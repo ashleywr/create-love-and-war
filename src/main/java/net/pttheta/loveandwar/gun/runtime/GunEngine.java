@@ -8,7 +8,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -21,7 +20,6 @@ import net.pttheta.loveandwar.gun.content.GunDef;
 import net.pttheta.loveandwar.gun.content.InputHandler;
 import net.pttheta.loveandwar.gun.content.InputNode;
 import net.pttheta.loveandwar.gun.content.MagazineDef;
-import net.pttheta.loveandwar.gun.content.SoundDef;
 import net.pttheta.loveandwar.gun.content.stat.ModifierSource;
 import net.pttheta.loveandwar.gun.content.stat.StatResolver;
 import net.pttheta.loveandwar.item.ModDataComponents;
@@ -363,7 +361,7 @@ public final class GunEngine {
                doEjectCasing(player, def);
                break;
             case "PlaySound":
-               doPlaySound(player, action);
+               GunSounds.send(player, group, action, sources);
                break;
             case "SwitchMode":
                doSwitchMode(gunStack, def, group);
@@ -374,10 +372,11 @@ public final class GunEngine {
       }
    }
 
-   static void runImmediateSounds(ServerPlayer player, GunDef def, ActionGroup group) {
+   static void runImmediateSounds(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group) {
+      var sources = StatSources.forFiring(def, group, gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY));
       for (ActionDef action : group.actions()) {
          if ("PlaySound".equals(action.actionType())) {
-            doPlaySound(player, action);
+            GunSounds.send(player, group, action, sources);
          } else if ("EjectCasing".equals(action.actionType())) {
             doEjectCasing(player, def);
          }
@@ -429,19 +428,6 @@ public final class GunEngine {
                }
             }
          );
-   }
-
-   private static void doPlaySound(ServerPlayer player, ActionDef action) {
-      for (SoundDef sound : action.sounds()) {
-         if (!sound.sound().isEmpty()) {
-            ResourceLocation id = parseRL(sound.sound());
-            BuiltInRegistries.SOUND_EVENT.getOptional(id).ifPresent(event -> {
-               float pitch = sound.minPitchMultiplier() + player.getRandom().nextFloat() * (sound.maxPitchMultiplier() - sound.minPitchMultiplier());
-               float volume = sound.minVolume() + player.getRandom().nextFloat() * (sound.maxVolume() - sound.minVolume());
-               player.level().playSound(null, player.getX(), player.getY(), player.getZ(), event, SoundSource.PLAYERS, volume, pitch);
-            });
-         }
-      }
    }
 
    private static void doSwitchMode(ItemStack gunStack, GunDef def, ActionGroup group) {

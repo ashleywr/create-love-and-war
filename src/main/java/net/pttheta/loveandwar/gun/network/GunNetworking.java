@@ -10,6 +10,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.pttheta.loveandwar.gun.client.ShotTrailRenderer;
+import net.pttheta.loveandwar.gun.client.GunSoundPlayer;
 import net.pttheta.loveandwar.gun.runtime.GunEngine;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 
@@ -23,6 +24,7 @@ public final class GunNetworking {
       PayloadRegistrar registrar = event.registrar("1.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
+      registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));
    }
 
    private static void handleShotTrail(SShotTrail payload, IPayloadContext context) {

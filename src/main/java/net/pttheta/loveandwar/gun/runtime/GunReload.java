@@ -64,7 +64,7 @@ final class GunReload {
             Optional<ActionGroup> startGroup = def.actionGroups().stream().filter(g -> g.key().equals(reloadDef.startActionKey())).findFirst();
             int totalTicks = startGroup.map(GunEngine::groupDurationTicks).orElse(0);
             gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withGroup(reloadDef.startActionKey(), totalTicks, queue));
-            startGroup.ifPresent(g -> GunEngine.runImmediateSounds(player, def, g));
+            startGroup.ifPresent(g -> GunEngine.runImmediateSounds(player, gunStack, def, g));
          }
       }
    }
@@ -89,7 +89,7 @@ final class GunReload {
          Optional<ActionGroup> group = def.actionGroups().stream().filter(g -> g.key().equals(nextKey)).findFirst();
          int totalTicks = group.map(GunEngine::groupDurationTicks).orElse(0);
          gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withGroup(nextKey, totalTicks, rest));
-         group.ifPresent(g -> GunEngine.runImmediateSounds(player, def, g));
+         group.ifPresent(g -> GunEngine.runImmediateSounds(player, gunStack, def, g));
       }
    }
 
