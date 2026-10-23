@@ -54,6 +54,7 @@ public final class GunEngine {
          }
       } else {
          if (!(gunStack.getItem() instanceof GunItem) || player.isSpectator() || !player.isAlive()) return;
+         cleanOrphanedToggles(player, gunStack);
          Optional<GunDef> defOpt = GunLookup.gunDef(gunStack);
          if (defOpt.isEmpty()) {
             if (gunStack.getItem() instanceof GunItem) {
@@ -141,10 +142,12 @@ public final class GunEngine {
          GunFireScheduler.cancel(player, gunStack);
          GunActionTimeline.cancelAll(player, gunStack);
          var state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+         for (String key : state.activeToggles()) state = state.withToggle(key, false);
          gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.idled().withBurstRemaining(0).withWaitingForRelease(false));
          return;
       }
       GunActionTimeline.tick(player, gunStack);
+      cleanOrphanedToggles(player, gunStack);
       try {
          var previous = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
          if (!previous.activeGroup().isEmpty() && !GunActionTimeline.owns(player, gunStack, previous.activeGroup())
@@ -158,7 +161,7 @@ public final class GunEngine {
             var def = GunLookup.gunDef(gunStack);
             if (def.isPresent()) {
                var ticked = state.tickedGroup();
-               if (ticked.groupTicksElapsed() < ticked.groupTotalTicks()) {
+               if (ticked.groupTicksElapsed() < ticked.groupTotalTicks() && !GunActionTimeline.isFinishing(player, gunStack, state.activeGroup())) {
                   gunStack.set(ModDataComponents.GUN_ACTION_STATE, ticked);
                } else if (isReloadGroup(def.get(), ticked.activeGroup())) {
                   GunReload.advance(player, gunStack, def.get(), ticked);
@@ -168,6 +171,13 @@ public final class GunEngine {
             }
          }
       } finally { GunActionTimeline.finishTick(player, gunStack); }
+   }
+
+   private static void cleanOrphanedToggles(ServerPlayer player, ItemStack stack) {
+      var previous = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+      var current = previous;
+      for (String key : previous.activeToggles()) if (!GunActionTimeline.owns(player, stack, key)) current = current.withToggle(key, false);
+      if (current != previous) stack.set(ModDataComponents.GUN_ACTION_STATE, current);
    }
 
    static void tryHeldFire(ServerPlayer player, ItemStack gunStack) {
@@ -298,21 +308,7 @@ public final class GunEngine {
    }
 
    private static boolean modalCheckPasses(GunDef def, GunActionState state, String modalCheck) {
-      int sep = modalCheck.indexOf(58);
-      if (sep < 0) {
-         return true;
-      }
-
-      String key = modalCheck.substring(0, sep);
-      String expected = modalCheck.substring(sep + 1);
-      return currentModeValue(def, state, key).equals(expected);
-   }
-
-   private static String currentModeValue(GunDef def, GunActionState state, String key) {
-      String stored = state.modeValues().get(key);
-      return stored != null
-         ? stored
-         : def.modes().stream().filter(m -> m.key().equals(key)).findFirst().map(m -> m.values().isEmpty() ? "" : m.values().get(0)).orElse("");
+      return GunModes.modalCheck(def, state, modalCheck);
    }
 
    private static void tryTrigger(
@@ -376,7 +372,7 @@ public final class GunEngine {
             GunSounds.send(player, group, action, sources);
             break;
          case "SwitchMode":
-            doSwitchMode(gunStack, def, group);
+            GunModes.switchMode(player, gunStack, def, sources);
             break;
          case "SpawnParticle":
             doSpawnParticle(player);
@@ -434,21 +430,6 @@ public final class GunEngine {
                }
             }
          );
-   }
-
-   private static void doSwitchMode(ItemStack gunStack, GunDef def, ActionGroup group) {
-      String modeKey = StatResolver.resolveOverride("mode", "", List.of(ModifierSource.of("group", group.modifiers())));
-      if (!modeKey.isEmpty()) {
-         Optional<GunDef.ModeEntry> entry = def.modes().stream().filter(m -> m.key().equals(modeKey)).findFirst();
-         if (!entry.isEmpty() && !entry.get().values().isEmpty()) {
-            GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
-            List<String> values = entry.get().values();
-            String current = state.modeValues().getOrDefault(modeKey, values.get(0));
-            int idx = values.indexOf(current);
-            String next = values.get((idx + 1) % values.size());
-            gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withMode(modeKey, next));
-         }
-      }
    }
 
    static Optional<MagazineDef> findMagazineDef(ServerPlayer player, GunDef def) {

@@ -32,6 +32,7 @@ public final class GunFireScheduler {
         int progress;
         int triggers;
         int duration;
+        boolean finishing;
 
         Cycle(long now) { this.lastTick = now; this.seenTick = now; }
 
@@ -88,6 +89,7 @@ public final class GunFireScheduler {
         if (cycle.group == null || !cycle.group.key().equals(group.key())) {
             cycle.progress = 0;
             cycle.triggers = 0;
+            cycle.finishing = false;
         }
         cycle.gun = gun;
         cycle.group = group;
@@ -106,7 +108,15 @@ public final class GunFireScheduler {
             if (cycle.group != null) GunActionTimeline.cancel(player, stack, cycle.group.key());
             cycle.group = null;
             cycle.retriggers = 0;
+            cycle.finishing = false;
         }
+    }
+
+    static void finishModeGroup(ServerPlayer player, ItemStack stack, String key) {
+        var cycles = CYCLES.get(player);
+        var cycle = cycles == null ? null : cycles.get(stack);
+        // Retain the final pending feedback tick, without adding a client-only final prediction as server damage.
+        if (cycle != null && cycle.group != null && cycle.group.key().equals(key)) cycle.finishing = true;
     }
 
     /** True when this scheduler owns the active group's progress for this inventory tick. */
@@ -144,8 +154,8 @@ public final class GunFireScheduler {
 
         cycle.progress++;
         GunFireMode mode = GunFireMode.of(cycle.group.repeatMode());
-        boolean repeat = mode == GunFireMode.FULL_AUTO && cycle.held;
-        if (mode == GunFireMode.BURST_FIRE && cycle.retriggers > 0) {
+        boolean repeat = !cycle.finishing && mode == GunFireMode.FULL_AUTO && cycle.held;
+        if (!cycle.finishing && mode == GunFireMode.BURST_FIRE && cycle.retriggers > 0) {
             // Original CheckRetrigger counts checks, not successful shots, even while out of ammo.
             cycle.retriggers--;
             repeat = true;
@@ -153,7 +163,7 @@ public final class GunFireScheduler {
         if (repeat && !stack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY).isEmpty()) {
             emit(player, stack, cycle, cycle.cadence.trigger(cycle.group.repeatDelay() <= 0 ? 0.05F : cycle.group.repeatDelay()));
         }
-        if ((mode == GunFireMode.BURST_FIRE || mode == GunFireMode.SEMI_AUTO)
+        if (cycle.finishing || (mode == GunFireMode.BURST_FIRE || mode == GunFireMode.SEMI_AUTO)
                 && cycle.progress > (long)cycle.duration * cycle.triggers) {
             finish(stack, cycle);
         } else synchronize(stack, cycle, now);
@@ -192,6 +202,7 @@ public final class GunFireScheduler {
     private static void finish(ItemStack stack, Cycle cycle) {
         cycle.group = null;
         cycle.retriggers = 0;
+        cycle.finishing = false;
         var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
         stack.set(ModDataComponents.GUN_ACTION_STATE, state.idled().withBurstRemaining(0));
     }

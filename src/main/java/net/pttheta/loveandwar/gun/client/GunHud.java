@@ -18,6 +18,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.pttheta.loveandwar.LoveAndWarMod;
 import net.pttheta.loveandwar.gun.content.GunDef;
 import net.pttheta.loveandwar.gun.runtime.GunActionState;
+import net.pttheta.loveandwar.gun.runtime.GunModes;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.item.ModDataComponents;
@@ -60,7 +61,7 @@ public final class GunHud {
                   Iterator rowY = def.modes().iterator();
                   if (rowY.hasNext()) {
                      GunDef.ModeEntry mode = (GunDef.ModeEntry)rowY.next();
-                     String value = hudState.modeValues().getOrDefault(mode.key(), "off");
+                     String value = GunModes.value(def, hudState, mode.key());
                      String key = "tooltip.mode." + mode.key() + "." + value;
                      Component hint = Component.translatable(key);
                      if (!key.equals(hint.getString())) {

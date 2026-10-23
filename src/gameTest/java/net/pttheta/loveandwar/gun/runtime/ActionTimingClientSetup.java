@@ -94,14 +94,14 @@ public final class ActionTimingClientSetup {
     @SubscribeEvent public static void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean("law.enableClientScenario")) return;
         var command = Commands.literal("law_test_timing_setup").requires(source -> source.hasPermission(2));
-        for (String name : new String[]{"1887", "g11k2", "wz38", "krag", "mat49", "aai_acr", "mars"}) {
+        for (String name : new String[]{"1887", "g11k2", "wz38", "krag", "lebel_scope", "mat49", "aai_acr", "mars"}) {
             command.then(Commands.literal(name).executes(context -> {
                 var player = context.getSource().getPlayerOrException(); cleanup(player);
                 SESSIONS.put(player.getUUID(), new Session(player, name));
                 var stack = item(name, 1);
                 String bullet = name.equals("1887") ? "buckshot_shell" : name.equals("g11k2") || name.equals("aai_acr") ? "caseless_bullet"
                         : name.equals("mat49") || name.equals("mars") ? "pistol_bullet" : "rifle_bullet";
-                if (name.equals("krag") || name.equals("mat49") || name.equals("aai_acr") || name.equals("mars")) {
+                if (name.equals("krag") || name.equals("lebel_scope") || name.equals("mat49") || name.equals("aai_acr") || name.equals("mars")) {
                     stack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(List.of(item(bullet, 1))));
                 }
                 player.getInventory().selected = 0;
@@ -115,6 +115,14 @@ public final class ActionTimingClientSetup {
             }));
         }
         event.getDispatcher().register(command);
+        event.getDispatcher().register(Commands.literal("law_test_mode_status").requires(source -> source.hasPermission(2)).executes(context -> {
+            var player = context.getSource().getPlayerOrException(); var stack = player.getMainHandItem();
+            var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+            String mode = GunLookup.gunDef(stack).map(def -> GunModes.value(def, state, "iron_sight")).orElse("missing");
+            LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_MODE_SERVER gun={} mode={} initialized={} stored={} toggles={}",
+                    GunLookup.contentKey(stack), mode, state.modesInitialized(), state.modeValues(), state.activeToggles());
+            return 1;
+        }));
         var environment = Commands.literal("law_test_restriction_environment").requires(source -> source.hasPermission(2));
         for (String name : new String[]{"dry", "offhand", "water", "flowing", "lava"}) {
             environment.then(Commands.literal(name).executes(context -> {

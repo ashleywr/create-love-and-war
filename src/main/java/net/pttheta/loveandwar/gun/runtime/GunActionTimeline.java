@@ -106,9 +106,16 @@ public final class GunActionTimeline {
         if (groups == null) return;
         long now = player.level().getGameTime();
         // Defer removal until reload transitions can retrigger the same instance and extend its lifetime.
-        groups.values().removeIf(frame -> frame.tickedAt == now && (frame.finishing
+        groups.values().removeIf(frame -> {
+            boolean remove = frame.tickedAt == now && (frame.finishing
                 || (GunFireMode.of(frame.group.repeatMode()) == GunFireMode.SEMI_AUTO || GunFireMode.of(frame.group.repeatMode()) == GunFireMode.BURST_FIRE)
-                && frame.progress > (long)GunEngine.groupDurationTicks(frame.group) * frame.triggers));
+                && frame.progress > (long)GunEngine.groupDurationTicks(frame.group) * frame.triggers);
+            if (remove && frame.finishing) {
+                var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+                if (state.activeToggles().contains(frame.group.key())) stack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(frame.group.key(), false));
+            }
+            return remove;
+        });
         if (groups.isEmpty()) stacks.remove(stack);
         if (stacks.isEmpty()) FRAMES.remove(player);
     }
@@ -139,6 +146,11 @@ public final class GunActionTimeline {
 
     static boolean owns(ServerPlayer player, ItemStack stack, String key) {
         return frame(player, stack, key) != null;
+    }
+
+    static boolean isFinishing(ServerPlayer player, ItemStack stack, String key) {
+        var frame = frame(player, stack, key);
+        return frame != null && frame.finishing;
     }
 
     static boolean advanceState(ServerPlayer player, ItemStack stack, String key) {

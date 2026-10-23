@@ -85,11 +85,12 @@ public record GunDef(
       );
    }
 
-   public record ModeEntry(String key, List<String> values) {
+   public record ModeEntry(String key, List<String> values, String defaultValue) {
       public static final Codec<GunDef.ModeEntry> CODEC = RecordCodecBuilder.create(
          instance -> instance.group(
-               Codec.STRING.fieldOf("key").forGetter(GunDef.ModeEntry::key),
-               Codec.STRING.listOf().optionalFieldOf("values", List.of()).forGetter(GunDef.ModeEntry::values)
+               Codec.STRING.optionalFieldOf("key", "mode").forGetter(GunDef.ModeEntry::key),
+               Codec.STRING.listOf().optionalFieldOf("values", List.of("on", "off")).forGetter(GunDef.ModeEntry::values),
+               Codec.STRING.optionalFieldOf("defaultValue", "off").forGetter(GunDef.ModeEntry::defaultValue)
             )
             .apply(instance, GunDef.ModeEntry::new)
       );

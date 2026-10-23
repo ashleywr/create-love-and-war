@@ -21,8 +21,19 @@ public record GunActionState(
    List<String> activeToggles,
    long cooldownUntilGameTime,
    int burstRemaining,
-   boolean waitingForRelease
+   boolean waitingForRelease,
+   boolean modesInitialized
 ) {
+   public GunActionState {
+      modesInitialized |= !modeValues.isEmpty();
+   }
+   /** Compatibility for callers and saves predating explicit empty-mode-compound presence. */
+   public GunActionState(String activeGroup, int groupTicksElapsed, int groupTotalTicks, List<String> pendingReloadGroups,
+                         Map<String, String> modeValues, List<String> activeToggles, long cooldownUntilGameTime,
+                         int burstRemaining, boolean waitingForRelease) {
+      this(activeGroup, groupTicksElapsed, groupTotalTicks, pendingReloadGroups, modeValues, activeToggles,
+           cooldownUntilGameTime, burstRemaining, waitingForRelease, !modeValues.isEmpty());
+   }
    public static final GunActionState IDLE = new GunActionState("", 0, 0, List.of(), Map.of(), List.of(), 0L, 0, false);
    public static final Codec<GunActionState> CODEC = RecordCodecBuilder.create(
       instance -> instance.group(
@@ -34,7 +45,8 @@ public record GunActionState(
             Codec.STRING.listOf().optionalFieldOf("activeToggles", List.of()).forGetter(GunActionState::activeToggles),
             Codec.LONG.optionalFieldOf("cooldownUntilGameTime", 0L).forGetter(GunActionState::cooldownUntilGameTime),
             Codec.INT.optionalFieldOf("burstRemaining", 0).forGetter(GunActionState::burstRemaining),
-            Codec.BOOL.optionalFieldOf("waitingForRelease", false).forGetter(GunActionState::waitingForRelease)
+            Codec.BOOL.optionalFieldOf("waitingForRelease", false).forGetter(GunActionState::waitingForRelease),
+            Codec.BOOL.optionalFieldOf("modesInitialized", false).forGetter(GunActionState::modesInitialized)
          )
          .apply(instance, GunActionState::new)
    );
@@ -53,6 +65,7 @@ public record GunActionState(
          ByteBufCodecs.VAR_LONG.encode(buf, v.cooldownUntilGameTime());
          ByteBufCodecs.VAR_INT.encode(buf, v.burstRemaining());
          ByteBufCodecs.BOOL.encode(buf, v.waitingForRelease());
+         ByteBufCodecs.BOOL.encode(buf, v.modesInitialized());
       },
       buf -> new GunActionState(
          (String)ByteBufCodecs.STRING_UTF8.decode(buf),
@@ -63,6 +76,7 @@ public record GunActionState(
          (List<String>)STRING_LIST.decode(buf),
          (Long)ByteBufCodecs.VAR_LONG.decode(buf),
          (Integer)ByteBufCodecs.VAR_INT.decode(buf),
+         (Boolean)ByteBufCodecs.BOOL.decode(buf),
          (Boolean)ByteBufCodecs.BOOL.decode(buf)
       )
    );
@@ -73,18 +87,18 @@ public record GunActionState(
 
    public GunActionState withGroup(String group, int totalTicks, List<String> pending) {
       return new GunActionState(
-         group, 0, totalTicks, pending, this.modeValues, this.activeToggles, this.cooldownUntilGameTime, this.burstRemaining, this.waitingForRelease
+         group, 0, totalTicks, pending, this.modeValues, this.activeToggles, this.cooldownUntilGameTime, this.burstRemaining, this.waitingForRelease, this.modesInitialized
       );
    }
 
    public GunActionState withFiringFrame(String group, int elapsed, int total, long cooldown, int remaining, boolean waiting) {
-      return new GunActionState(group, elapsed, total, List.of(), this.modeValues, this.activeToggles, cooldown, remaining, waiting);
+      return new GunActionState(group, elapsed, total, List.of(), this.modeValues, this.activeToggles, cooldown, remaining, waiting, this.modesInitialized);
    }
 
    public GunActionState withReloadGroup(String group, int duration, List<String> pending) {
       if (!activeGroup.equals(group)) return withGroup(group, duration + 1, pending);
       return new GunActionState(group, groupTicksElapsed, groupTotalTicks + duration, pending, modeValues, activeToggles,
-         cooldownUntilGameTime, burstRemaining, waitingForRelease);
+         cooldownUntilGameTime, burstRemaining, waitingForRelease, modesInitialized);
    }
 
    /** Reused LoadOne instances trigger at P=D+1,2D+1,... rather than resetting the lifetime clock. */
@@ -105,13 +119,14 @@ public record GunActionState(
          this.activeToggles,
          this.cooldownUntilGameTime,
          this.burstRemaining,
-         this.waitingForRelease
+         this.waitingForRelease,
+         this.modesInitialized
       );
    }
 
    public GunActionState idled() {
       return new GunActionState(
-         "", 0, 0, List.of(), this.modeValues, this.activeToggles, this.cooldownUntilGameTime, this.burstRemaining, this.waitingForRelease
+         "", 0, 0, List.of(), this.modeValues, this.activeToggles, this.cooldownUntilGameTime, this.burstRemaining, this.waitingForRelease, this.modesInitialized
       );
    }
 
@@ -125,7 +140,8 @@ public record GunActionState(
          this.activeToggles,
          until,
          this.burstRemaining,
-         this.waitingForRelease
+         this.waitingForRelease,
+         this.modesInitialized
       );
    }
 
@@ -141,7 +157,8 @@ public record GunActionState(
          this.activeToggles,
          this.cooldownUntilGameTime,
          this.burstRemaining,
-         this.waitingForRelease
+         this.waitingForRelease,
+         true
       );
    }
 
@@ -161,7 +178,8 @@ public record GunActionState(
          next,
          this.cooldownUntilGameTime,
          this.burstRemaining,
-         this.waitingForRelease
+         this.waitingForRelease,
+         this.modesInitialized
       );
    }
 
@@ -175,7 +193,8 @@ public record GunActionState(
          this.activeToggles,
          this.cooldownUntilGameTime,
          n,
-         this.waitingForRelease
+         this.waitingForRelease,
+         this.modesInitialized
       );
    }
 
@@ -189,7 +208,8 @@ public record GunActionState(
          this.activeToggles,
          this.cooldownUntilGameTime,
          this.burstRemaining,
-         waiting
+         waiting,
+         this.modesInitialized
       );
    }
 
@@ -203,7 +223,8 @@ public record GunActionState(
          this.activeToggles,
          this.cooldownUntilGameTime,
          this.burstRemaining,
-         false
+         false,
+         this.modesInitialized
       );
    }
 }
