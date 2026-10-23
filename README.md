@@ -16,7 +16,7 @@ Install Java 21, then run:
 
 The mod JAR and source JAR are written to `build/libs/`. Dependencies are resolved from the NeoForge, Create, Registrate and JEI Maven repositories; no local mod JARs are required to compile.
 
-JAR entries use stable ordering and fixed timestamps. Two clean builds in the pinned local environment produced byte-identical mod and source JARs; portability across other JDKs or dependency changes has not been certified.
+JAR entries use stable ordering and fixed timestamps. A clean checkout and a fresh Git source export built in another directory produced byte-identical mod and source JARs with the build cache disabled. This uses the repository's LF line-ending policy and the pinned local environment; portability across other JDKs or dependency changes has not been certified.
 
 Development tasks: `runClient`, `runServer` and `runGameTestServer`. Development worlds and logs are stored outside the repository in the workspace's `private/` directory.
 
