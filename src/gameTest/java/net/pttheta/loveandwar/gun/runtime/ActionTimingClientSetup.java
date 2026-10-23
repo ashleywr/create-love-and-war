@@ -79,6 +79,7 @@ public final class ActionTimingClientSetup {
         for (int i = 0; i < session.armor.size(); i++) player.getInventory().armor.set(i, session.armor.get(i).copy());
         for (int i = 0; i < session.offhand.size(); i++) player.getInventory().offhand.set(i, session.offhand.get(i).copy());
         player.getInventory().selected = session.selected;
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(session.selected));
         player.setGameMode(session.mode); player.getAbilities().flying = session.flying;
         player.getAbilities().invulnerable = session.invulnerable; player.onUpdateAbilities();
         player.setRemainingFireTicks(session.fireTicks);
@@ -105,6 +106,7 @@ public final class ActionTimingClientSetup {
                     stack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(List.of(item(bullet, 1))));
                 }
                 player.getInventory().selected = 0;
+                player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
                 player.getInventory().setItem(0, stack);
                 player.getInventory().setItem(8, item(bullet, name.equals("1887") ? 5 : 12));
                 player.setGameMode(GameType.SURVIVAL);

@@ -70,8 +70,8 @@ public final class GunEngine {
                GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                GunAttachments attachments = (GunAttachments)gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
                AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
-               Optional<GunEngine.Resolved> resolved = resolveNode(player, gunStack, def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty(), true);
-               if (resolved.isPresent() && heldTriggerFallthrough(def, resolved.get(), inputType, state)) {
+               Optional<GunEngine.Resolved> resolved = resolveNode(player, gunStack, def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty(), GunActiveGroups.Origin.base(gunStack), true);
+               if (resolved.isPresent() && heldTriggerFallthrough(player, gunStack, def, resolved.get(), inputType, state)) {
                   diag(
                      "Gun '{}': '{}' needs a fresh Fire1 press, not the held one that fired the last round",
                      GunLookup.contentKey(gunStack),
@@ -108,9 +108,11 @@ public final class GunEngine {
       GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
       GunAttachments attachments = (GunAttachments)gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
       AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
-      Optional<GunEngine.Resolved> resolved = resolveNode(shooter, gunStack, def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty(), true);
-      if (!resolved.isEmpty() && !heldTriggerFallthrough(def, resolved.get(), inputType, state)) {
-         Optional<ActionGroup> groupOpt = resolveActionGroup(def, resolved.get());
+      Optional<GunEngine.Resolved> resolved = resolveNode(shooter, gunStack, def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty(), GunActiveGroups.Origin.base(gunStack), true);
+      if (!resolved.isEmpty() && !heldTriggerFallthrough(shooter, gunStack, def, resolved.get(), inputType, state)) {
+         if (resolveActionGroup(def, resolved.get()).map(group -> GunFireMode.of(group.repeatMode()) == GunFireMode.TOGGLE).orElse(false)
+               && hasRetainedGroup(shooter, gunStack, resolved.get().groupKey())) return Optional.empty();
+         Optional<ActionGroup> groupOpt = effectiveActionGroup(shooter, gunStack, def, resolved.get());
          if (groupOpt.isEmpty()) {
             return Optional.empty();
          }
@@ -174,6 +176,7 @@ public final class GunEngine {
    }
 
    private static void cleanOrphanedToggles(ServerPlayer player, ItemStack stack) {
+      GunActionTimeline.synchronize(player, stack);
       var previous = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
       var current = previous;
       for (String key : previous.activeToggles()) if (!GunActionTimeline.owns(player, stack, key)) current = current.withToggle(key, false);
@@ -189,8 +192,8 @@ public final class GunEngine {
       if (handler.isEmpty()) return;
       var state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
       var attachments = gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
-      var resolved = resolveNode(player, gunStack, def, attachments, state, rounds, handler.get().nodes(), "Fire1", Optional.empty(), true);
-      if (resolved.isPresent() && resolveActionGroup(def, resolved.get()).map(g -> GunFireMode.of(g.repeatMode()) == GunFireMode.FULL_AUTO).orElse(false)) {
+      var resolved = resolveNode(player, gunStack, def, attachments, state, rounds, handler.get().nodes(), "Fire1", Optional.empty(), GunActiveGroups.Origin.base(gunStack), true);
+      if (resolved.isPresent() && effectiveActionGroup(player, gunStack, def, resolved.get()).map(g -> GunFireMode.of(g.repeatMode()) == GunFireMode.FULL_AUTO).orElse(false)) {
          tryTrigger(player, gunStack, def, resolved.get(), attachments, state);
       }
    }
@@ -205,6 +208,7 @@ public final class GunEngine {
       List<InputNode> nodes,
       String inputType,
       Optional<AttachmentDef> context,
+      GunActiveGroups.Origin origin,
       boolean rootHandler
    ) {
       for (InputNode node : nodes) {
@@ -220,7 +224,7 @@ public final class GunEngine {
                      ad -> ad.handlerOverrides().stream().filter(h -> h.inputType().equals(inputType)).findFirst()
                   );
                   if (overrideHandler.isPresent()) {
-                     Optional<GunEngine.Resolved> r = resolveNode(shooter, gunStack, def, attachments, state, rounds, overrideHandler.get().nodes(), inputType, attDef, false);
+                     Optional<GunEngine.Resolved> r = resolveNode(shooter, gunStack, def, attachments, state, rounds, overrideHandler.get().nodes(), inputType, attDef, new GunActiveGroups.Origin(node.attachmentType(), node.attachmentIndex(), GunLookup.contentKey(slotStacks.get(node.attachmentIndex()))), false);
                      if (r.isPresent()) {
                         return r;
                      }
@@ -230,7 +234,7 @@ public final class GunEngine {
             } else {
                String key = node.actionGroupToTrigger();
                if (!key.isEmpty()) {
-                  GunEngine.Resolved candidate = new GunEngine.Resolved(key, context);
+                  GunEngine.Resolved candidate = new GunEngine.Resolved(key, context, origin);
                   if (isSatisfied(shooter, gunStack, def, candidate, rounds, state)) {
                      return Optional.of(candidate);
                   }
@@ -245,7 +249,7 @@ public final class GunEngine {
    }
 
    private static boolean isSatisfied(Player shooter, ItemStack gunStack, GunDef def, GunEngine.Resolved candidate, AmmoPouchContents rounds, GunActionState state) {
-      Optional<ActionGroup> groupOpt = resolveActionGroup(def, candidate);
+      Optional<ActionGroup> groupOpt = effectiveActionGroup(shooter, gunStack, def, candidate);
       if (groupOpt.isEmpty()) {
          LOGGER.warn(
             "inputHandlers node references undefined action group '{}' (not present in actionGroups[] or the resolved attachment's actionOverrides[])",
@@ -267,7 +271,7 @@ public final class GunEngine {
             GunFireMode fireMode = GunFireMode.of(group.repeatMode());
             boolean reentrantFire = needsAmmo && state.activeGroup().equals(group.key());
             boolean reloadOverFire = isReloadStart(def, group.key()) && !isReloadGroup(def, state.activeGroup());
-            if (fireMode != GunFireMode.TOGGLE && !reentrantFire && !reloadOverFire && state.busy()) {
+            if (fireMode != GunFireMode.TOGGLE && !reentrantFire && !reloadOverFire && !hasRetainedGroup(shooter, gunStack, group.key()) && state.busy()) {
                diag("Action group '{}' blocked: gun is busy (mid-action or mid-reload)", group.key());
                return false;
             } else {
@@ -277,9 +281,9 @@ public final class GunEngine {
       }
    }
 
-   private static boolean heldTriggerFallthrough(GunDef def, GunEngine.Resolved resolved, String inputType, GunActionState state) {
+   private static boolean heldTriggerFallthrough(Player shooter, ItemStack gunStack, GunDef def, GunEngine.Resolved resolved, String inputType, GunActionState state) {
       return "Fire1".equals(inputType) && state.waitingForRelease()
-         ? resolveActionGroup(def, resolved).map(g -> g.actions().stream().noneMatch(a -> "Shoot".equals(a.actionType()))).orElse(false)
+         ? effectiveActionGroup(shooter, gunStack, def, resolved).map(g -> g.actions().stream().noneMatch(a -> "Shoot".equals(a.actionType()))).orElse(false)
          : false;
    }
 
@@ -298,13 +302,24 @@ public final class GunEngine {
 
    private static Optional<ActionGroup> resolveActionGroup(GunDef def, GunEngine.Resolved resolved) {
       if (resolved.context().isPresent()) {
-         Optional<ActionGroup> override = resolved.context().get().actionOverrides().stream().filter(g -> g.key().equals(resolved.groupKey())).findFirst();
-         if (override.isPresent()) {
-            return override;
-         }
+         return resolved.context().get().actionOverrides().stream().filter(g -> g.key().equals(resolved.groupKey())).findFirst();
       }
 
       return def.actionGroups().stream().filter(g -> g.key().equals(resolved.groupKey())).findFirst();
+   }
+
+   private static Optional<ActionGroup> retainedGroup(Player shooter, ItemStack stack, String key) {
+      if (shooter instanceof ServerPlayer server) return GunActionTimeline.context(server, stack, key).map(GunActionTimeline.Context::group);
+      return GunActiveGroups.of(stack).find(key).filter(entry -> entry.owner().equals(shooter.getUUID())).flatMap(GunActiveGroups.Entry::resolve);
+   }
+
+   private static boolean hasRetainedGroup(Player shooter, ItemStack stack, String key) {
+      return retainedGroup(shooter, stack, key).isPresent();
+   }
+
+   private static Optional<ActionGroup> effectiveActionGroup(Player shooter, ItemStack stack, GunDef def, Resolved resolved) {
+      // An undefined candidate still cannot create/target a group merely because another provider is active.
+      return resolveActionGroup(def, resolved).flatMap(candidate -> retainedGroup(shooter, stack, candidate.key()).or(() -> Optional.of(candidate)));
    }
 
    private static boolean modalCheckPasses(GunDef def, GunActionState state, String modalCheck) {
@@ -324,32 +339,45 @@ public final class GunEngine {
          LOGGER.warn("tryTrigger called with unresolvable action group '{}'", resolved.groupKey());
          return;
       }
-      ActionGroup group = groupOpt.get();
-      GunFireMode mode = GunFireMode.of(group.repeatMode());
-      if (mode == GunFireMode.TOGGLE) {
-         boolean turningOn = !state.activeToggles().contains(group.key());
-         gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(group.key(), turningOn));
-         if (turningOn) triggerActions(player, gunStack, def, group, attachments);
-         else GunActionTimeline.finishAfterTick(player, gunStack, group.key());
+      ActionGroup candidate = groupOpt.get();
+      var retained = GunActionTimeline.context(player, gunStack, candidate.key());
+      // Quirk kept: Toggle is checked on the requested context, while CanStart/actions use the retained instance.
+      if (GunFireMode.of(candidate.repeatMode()) == GunFireMode.TOGGLE && retained.isPresent()) {
+         var current = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+         gunStack.set(ModDataComponents.GUN_ACTION_STATE, current.withToggle(candidate.key(), false));
+         GunActionTimeline.finishAfterTick(player, gunStack, candidate.key());
+         GunFireScheduler.finishModeGroup(player, gunStack, candidate.key());
          return;
       }
-      boolean firesRound = group.actions().stream().anyMatch(a -> "Shoot".equals(a.actionType()));
+      ActionGroup group = retained.map(GunActionTimeline.Context::group).orElse(candidate);
+      GunDef actualGun = retained.map(GunActionTimeline.Context::gun).orElse(def);
+      var origin = retained.map(GunActionTimeline.Context::origin).orElse(resolved.origin());
+      GunFireMode mode = GunFireMode.of(group.repeatMode());
+      if (mode == GunFireMode.TOGGLE) {
+         gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(group.key(), true));
+         triggerActions(player, gunStack, actualGun, group, attachments, origin);
+         return;
+      }
+      boolean firesRound = group.actions().stream().anyMatch(action -> "Shoot".equals(action.actionType()));
       if (firesRound && (mode == GunFireMode.SEMI_AUTO || mode == GunFireMode.FULL_AUTO || mode == GunFireMode.BURST_FIRE)) {
-         GunFireScheduler.start(player, gunStack, def, group, attachments);
+         GunFireScheduler.start(player, gunStack, actualGun, group, attachments, origin);
          return;
       }
       long now = player.level().getGameTime();
       if (firesRound && now < state.cooldownUntilGameTime()) return;
-      Optional<GunDef.ReloadDef> reloadDef = def.reloads().stream().filter(rd -> rd.startActionKey().equals(group.key())).findFirst();
+      Optional<GunDef.ReloadDef> reloadDef = actualGun.reloads().stream().filter(rd -> rd.startActionKey().equals(group.key())).findFirst();
       if (reloadDef.isPresent()) {
          GunFireScheduler.cancel(player, gunStack);
-         GunReload.start(player, gunStack, def, reloadDef.get(), state.withBurstRemaining(0));
+         GunReload.start(player, gunStack, actualGun, reloadDef.get(), state.withBurstRemaining(0));
          return;
       }
-      GunActionState next = state.withGroup(group.key(), groupDurationTicks(group) + 1, List.of());
+      int progress = retained.map(GunActionTimeline.Context::progress).orElse(0);
+      long triggers = retained.map(GunActionTimeline.Context::triggers).orElse(0L) + 1;
+      int total = (int)Math.min(Integer.MAX_VALUE, (long)groupDurationTicks(group) * triggers + 1);
+      GunActionState next = state.withFiringFrame(group.key(), progress, total, state.cooldownUntilGameTime(), state.burstRemaining(), state.waitingForRelease());
       if (firesRound) next = next.withCooldown(now + Math.round(group.repeatDelay() * 20.0F));
       gunStack.set(ModDataComponents.GUN_ACTION_STATE, next);
-      triggerActions(player, gunStack, def, group, attachments);
+      triggerActions(player, gunStack, actualGun, group, attachments, origin);
    }
 
    static int groupDurationTicks(ActionGroup group) {
@@ -357,7 +385,11 @@ public final class GunEngine {
    }
 
    static void triggerActions(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, GunAttachments attachments) {
-      GunActionTimeline.trigger(player, gunStack, def, group, attachments, false);
+      triggerActions(player, gunStack, def, group, attachments, GunActiveGroups.Origin.base(gunStack));
+   }
+
+   static void triggerActions(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, GunAttachments attachments, GunActiveGroups.Origin origin) {
+      GunActionTimeline.trigger(player, gunStack, def, group, attachments, false, origin);
    }
 
    static void executeAction(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, ActionDef action, List<ModifierSource> sources, int progress) {
@@ -479,6 +511,6 @@ public final class GunEngine {
       }
    }
 
-   private record Resolved(String groupKey, Optional<AttachmentDef> context) {
+   private record Resolved(String groupKey, Optional<AttachmentDef> context, GunActiveGroups.Origin origin) {
    }
 }

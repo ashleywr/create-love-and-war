@@ -21,8 +21,8 @@ public final class GunNetworking {
 
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-      // Gun action-state components now retain mode-compound presence; older component codecs cannot decode this wire schema.
-      PayloadRegistrar registrar = event.registrar("2.0");
+      // Runtime active-group provenance adds a network-only component unknown to older clients.
+      PayloadRegistrar registrar = event.registrar("3.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
       registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));

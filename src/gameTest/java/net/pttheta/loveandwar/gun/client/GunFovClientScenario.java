@@ -23,6 +23,8 @@ import net.pttheta.loveandwar.gun.content.GunContent;
 import net.pttheta.loveandwar.gun.content.GunDef;
 import net.pttheta.loveandwar.gun.content.stat.SightFov;
 import net.pttheta.loveandwar.gun.runtime.GunActionState;
+import net.pttheta.loveandwar.gun.runtime.GunActiveGroups;
+import net.pttheta.loveandwar.gun.runtime.StatSources;
 import net.pttheta.loveandwar.gun.runtime.GunAttachments;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.item.ModDataComponents;
@@ -46,7 +48,9 @@ public final class GunFovClientScenario {
                 name, actual, expected, Double.isFinite(actual) && Math.abs(actual - expected) < 0.0001);
     }
     private static float factor(GunDef def, GunActionState state) {
-        return GunAimZoom.addSights(SightFov.EMPTY, def, GunAttachments.EMPTY, state).mean();
+        var sights = SightFov.EMPTY;
+        for (var group : def.actionGroups()) if (state.activeToggles().contains(group.key())) sights = sights.add(group, StatSources.forFiring(def, group, GunAttachments.EMPTY));
+        return sights.mean();
     }
     private static int check() {
         result("krag_scope", factor(GunContent.gun("krag").orElseThrow(), active("ads_0")), 4);
@@ -71,7 +75,9 @@ public final class GunFovClientScenario {
         var off = player.getInventory().offhand.get(0);
         try {
             var first = main.copy(); first.set(ModDataComponents.GUN_ACTION_STATE, active("ads_0"));
+            first.set(ModDataComponents.GUN_ACTIVE_GROUPS, new GunActiveGroups(List.of(new GunActiveGroups.Entry("ads_0", GunActiveGroups.Origin.base(first), UUID.randomUUID(), player.level().getGameTime(), player.getUUID()))));
             var second = main.copy(); second.set(ModDataComponents.GUN_ACTION_STATE, active("ads_1"));
+            second.set(ModDataComponents.GUN_ACTIVE_GROUPS, new GunActiveGroups(List.of(new GunActiveGroups.Entry("ads_1", GunActiveGroups.Origin.base(second), UUID.randomUUID(), player.level().getGameTime(), player.getUUID()))));
             player.getInventory().items.set(player.getInventory().selected, first);
             player.getInventory().offhand.set(0, second);
             var modifier = new ComputeFovModifierEvent(player, 1.1F); modifier.setNewFovModifier(1.1F);

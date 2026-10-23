@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.UUID;
+import java.util.ArrayList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -27,7 +29,7 @@ public final class GunActionTimeline {
     private static final class Frame {
         final GunDef gun;
         final ActionGroup group;
-        final boolean soundsOnly;
+        final GunActiveGroups.Entry descriptor;
         final int[] remaining;
         final boolean[] pending;
         long lastTick;
@@ -37,9 +39,10 @@ public final class GunActionTimeline {
         long triggers;
         boolean finishing;
 
-        Frame(GunDef gun, ActionGroup group, boolean soundsOnly, long now) {
-            this.gun = gun; this.group = group; this.soundsOnly = soundsOnly; this.lastTick = now;
-            boolean delayed = group.actions().stream().anyMatch(action -> eligible(action, soundsOnly) && action.delay() != 0);
+        Frame(ServerPlayer player, GunDef gun, ActionGroup group, GunActiveGroups.Origin origin, long now) {
+            this.gun = gun; this.group = group; this.lastTick = now;
+            descriptor = new GunActiveGroups.Entry(group.key(), origin, UUID.randomUUID(), now, player.getUUID());
+            boolean delayed = group.actions().stream().anyMatch(action -> action.delay() != 0);
             remaining = delayed ? new int[group.actions().size()] : NO_DELAYS;
             pending = delayed ? new boolean[remaining.length] : NO_PENDING;
         }
@@ -51,15 +54,24 @@ public final class GunActionTimeline {
     }
 
     static void trigger(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunAttachments attachments, boolean soundsOnly) {
+        trigger(player, stack, gun, group, attachments, soundsOnly, GunActiveGroups.Origin.base(stack));
+    }
+
+    static void trigger(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunAttachments attachments, boolean soundsOnly, GunActiveGroups.Origin origin) {
+        claim(player, stack);
         var groups = FRAMES.computeIfAbsent(player, ignored -> new IdentityHashMap<>()).computeIfAbsent(stack, ignored -> new LinkedHashMap<>());
         var frame = groups.get(group.key());
-        if (frame == null || !frame.group.equals(group) || frame.soundsOnly != soundsOnly) {
-            frame = new Frame(gun, group, soundsOnly, player.level().getGameTime());
+        if (frame == null) {
+            frame = new Frame(player, gun, group, origin, player.level().getGameTime());
             groups.put(group.key(), frame);
+            publish(player, stack, groups);
         }
+        // Quirk kept: ActionStack aliases Def.key and reuses the first instance's actual definition/context.
+        gun = frame.gun;
+        group = frame.group;
         frame.triggers++;
         var sources = RealisticDamage.apply(GunLookup.contentKey(stack), group, StatSources.forFiring(gun, group, attachments));
-        int progress = GunFireScheduler.progress(player, stack, group.key());
+        int progress = frame.progress;
         for (int index = 0; index < group.actions().size(); index++) {
             var action = group.actions().get(index);
             if (!eligible(action, soundsOnly)) continue;
@@ -76,14 +88,15 @@ public final class GunActionTimeline {
         var stacks = FRAMES.get(player);
         var groups = stacks == null ? null : stacks.get(stack);
         if (groups == null) return;
-        if (!player.isAlive() || player.isSpectator() || stack.isEmpty()) { stacks.remove(stack); return; }
+        if (!player.isAlive() || player.isSpectator() || stack.isEmpty()) { stacks.remove(stack); publish(player, stack, null); return; }
         long now = player.level().getGameTime();
+        boolean removed = false;
         var iterator = groups.values().iterator();
         while (iterator.hasNext()) {
             var frame = iterator.next();
             if (now <= frame.lastTick) continue;
             // Runtime pending work must not resume after a dropped/unloaded interval.
-            if (now - frame.lastTick > 1) { iterator.remove(); continue; }
+            if (now - frame.lastTick > 1) { iterator.remove(); removed = true; continue; }
             frame.lastTick = now; frame.tickedAt = now; frame.progress++;
             List<ModifierSource> sources = null;
             for (int index = 0; index < frame.pending.length; index++) {
@@ -98,6 +111,7 @@ public final class GunActionTimeline {
                 GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, frame.progress);
             }
         }
+        if (removed) publish(player, stack, groups);
     }
 
     static void finishTick(ServerPlayer player, ItemStack stack) {
@@ -106,7 +120,7 @@ public final class GunActionTimeline {
         if (groups == null) return;
         long now = player.level().getGameTime();
         // Defer removal until reload transitions can retrigger the same instance and extend its lifetime.
-        groups.values().removeIf(frame -> {
+        boolean removed = groups.values().removeIf(frame -> {
             boolean remove = frame.tickedAt == now && (frame.finishing
                 || (GunFireMode.of(frame.group.repeatMode()) == GunFireMode.SEMI_AUTO || GunFireMode.of(frame.group.repeatMode()) == GunFireMode.BURST_FIRE)
                 && frame.progress > (long)GunEngine.groupDurationTicks(frame.group) * frame.triggers);
@@ -116,6 +130,7 @@ public final class GunActionTimeline {
             }
             return remove;
         });
+        if (removed) publish(player, stack, groups);
         if (groups.isEmpty()) stacks.remove(stack);
         if (stacks.isEmpty()) FRAMES.remove(player);
     }
@@ -130,18 +145,58 @@ public final class GunActionTimeline {
     static void cancel(ServerPlayer player, ItemStack stack, String key) {
         var stacks = FRAMES.get(player);
         var groups = stacks == null ? null : stacks.get(stack);
-        if (groups != null) groups.remove(key);
+        if (groups != null && groups.remove(key) != null) publish(player, stack, groups);
     }
 
     static void cancelAll(ServerPlayer player, ItemStack stack) {
         var stacks = FRAMES.get(player);
         if (stacks != null) stacks.remove(stack);
+        publish(player, stack, null);
     }
 
     private static Frame frame(ServerPlayer player, ItemStack stack, String key) {
         var stacks = FRAMES.get(player);
         var groups = stacks == null ? null : stacks.get(stack);
         return groups == null ? null : groups.get(key);
+    }
+
+    record Context(GunDef gun, ActionGroup group, GunActiveGroups.Origin origin, int progress, long triggers) {}
+
+    static java.util.Optional<Context> context(ServerPlayer player, ItemStack stack, String key) {
+        var frame = frame(player, stack, key);
+        return frame == null ? java.util.Optional.empty() : java.util.Optional.of(new Context(frame.gun, frame.group, frame.descriptor.origin(), frame.progress, frame.triggers));
+    }
+
+    static void synchronize(ServerPlayer player, ItemStack stack) {
+        claim(player, stack);
+        var stacks = FRAMES.get(player);
+        publish(player, stack, stacks == null ? null : stacks.get(stack));
+    }
+
+    private static void claim(ServerPlayer owner, ItemStack stack) {
+        boolean transferred = false;
+        for (var entry : GunActiveGroups.of(stack).entries()) if (!entry.owner().equals(owner.getUUID())) { transferred = true; break; }
+        if (!transferred) return;
+        // Transfer invalidates old holders before creating a replacement. Their later logout/prune cannot erase its view.
+        for (var entry : new ArrayList<>(FRAMES.entrySet())) if (entry.getKey() != owner && entry.getValue().remove(stack) != null) {
+            GunFireScheduler.cancel(entry.getKey(), stack);
+            if (entry.getValue().isEmpty()) FRAMES.remove(entry.getKey());
+        }
+        stack.remove(ModDataComponents.GUN_ACTIVE_GROUPS);
+    }
+
+    private static void publish(ServerPlayer owner, ItemStack stack, Map<String, Frame> groups) {
+        if (stack.isEmpty()) return;
+        var current = GunActiveGroups.of(stack);
+        for (var entry : current.entries()) if (!entry.owner().equals(owner.getUUID())) return;
+        if (groups == null || groups.isEmpty()) { stack.remove(ModDataComponents.GUN_ACTIVE_GROUPS); return; }
+        var previous = GunActiveGroups.of(stack).entries();
+        boolean same = previous.size() == groups.size();
+        int index = 0;
+        if (same) for (var frame : groups.values()) if (!previous.get(index++).equals(frame.descriptor)) { same = false; break; }
+        if (same) return;
+        var descriptors = new GunActiveGroups(groups.values().stream().map(frame -> frame.descriptor).toList());
+        if (!descriptors.equals(GunActiveGroups.of(stack))) stack.set(ModDataComponents.GUN_ACTIVE_GROUPS, descriptors);
     }
 
     static boolean owns(ServerPlayer player, ItemStack stack, String key) {
@@ -167,11 +222,17 @@ public final class GunActionTimeline {
         if (stacks == null) return;
         long now = player.level().getGameTime();
         stacks.entrySet().removeIf(entry -> {
-            entry.getValue().values().removeIf(frame -> frame.lastTick < now - 1);
+            if (entry.getValue().values().removeIf(frame -> frame.lastTick < now - 1)) publish(player, entry.getKey(), entry.getValue());
             return entry.getKey().isEmpty() || entry.getValue().isEmpty();
         });
         if (stacks.isEmpty()) FRAMES.remove(player);
     }
-    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) { FRAMES.remove(event.getEntity()); }
-    @SubscribeEvent public static void stop(ServerStoppedEvent event) { FRAMES.clear(); }
+    @SubscribeEvent public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
+        var stacks = FRAMES.remove(event.getEntity());
+        if (stacks != null) stacks.keySet().forEach(stack -> publish((ServerPlayer)event.getEntity(), stack, null));
+    }
+    @SubscribeEvent public static void stop(ServerStoppedEvent event) {
+        FRAMES.forEach((owner, stacks) -> stacks.keySet().forEach(stack -> publish(owner, stack, null)));
+        FRAMES.clear();
+    }
 }

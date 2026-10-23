@@ -1,22 +1,22 @@
 package net.pttheta.loveandwar.gun.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.util.Optional;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+import net.pttheta.loveandwar.gun.runtime.GunActiveGroups;
+import net.pttheta.loveandwar.gun.runtime.GunAttachments;
+import net.pttheta.loveandwar.gun.runtime.StatSources;
+import net.pttheta.loveandwar.gun.content.stat.StatResolver;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Pre;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.pttheta.loveandwar.gun.content.ActionDef;
-import net.pttheta.loveandwar.gun.content.ActionGroup;
-import net.pttheta.loveandwar.gun.content.GunDef;
-import net.pttheta.loveandwar.gun.runtime.GunActionState;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.item.ModDataComponents;
@@ -62,37 +62,35 @@ public final class GunScopeOverlay {
    private static ResourceLocation activeScopeOverlay() {
       Minecraft mc = Minecraft.getInstance();
       if (mc.player != null && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
-         ItemStack stack = mc.player.getMainHandItem();
-         if (!(stack.getItem() instanceof GunItem)) {
-            return null;
-         }
-
-         Optional<GunDef> def = GunLookup.gunDef(stack);
-         if (def.isEmpty()) {
-            return null;
-         }
-
-         GunActionState state = (GunActionState)stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
-
-         for (String toggle : state.activeToggles()) {
-            for (ActionGroup group : def.get().actionGroups()) {
-               if (group.key().equals(toggle)) {
-                  for (ActionDef action : group.actions()) {
-                     if ("Scope".equals(action.actionType()) && !action.scopeOverlay().isEmpty()) {
-                        ResourceLocation texture = resolveOverlay(action.scopeOverlay());
-                        if (texture != null && mc.getResourceManager().getResource(texture).isPresent()) {
-                           return texture;
-                        }
-                     }
-                  }
-               }
-            }
+         for (var hand : InteractionHand.values()) {
+            ItemStack stack = mc.player.getItemInHand(hand);
+            var def = GunLookup.gunDef(stack);
+            if (!(stack.getItem() instanceof GunItem) || def.isEmpty()) continue;
+            var texture = scopeOverlay(stack, mc.player.getUUID());
+            if (texture != null) return texture;
          }
 
          return null;
       } else {
          return null;
       }
+   }
+
+   static ResourceLocation scopeOverlay(ItemStack stack, java.util.UUID owner) {
+      var def = GunLookup.gunDef(stack);
+      if (def.isEmpty()) return null;
+      var attachments = stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
+      for (var entry : GunActiveGroups.of(stack).entries()) {
+         if (!entry.owner().equals(owner)) continue;
+         var group = entry.resolve();
+         if (group.isEmpty()) continue;
+         var sources = StatSources.forFiring(def.get(), group.get(), attachments);
+         for (var action : group.get().actions()) if ("Scope".equals(action.actionType())) {
+            String declared = StatResolver.resolveOverride("scope_overlay", action.scopeOverlay(), sources);
+            return resolveOverlay(declared);
+         }
+      }
+      return null;
    }
 
    static ResourceLocation resolveOverlay(String declared) {

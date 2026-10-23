@@ -28,6 +28,7 @@ public final class GunFireScheduler {
         GunDef gun;
         ActionGroup group;
         GunAttachments attachments;
+        GunActiveGroups.Origin origin;
         int retriggers;
         int progress;
         int triggers;
@@ -84,6 +85,14 @@ public final class GunFireScheduler {
     }
 
     static void start(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunAttachments attachments) {
+        start(player, stack, gun, group, attachments, GunActiveGroups.Origin.base(stack));
+    }
+
+    static void start(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunAttachments attachments, GunActiveGroups.Origin origin) {
+        var retained = GunActionTimeline.context(player, stack, group.key());
+        if (retained.isPresent()) {
+            gun = retained.get().gun(); group = retained.get().group(); origin = retained.get().origin();
+        }
         var cycle = cycle(player, stack);
         cycle.advance(player.level().getGameTime());
         if (cycle.group == null || !cycle.group.key().equals(group.key())) {
@@ -94,6 +103,7 @@ public final class GunFireScheduler {
         cycle.gun = gun;
         cycle.group = group;
         cycle.attachments = attachments;
+        cycle.origin = origin;
         cycle.duration = durationPerTrigger(group);
         emit(player, stack, cycle, cycle.cadence.trigger(group.repeatDelay()));
         cycle.retriggers = group.repeatDelay() > 0 && GunFireMode.of(group.repeatMode()) == GunFireMode.BURST_FIRE
@@ -187,7 +197,7 @@ public final class GunFireScheduler {
     private static void emit(ServerPlayer player, ItemStack stack, Cycle cycle, int count) {
         for (int i = 0; i < count; i++) {
             cycle.triggers++;
-            GunEngine.triggerActions(player, stack, cycle.gun, cycle.group, cycle.attachments);
+            GunEngine.triggerActions(player, stack, cycle.gun, cycle.group, cycle.attachments, cycle.origin);
         }
     }
 
