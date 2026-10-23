@@ -28,4 +28,6 @@ Gunsmithing uses a selected recipe and ordered ingredient slots, as in the offic
 
 Original Create: Love and War by Proto and Alcoholism, integrating industry with firearm production. This fork starts from the unofficial Minecraft 1.21.1 NeoForge port, version 1.0.9. Its source was recovered with Vineflower because that port did not provide a source checkout. Reconstructed Java may differ in formatting and local variable names from the original source.
 
+The official release's gun engine is Flan's Mod Reloaded by jamioflan. Its pinned 0.4.316 binary (MIT in its own metadata) is the reference for the reconstructed firing, traits, sound and projectile behavior. See the reference manifest and migration status for exact inputs and adaptation decisions.
+
 The unchanged input binary and raw recovery are retained separately from this repository. Source input SHA-256: `3cb2032a80019661c388c5204a6ec1c5899d8e743b168f47560fb465d1c6d4bb`.

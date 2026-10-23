@@ -47,14 +47,17 @@ public record BulletDef(
       );
    }
 
-   public record ParticleTrailDef(String particle, float speed, int fromTick, int toTick, List<String> spawnPoints) {
+   public record ParticleTrailDef(String particle, float speed, int fromTick, int toTick, List<String> spawnPoints,
+                                  boolean spawnUnderwater, boolean onlySpawnUnderwater) {
       public static final Codec<BulletDef.ParticleTrailDef> CODEC = RecordCodecBuilder.create(
          instance -> instance.group(
                Codec.STRING.optionalFieldOf("particle", "").forGetter(BulletDef.ParticleTrailDef::particle),
-               Codec.FLOAT.optionalFieldOf("speed", 1.0F).forGetter(BulletDef.ParticleTrailDef::speed),
+               Codec.FLOAT.optionalFieldOf("speed", 0.0F).forGetter(BulletDef.ParticleTrailDef::speed),
                Codec.INT.optionalFieldOf("fromTick", 0).forGetter(BulletDef.ParticleTrailDef::fromTick),
-               Codec.INT.optionalFieldOf("toTick", -1).forGetter(BulletDef.ParticleTrailDef::toTick),
-               Codec.STRING.listOf().optionalFieldOf("spawnPoints", List.of()).forGetter(BulletDef.ParticleTrailDef::spawnPoints)
+               Codec.INT.optionalFieldOf("toTick", Integer.MAX_VALUE).forGetter(BulletDef.ParticleTrailDef::toTick),
+               Codec.STRING.listOf().optionalFieldOf("spawnPoints", List.of()).forGetter(BulletDef.ParticleTrailDef::spawnPoints),
+               Codec.BOOL.optionalFieldOf("spawnUnderwater", false).forGetter(BulletDef.ParticleTrailDef::spawnUnderwater),
+               Codec.BOOL.optionalFieldOf("onlySpawnUnderwater", false).forGetter(BulletDef.ParticleTrailDef::onlySpawnUnderwater)
             )
             .apply(instance, BulletDef.ParticleTrailDef::new)
       );
@@ -81,7 +84,7 @@ public record BulletDef(
             instance -> instance.group(
                   Codec.BOOL.optionalFieldOf("sticky", false).forGetter(BulletDef.ProjectileDef.Behavior::sticky),
                   Codec.FLOAT.optionalFieldOf("fuseTime", 0.0F).forGetter(BulletDef.ProjectileDef.Behavior::fuseTime),
-                  Codec.STRING.optionalFieldOf("responseToBlock", "Detonate").forGetter(BulletDef.ProjectileDef.Behavior::responseToBlock),
+                  Codec.STRING.optionalFieldOf("responseToBlock", "Bounce").forGetter(BulletDef.ProjectileDef.Behavior::responseToBlock),
                   Codec.STRING.optionalFieldOf("responseToEntity", "Detonate").forGetter(BulletDef.ProjectileDef.Behavior::responseToEntity),
                   Codec.STRING.optionalFieldOf("responseToVehicle", "Detonate").forGetter(BulletDef.ProjectileDef.Behavior::responseToVehicle)
                )
@@ -95,24 +98,35 @@ public record BulletDef(
                   Codec.INT.optionalFieldOf("shotCount", 1).forGetter(BulletDef.ProjectileDef.Core::shotCount),
                   Codec.FLOAT.optionalFieldOf("splashRadius", 0.0F).forGetter(BulletDef.ProjectileDef.Core::splashRadius),
                   BulletDef.ImpactDef.CODEC.listOf().optionalFieldOf("impacts", List.of()).forGetter(BulletDef.ProjectileDef.Core::impacts),
-                  Codec.FLOAT.optionalFieldOf("penetrationPower", 1.0F).forGetter(BulletDef.ProjectileDef.Core::penetrationPower)
+                  Codec.FLOAT.optionalFieldOf("penetrationPower", 0.0F).forGetter(BulletDef.ProjectileDef.Core::penetrationPower)
                )
                .apply(instance, BulletDef.ProjectileDef.Core::new)
          );
       }
 
       public record Motion(
-         String guidanceType, float launchSpeed, float gravityFactor, float turnRate, float dragInAir, float dragInWater, float timeBetweenTrailParticles
+         String guidanceType, float launchSpeed, float gravityFactor, float turnRate, float dragInAir, float dragInWater, float timeBetweenTrailParticles,
+         float acceleration, float maxSpeed, float lockRange, float lockCone, float trackCone, float lockTime,
+         float topAttackHeight, float topAttackRange, List<String> targetTypes
       ) {
          public static final MapCodec<BulletDef.ProjectileDef.Motion> MAP_CODEC = RecordCodecBuilder.mapCodec(
             instance -> instance.group(
                   Codec.STRING.optionalFieldOf("guidanceType", "none").forGetter(BulletDef.ProjectileDef.Motion::guidanceType),
-                  Codec.FLOAT.optionalFieldOf("launchSpeed", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::launchSpeed),
-                  Codec.FLOAT.optionalFieldOf("gravityFactor", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::gravityFactor),
-                  Codec.FLOAT.optionalFieldOf("turnRate", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::turnRate),
-                  Codec.FLOAT.optionalFieldOf("dragInAir", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::dragInAir),
-                  Codec.FLOAT.optionalFieldOf("dragInWater", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::dragInWater),
-                  Codec.FLOAT.optionalFieldOf("timeBetweenTrailParticles", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::timeBetweenTrailParticles)
+                  Codec.FLOAT.optionalFieldOf("launchSpeed", 3.0F).forGetter(BulletDef.ProjectileDef.Motion::launchSpeed),
+                  Codec.FLOAT.optionalFieldOf("gravityFactor", 1.0F).forGetter(BulletDef.ProjectileDef.Motion::gravityFactor),
+                  Codec.FLOAT.optionalFieldOf("turnRate", 0.1F).forGetter(BulletDef.ProjectileDef.Motion::turnRate),
+                  Codec.FLOAT.optionalFieldOf("dragInAir", 0.01F).forGetter(BulletDef.ProjectileDef.Motion::dragInAir),
+                  Codec.FLOAT.optionalFieldOf("dragInWater", 0.2F).forGetter(BulletDef.ProjectileDef.Motion::dragInWater),
+                  Codec.FLOAT.optionalFieldOf("timeBetweenTrailParticles", 0.25F).forGetter(BulletDef.ProjectileDef.Motion::timeBetweenTrailParticles),
+                  Codec.FLOAT.optionalFieldOf("acceleration", 0.0F).forGetter(BulletDef.ProjectileDef.Motion::acceleration),
+                  Codec.FLOAT.optionalFieldOf("maxSpeed", 3.0F).forGetter(BulletDef.ProjectileDef.Motion::maxSpeed),
+                  Codec.FLOAT.optionalFieldOf("lockRange", 128.0F).forGetter(BulletDef.ProjectileDef.Motion::lockRange),
+                  Codec.FLOAT.optionalFieldOf("lockCone", 15.0F).forGetter(BulletDef.ProjectileDef.Motion::lockCone),
+                  Codec.FLOAT.optionalFieldOf("trackCone", 70.0F).forGetter(BulletDef.ProjectileDef.Motion::trackCone),
+                  Codec.FLOAT.optionalFieldOf("lockTime", 20.0F).forGetter(BulletDef.ProjectileDef.Motion::lockTime),
+                  Codec.FLOAT.optionalFieldOf("topAttackHeight", 10.0F).forGetter(BulletDef.ProjectileDef.Motion::topAttackHeight),
+                  Codec.FLOAT.optionalFieldOf("topAttackRange", 10.0F).forGetter(BulletDef.ProjectileDef.Motion::topAttackRange),
+                  Codec.STRING.listOf().optionalFieldOf("targetTypes", List.of()).forGetter(BulletDef.ProjectileDef.Motion::targetTypes)
                )
                .apply(instance, BulletDef.ProjectileDef.Motion::new)
          );

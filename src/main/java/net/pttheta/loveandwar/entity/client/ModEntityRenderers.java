@@ -19,5 +19,6 @@ public class ModEntityRenderers {
    static void registerRenderers(RegisterRenderers event) {
       event.registerEntityRenderer((EntityType)ModEntities.ROBOT_DOG.get(), RobotdogRenderer::new);
       event.registerEntityRenderer((EntityType)ModEntities.SHOT_PROJECTILE.get(), ShotRenderer::new);
+      event.registerEntityRenderer(ModEntities.BULLET.get(), GunProjectileRenderer::new);
    }
 }

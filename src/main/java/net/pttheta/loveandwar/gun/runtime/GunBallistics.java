@@ -23,8 +23,10 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.HitResult.Type;
-import net.pttheta.loveandwar.entity.ShotProjectile;
+import net.pttheta.loveandwar.entity.GunProjectile;
+import net.pttheta.loveandwar.entity.ModEntities;
 import net.pttheta.loveandwar.gun.content.BulletDef;
+import net.pttheta.loveandwar.gun.content.GunContent;
 import net.pttheta.loveandwar.gun.content.stat.ModifierContext;
 import net.pttheta.loveandwar.gun.content.stat.ModifierSource;
 import net.pttheta.loveandwar.gun.content.stat.StatResolver;
@@ -39,27 +41,31 @@ public final class GunBallistics {
    }
 
    public static void fire(ServerPlayer shooter, BulletDef bullet, List<ModifierSource> sources) {
-      ServerLevel level = shooter.serverLevel();
-      float spread = StatResolver.resolve("spread", 0.0F, sources, ModifierContext.EMPTY);
-      float vRecoil = StatResolver.resolve("vertical_recoil", 0.0F, sources, ModifierContext.EMPTY);
-      float hRecoil = StatResolver.resolve("horizontal_recoil", 0.0F, sources, ModifierContext.EMPTY);
-      boolean hitscan = !bullet.hitscans().isEmpty();
-      BulletDef.ProjectileDef variant = hitscan ? bullet.hitscans().get(0) : (!bullet.projectiles().isEmpty() ? bullet.projectiles().get(0) : null);
-      if (variant != null) {
-         int shotCount = Math.max(1, variant.core().shotCount());
-         RandomSource random = shooter.getRandom();
+      var id = GunContent.bullets().entrySet().stream().filter(entry -> entry.getValue() == bullet).map(entry -> entry.getKey()).findFirst().orElseThrow();
+      fire(shooter, ResourceLocation.fromNamespaceAndPath("createloveandwar", id), bullet, sources, "primary_fire", null, 0);
+   }
 
+   public static void fire(ServerPlayer shooter, ResourceLocation bulletId, BulletDef bullet, List<ModifierSource> sources,
+                           String group, Entity lockTarget, int progressTicks) {
+      ServerLevel level = shooter.serverLevel();
+      var context = ModifierContext.ofGroups(List.of(group));
+      float spread = StatResolver.resolve("spread", 0.0F, sources, context);
+      float vRecoil = StatResolver.resolve("vertical_recoil", 0.0F, sources, context);
+      float hRecoil = StatResolver.resolve("horizontal_recoil", 0.0F, sources, context);
+      RandomSource random = shooter.getRandom();
+      for (var variant : bullet.hitscans()) {
+         int shotCount = Math.max(0, (int)Math.ceil(StatResolver.resolve("shot_count", variant.core().shotCount(), sources, context)));
          for (int i = 0; i < shotCount; i++) {
             Vec3 dir = spreadDirection(shooter.getViewVector(1.0F), spread, random);
-            if (hitscan) {
-               fireHitscan(level, shooter, dir, variant, bullet, sources);
-            } else {
-               fireProjectile(level, shooter, dir, variant, bullet, sources);
-            }
+            fireHitscan(level, shooter, dir, variant, bullet, sources);
          }
-
-         applyKick(shooter, vRecoil, hRecoil);
       }
+      for (var variant : bullet.projectiles()) {
+         int shotCount = Math.max(0, (int)Math.ceil(StatResolver.resolve("shot_count", variant.core().shotCount(), sources, context)));
+         for (int i = 0; i < shotCount; i++) fireProjectile(level, shooter, spreadDirection(shooter.getViewVector(1), spread, random),
+                 variant, bulletId, sources, group, lockTarget, progressTicks);
+      }
+      applyKick(shooter, vRecoil, hRecoil);
    }
 
    private static Vec3 spreadDirection(Vec3 look, float spread, RandomSource random) {
@@ -120,17 +126,14 @@ public final class GunBallistics {
    }
 
    private static void fireProjectile(
-      ServerLevel level, ServerPlayer shooter, Vec3 dir, BulletDef.ProjectileDef variant, BulletDef bullet, List<ModifierSource> sources
+      ServerLevel level, ServerPlayer shooter, Vec3 dir, BulletDef.ProjectileDef variant, ResourceLocation bulletId, List<ModifierSource> sources,
+      String group, Entity lockTarget, int progressTicks
    ) {
-      ShotProjectile projectile = new ShotProjectile(level, shooter, 0.0, 0.0, 0.0);
-      projectile.setPos(shooter.getX(), shooter.getEyeY() - 0.1, shooter.getZ());
-      projectile.owner = shooter;
-      projectile.damage = resolveEntityDamage(variant.core().impacts(), sources);
-      float speed = variant.motion().launchSpeed() > 0.0F ? variant.motion().launchSpeed() : 3.0F;
-      Vec3 look = dir.normalize();
-      projectile.shoot(look.x, look.y, look.z, speed, 0.0F);
+      GunProjectile projectile = new GunProjectile(ModEntities.BULLET.get(), level);
+      projectile.setPos(shooter.getEyePosition());
+      projectile.initialize(shooter, bulletId, variant, sources, group, lockTarget, progressTicks);
+      projectile.launch(dir);
       level.addFreshEntity(projectile);
-      ShotImpactHandler.track(projectile, new ShotImpactHandler.PendingShot(variant.core().impacts(), variant.core().splashRadius(), sources));
    }
 
    private static boolean isHeadshot(Vec3 hitPoint, LivingEntity target) {
@@ -151,7 +154,7 @@ public final class GunBallistics {
       return 0.0F;
    }
 
-   static void applyImpacts(
+   public static void applyImpacts(
       ServerLevel level, ServerPlayer shooter, List<BulletDef.ImpactDef> impacts, HitResult hit, float splashRadius, List<ModifierSource> sources
    ) {
       String targetType = hit instanceof EntityHitResult ? "ShotEntity" : "ShotBlock";

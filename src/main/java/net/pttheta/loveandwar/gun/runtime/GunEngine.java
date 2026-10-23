@@ -355,7 +355,7 @@ public final class GunEngine {
       for (ActionDef action : group.actions()) {
          switch (action.actionType()) {
             case "Shoot":
-               doShoot(player, gunStack, sources);
+               doShoot(player, gunStack, sources, group.key());
                break;
             case "EjectCasing":
                doEjectCasing(player, def);
@@ -383,14 +383,16 @@ public final class GunEngine {
       }
    }
 
-   private static void doShoot(ServerPlayer player, ItemStack gunStack, List<ModifierSource> sources) {
+   private static void doShoot(ServerPlayer player, ItemStack gunStack, List<ModifierSource> sources, String group) {
       AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
       if (!rounds.isEmpty()) {
          ItemStack round = rounds.items().get(0);
          List<ItemStack> remaining = new ArrayList<>(rounds.items().subList(1, rounds.items().size()));
          gunStack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(remaining));
          diag("SHOT fired, {} rounds left", remaining.size());
-         GunLookup.bulletDef(round).ifPresent(bullet -> GunBallistics.fire(player, bullet, sources));
+         GunLookup.bulletDef(round).ifPresent(bullet -> GunBallistics.fire(player,
+                 BuiltInRegistries.ITEM.getKey(round.getItem()), bullet, sources, group, GunTargeting.target(player, gunStack),
+                 GunFireScheduler.progress(player, gunStack, group)));
       }
    }
 

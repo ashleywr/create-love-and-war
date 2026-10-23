@@ -156,6 +156,14 @@ public final class GunFireScheduler {
         return true;
     }
 
+    static int progress(ServerPlayer player, ItemStack stack, String group) {
+        var cycles = CYCLES.get(player);
+        var cycle = cycles == null ? null : cycles.get(stack);
+        if (cycle != null && cycle.group != null && cycle.group.key().equals(group)) return cycle.progress;
+        var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+        return state.activeGroup().equals(group) ? state.groupTicksElapsed() : 0;
+    }
+
     private static void emit(ServerPlayer player, ItemStack stack, Cycle cycle, int count) {
         for (int i = 0; i < count; i++) {
             cycle.triggers++;

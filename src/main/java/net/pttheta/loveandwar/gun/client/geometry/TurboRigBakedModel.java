@@ -66,6 +66,7 @@ public final class TurboRigBakedModel implements BakedModel {
    private final ItemTransforms transforms;
    private final ItemOverrides overrides;
    private final List<BakedQuad> defaultFlatQuads;
+   private final BakedModel projectileMesh;
    private final BakedModel flatIconModel;
    private BakedModel heldIconModel;
 
@@ -107,6 +108,7 @@ public final class TurboRigBakedModel implements BakedModel {
       }
 
       this.defaultFlatQuads = List.copyOf(flat);
+      this.projectileMesh = new FlatIconModel(this.defaultFlatQuads, particleIcon);
       this.flatIconModel = iconSprite == null ? null : new TurboRigBakedModel.FlatIconModel(bakeFlatIcon(iconSprite), iconSprite);
    }
 
@@ -268,6 +270,9 @@ public final class TurboRigBakedModel implements BakedModel {
 
       return this.defaultFlatQuads;
    }
+
+   /** Unposed authored geometry, without held-icon or local gun muzzle-flash state. */
+   public BakedModel projectileMesh() { return this.projectileMesh; }
 
    private static boolean isHeldFirstPerson() {
       ItemDisplayContext ctx = CONTEXT_FOR_FRAME.get();

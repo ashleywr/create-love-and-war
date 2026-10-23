@@ -42,6 +42,7 @@ public class GunItem extends Item {
 
    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
       if (!level.isClientSide && entity instanceof ServerPlayer player) {
+         if (isSelected) GunTargeting.tick(player, stack);
          GunEngine.tick(player, stack);
       }
    }
