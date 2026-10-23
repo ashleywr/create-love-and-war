@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -18,6 +19,8 @@ import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -153,7 +156,7 @@ public final class ProjectileContextGameTests {
                 """)).getOrThrow();
         var def = definition("""
                 {"impacts":[{"targetType":"ShotEntity","impactEffects":[{"effectType":"ApplyDamage","modifiers":[
-                  {"stat":"impact_damage","accumulators":[{"operation":"BaseAdd","value":2}]}]}]}]}
+                  {"stat":"impact_damage","matchGroupPaths":["other_group"],"accumulators":[{"operation":"BaseAdd","value":2}]}]}]}]}
                 """);
         var bullet = projectile(helper, owner, def, List.of(ModifierSource.of("test", List.of(modifier))), null, 0);
         var loaded = new GunProjectile(ModEntities.BULLET.get(), helper.getLevel());
@@ -234,5 +237,38 @@ public final class ProjectileContextGameTests {
                 } finally { if (progress == 2) bullets.forEach(GunProjectile::discard); }
             });
         }
+    }
+
+    @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
+    public static void fuseMissDoesNotRunBlockOnlyImpacts(GameTestHelper helper) {
+        var owner = shooter(helper);
+        var bullet = projectile(helper, owner, definition("""
+                {"splashRadius":3,"impacts":[{"targetType":"ShotBlock","impactEffects":[{"effectType":"ApplyDamage","modifiers":[
+                {"stat":"impact_damage","accumulators":[{"operation":"BaseAdd","value":3}]}]}]}]}
+                """), List.of(), null, 0);
+        var pig = target(helper, new Vec3(3.5, 6.5, 2.5));
+        try {
+            float health = pig.getHealth();
+            bullet.detonate(BlockHitResult.miss(bullet.position(), Direction.DOWN, bullet.blockPosition()));
+            helper.assertTrue(pig.getHealth() == health, "A fuse MISS must not dispatch ShotBlock effects");
+        } finally { bullet.discard(); pig.discard(); }
+        helper.succeed();
+    }
+
+    @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
+    public static void projectileImpactsStayInTheirDimensionAfterOwnerTravel(GameTestHelper helper) {
+        var otherLevel = helper.getLevel().getServer().getLevel(Level.NETHER);
+        var owner = new FakePlayer(otherLevel, new GameProfile(UUID.randomUUID(), "TravelTest"));
+        var bullet = projectile(helper, owner, definition("""
+                {"splashRadius":3,"impacts":[{"targetType":"ShotPosition","impactEffects":[{"effectType":"ApplyDamage","modifiers":[
+                {"stat":"impact_damage","accumulators":[{"operation":"BaseAdd","value":3}]}]}]}]}
+                """), List.of(), null, 0);
+        var pig = target(helper, new Vec3(3.5, 6.5, 2.5));
+        try {
+            float health = pig.getHealth();
+            bullet.detonate(BlockHitResult.miss(bullet.position(), Direction.DOWN, bullet.blockPosition()));
+            helper.assertTrue(pig.getHealth() < health, "Projectile-world effects must not move to the owner's new dimension");
+        } finally { bullet.discard(); pig.discard(); }
+        helper.succeed();
     }
 }

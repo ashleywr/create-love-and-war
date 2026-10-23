@@ -14,6 +14,11 @@ import org.joml.Vector3f;
 public final class GunProjectileEffects {
     private GunProjectileEffects() {}
 
+    public static Matrix4f trailRoot(float yaw, float pitch, float age) {
+        // Original Transform.fromPosAndEuler -> quatFromEuler negates all supplied Euler angles.
+        return new Matrix4f().rotateYXZ((float)Math.toRadians(yaw - 90), (float)Math.toRadians(-pitch), (float)Math.toRadians(-age));
+    }
+
     public static BakedModel model(GunProjectile bullet) {
         var id = bullet.bulletId();
         if (id == null) return null;
@@ -32,8 +37,7 @@ public final class GunProjectileEffects {
             var id = ResourceLocation.tryParse(trail.particle());
             if (id == null || !(BuiltInRegistries.PARTICLE_TYPE.get(id) instanceof ParticleOptions particle)) continue;
             for (String point : trail.spawnPoints()) {
-                Matrix4f transform = new Matrix4f().rotateYXZ((float)Math.toRadians(-bullet.getYRot() + 90),
-                        (float)Math.toRadians(bullet.getXRot()), (float)Math.toRadians(bullet.lifeTime()));
+                Matrix4f transform = trailRoot(bullet.getYRot(), bullet.getXRot(), bullet.lifeTime());
                 if (model instanceof TurboRigBakedModel rig) {
                     var attach = rig.attachPointMatrix(point);
                     if (attach != null) transform.mul(attach);

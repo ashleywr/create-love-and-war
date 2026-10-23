@@ -20,7 +20,7 @@ public record ModifierContext(Map<MultiplyPerKind, Integer> multipliers, List<St
       return result;
    }
 
-   public boolean inScope(List<String> matchGroupPaths) {
+   boolean inScope(List<String> matchGroupPaths) {
       if (matchGroupPaths.isEmpty()) {
          return true;
       }

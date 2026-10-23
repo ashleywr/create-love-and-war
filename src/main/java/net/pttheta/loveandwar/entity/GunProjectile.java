@@ -78,8 +78,7 @@ public final class GunProjectile extends Projectile {
         payload.putString("Bullet", id.toString());
         payload.put("Definition", ProjectileDef.CODEC.encodeStart(NbtOps.INSTANCE, resolved).getOrThrow());
         // Impact effects need the firing context after save/reload; no global entity-ID lookup table.
-        var flat = modifiers.stream().flatMap(source -> source.modifiers().stream()).filter(modifier -> context.inScope(modifier.matchGroupPaths()))
-                .map(modifier -> new Modifier(modifier.stat(), List.of(), modifier.accumulators(), modifier.setValue())).toList();
+        var flat = modifiers.stream().flatMap(source -> source.modifiers().stream()).toList();
         payload.put("Modifiers", MODIFIERS.encodeStart(NbtOps.INSTANCE, flat).getOrThrow());
         entityData.set(CONTEXT, payload);
         entityData.set(LOCK, target == null ? -1 : target.getId());
@@ -207,8 +206,8 @@ public final class GunProjectile extends Projectile {
     public void detonate(HitResult hit) {
         if (!detonated) {
             detonated = true;
-            if (!level().isClientSide && getOwner() instanceof ServerPlayer player) {
-                GunBallistics.applyImpacts(player.serverLevel(), player, definition().core().impacts(), hit, definition.core().splashRadius(), sources);
+            if (level() instanceof net.minecraft.server.level.ServerLevel projectileLevel && getOwner() instanceof ServerPlayer player) {
+                GunBallistics.applyImpacts(projectileLevel, player, definition().core().impacts(), hit, definition.core().splashRadius(), sources);
             }
         }
         if (!level().isClientSide) discard();

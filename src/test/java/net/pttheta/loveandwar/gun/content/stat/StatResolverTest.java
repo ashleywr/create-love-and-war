@@ -39,4 +39,14 @@ class StatResolverTest {
         assertEquals(5, StatResolver.resolve("recoil", 10,
                 List.of(ModifierSource.of("legacy", List.of(modifier)))), 0.0001);
     }
+
+    @Test void originalActiveCachesDoNotApplyDeclaredGroupPathFilters() {
+        var declared = new Modifier("impact_damage", List.of("other_group"),
+                List.of(new Accumulator(AccumulatorOp.BASE_ADD, 3, List.of())), "");
+        var sources = List.of(ModifierSource.of("attachment", List.of(declared)));
+        assertEquals(3, StatResolver.resolve("impact_damage", 0, sources, ModifierContext.ofGroups(List.of("primary_fire"))));
+        var override = new Modifier("response_to_block", List.of("other_group"), List.of(), "Stick");
+        assertEquals("Stick", StatResolver.resolveOverride("response_to_block", "Bounce", List.of(ModifierSource.of("attachment", List.of(override))),
+                ModifierContext.ofGroups(List.of("primary_fire"))));
+    }
 }

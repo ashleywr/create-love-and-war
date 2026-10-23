@@ -157,7 +157,11 @@ public final class GunBallistics {
    public static void applyImpacts(
       ServerLevel level, ServerPlayer shooter, List<BulletDef.ImpactDef> impacts, HitResult hit, float splashRadius, List<ModifierSource> sources
    ) {
-      String targetType = hit instanceof EntityHitResult ? "ShotEntity" : "ShotBlock";
+      String targetType = switch (hit.getType()) {
+         case ENTITY -> "ShotEntity";
+         case BLOCK -> "ShotBlock";
+         case MISS -> null;
+      };
 
       for (BulletDef.ImpactDef impact : impacts) {
          if (impact.targetType().equals(targetType) || "ShotPosition".equals(impact.targetType())) {

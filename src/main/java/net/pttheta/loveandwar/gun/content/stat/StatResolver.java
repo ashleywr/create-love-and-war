@@ -25,7 +25,8 @@ public final class StatResolver {
 
       for (ModifierSource source : sources) {
          for (Modifier modifier : source.modifiers()) {
-            if (modifier.stat().equals(stat) && !modifier.isOverride() && ctx.inScope(modifier.matchGroupPaths())) {
+            // Quirk kept: original active ModifierCache/StatHolder paths never call ModifierDefinition.AppliesTo.
+            if (modifier.stat().equals(stat) && !modifier.isOverride()) {
                for (Accumulator acc : modifier.accumulators()) {
                   float scaled = acc.value() * ctx.multiplierFor(acc.multiplyPer());
                   switch (acc.operation()) {
@@ -66,7 +67,7 @@ public final class StatResolver {
 
       for (ModifierSource source : sources) {
          for (Modifier modifier : source.modifiers()) {
-            if (modifier.stat().equals(stat) && modifier.isOverride() && ctx.inScope(modifier.matchGroupPaths())) {
+            if (modifier.stat().equals(stat) && modifier.isOverride()) {
                result = modifier.setValue();
             }
          }
