@@ -1,113 +1,65 @@
 package net.pttheta.loveandwar.gun.client;
 
-import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ViewportEvent.ComputeFov;
+import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
 import net.pttheta.loveandwar.Config;
 import net.pttheta.loveandwar.gun.content.ActionGroup;
-import net.pttheta.loveandwar.gun.content.AttachmentDef;
 import net.pttheta.loveandwar.gun.content.GunDef;
-import net.pttheta.loveandwar.gun.content.stat.ModifierSource;
-import net.pttheta.loveandwar.gun.content.stat.StatResolver;
+import net.pttheta.loveandwar.gun.content.stat.SightFov;
 import net.pttheta.loveandwar.gun.runtime.GunActionState;
 import net.pttheta.loveandwar.gun.runtime.GunAttachments;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.gun.runtime.StatSources;
 import net.pttheta.loveandwar.item.ModDataComponents;
-import org.slf4j.LoggerFactory;
 
 @EventBusSubscriber(modid = "createloveandwar", value = Dist.CLIENT)
 public final class GunAimZoom {
-   private static float lastFactor = 1.0F;
+    private GunAimZoom() {}
 
-   private GunAimZoom() {
-   }
+    @SubscribeEvent
+    public static void onComputeFov(ComputeFovModifierEvent event) {
+        // Quirk kept: original ClientRenderHooks uses the local shooter's actions even for a different camera player.
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        SightFov sights = SightFov.EMPTY;
+        for (var hand : InteractionHand.values()) {
+            var stack = player.getItemInHand(hand);
+            if (!(stack.getItem() instanceof GunItem)) continue;
+            var definition = GunLookup.gunDef(stack);
+            if (definition.isEmpty()) continue;
+            sights = addSights(sights, definition.get(), stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY),
+                    stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE));
+        }
+        float strength = Config.ADS_ZOOM.get().floatValue();
+        // GameRenderer smooths/clamps this modifier for world FOV. The separate hand projection stays untouched.
+        event.setNewFovModifier(sights.apply(event.getNewFovModifier(), strength));
+    }
 
-   @SubscribeEvent
-   public static void onComputeFov(ComputeFov event) {
-      Minecraft mc = Minecraft.getInstance();
-      if (mc.player != null) {
-         ItemStack stack = mc.player.getMainHandItem();
-         if (stack.getItem() instanceof GunItem) {
-            Optional<GunDef> defOpt = GunLookup.gunDef(stack);
-            if (!defOpt.isEmpty()) {
-               GunActionState state = (GunActionState)stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
-               if (!state.activeToggles().isEmpty() || !(AdsBlendState.blend() <= 0.0F)) {
-                  GunDef def = defOpt.get();
-                  GunAttachments attachments = (GunAttachments)stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
-                  float factor = resolveZoomFactor(def, attachments, state);
-                  if (factor > 1.0F) {
-                     lastFactor = factor;
-                  } else {
-                     factor = lastFactor;
-                  }
+    static SightFov addSights(SightFov sights, GunDef def, GunAttachments attachments, GunActionState state) {
+        for (String key : state.activeToggles()) {
+            var group = findActionGroup(def, attachments, key);
+            if (group.isPresent()) sights = sights.add(group.get(), StatSources.forFiring(def, group.get(), attachments));
+        }
+        return sights;
+    }
 
-                  float blend = AdsBlendState.blend();
-                  float strength = Config.ADS_ZOOM == null ? 1.0F : ((Double)Config.ADS_ZOOM.get()).floatValue();
-                  float eased = 1.0F + (factor - 1.0F) * blend * strength;
-                  if (eased > 1.0F) {
-                     double before = event.getFOV();
-                     event.setFOV(before / eased);
-                     if (Config.GUN_DIAGNOSTICS != null
-                        && (Boolean)Config.GUN_DIAGNOSTICS.get()
-                        && blend > 0.99F
-                        && Minecraft.getInstance().player.tickCount % 20 == 0) {
-                        LoggerFactory.getLogger("createloveandwar/zoom")
-                           .info(
-                              "ZOOM factor={} strength={} eased={} fov {} -> {}",
-                              new Object[]{
-                                 factor, strength, String.format("%.3f", eased), String.format("%.1f", before), String.format("%.1f", before / eased)
-                              }
-                           );
-                     }
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   private static float resolveZoomFactor(GunDef def, GunAttachments attachments, GunActionState state) {
-      float best = 1.0F;
-
-      for (String toggleKey : state.activeToggles()) {
-         Optional<ActionGroup> groupOpt = findActionGroup(def, attachments, toggleKey);
-         if (!groupOpt.isEmpty()) {
-            ActionGroup group = groupOpt.get();
-            boolean isAimGroup = group.actions().stream().anyMatch(a -> "AimDownSights".equals(a.actionType()) || "Scope".equals(a.actionType()));
-            if (isAimGroup) {
-               List<ModifierSource> sources = StatSources.forFiring(def, group, attachments);
-               float factor = StatResolver.resolve("fov_factor", 1.0F, sources);
-               best = Math.max(best, factor);
-            }
-         }
-      }
-
-      return best;
-   }
-
-   private static Optional<ActionGroup> findActionGroup(GunDef def, GunAttachments attachments, String key) {
-      Optional<ActionGroup> base = def.actionGroups().stream().filter(g -> g.key().equals(key)).findFirst();
-      if (base.isPresent()) {
-         return base;
-      }
-
-      for (ItemStack attachmentStack : attachments.all()) {
-         Optional<AttachmentDef> attDef = GunLookup.attachmentDef(attachmentStack);
-         if (!attDef.isEmpty()) {
-            Optional<ActionGroup> override = attDef.get().actionOverrides().stream().filter(g -> g.key().equals(key)).findFirst();
-            if (override.isPresent()) {
-               return override;
-            }
-         }
-      }
-
-      return Optional.empty();
-   }
+    private static Optional<ActionGroup> findActionGroup(GunDef def, GunAttachments attachments, String key) {
+        // Runtime first-created group provenance is still pending; this fallback cannot distinguish aliased providers.
+        var base = def.actionGroups().stream().filter(group -> group.key().equals(key)).findFirst();
+        if (base.isPresent()) return base;
+        for (ItemStack stack : attachments.all()) {
+            var attachment = GunLookup.attachmentDef(stack);
+            if (attachment.isEmpty()) continue;
+            var override = attachment.get().actionOverrides().stream().filter(group -> group.key().equals(key)).findFirst();
+            if (override.isPresent()) return override;
+        }
+        return Optional.empty();
+    }
 }

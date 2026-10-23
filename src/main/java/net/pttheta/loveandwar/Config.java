@@ -22,7 +22,7 @@ public class Config {
    public static final EnumValue<Config.CrosshairMode> CROSSHAIR = BUILDER.comment("When to hide the vanilla crosshair: VANILLA, HIDE_WITH_GUN, HIDE_ALWAYS.")
       .defineEnum("crosshair", Config.CrosshairMode.HIDE_WITH_GUN);
    public static final DoubleValue ADS_ZOOM = BUILDER.comment("Aim zoom strength. 1.0 = as authored (1.20.1), 0 = no zoom.")
-      .defineInRange("ads_zoom", 0.5, 0.0, 1.0);
+      .defineInRange("ads_zoom", 1.0, 0.0, 1.0);
    public static final DoubleValue MUZZLE_SMOKE = BUILDER.comment("Muzzle smoke amount. 1.0 = as in 1.20.1, 0 = none.")
       .defineInRange("muzzle_smoke", 1.0, 0.0, 1.0);
    public static final BooleanValue SMOOTH_RECOIL_KICK = BUILDER.comment("Slide the gun back on firing instead of snapping. false = as in 1.20.1.")
