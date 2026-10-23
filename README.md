@@ -2,7 +2,9 @@
 
 Minecraft 1.21.1, NeoForge 21.1.253, Java 21 and Create 6.0.10.
 
-This project reconstructs the unavailable source of the installed 1.0.9 NeoForge port and maintains targeted bug fixes. Original packages, registry IDs, models and gameplay are preserved.
+This project reconstructs the unavailable source of the installed 1.0.9 NeoForge port and maintains targeted bug fixes. Original package names and registry IDs are retained; behavior is compared against the official release while identified regressions are repaired.
+
+The recovered port has substantial fidelity gaps in its replacement gun engine. See [the audit and migration status](docs/MIGRATION_STATUS.md) for verified repairs, remaining defects and evidence limits. This checkout is an experimental maintenance base.
 
 ## Build
 
@@ -15,6 +17,8 @@ Install Java 21, then run:
 The mod JAR and source JAR are written to `build/libs/`. Dependencies are resolved from the NeoForge, Create, Registrate and JEI Maven repositories; no local mod JARs are required to compile.
 
 Development tasks: `runClient`, `runServer` and `runGameTestServer`. Development worlds and logs are stored outside the repository in the workspace's `private/` directory.
+
+Run `./gradlew build runGameTestServer` to execute the unit and NeoForge regression tests. Test sources are separate from the distributed mod JAR.
 
 ## Credits and provenance
 

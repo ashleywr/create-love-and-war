@@ -1,0 +1,35 @@
+{
+  "official": {
+    "project": "Create: Love & War",
+    "version": "0.4.2-1.20.1-Create-6.0.6",
+    "modrinth_version_id": "1FjYbLl5",
+    "release_url": "https://modrinth.com/mod/create-love-war/version/1FjYbLl5",
+    "files": [
+      {
+        "filename": "L&W 0.4.2-1.20.1-Create-6.0.6.jar",
+        "url": "https://cdn.modrinth.com/data/71LJXmxX/versions/1FjYbLl5/L%26W%200.4.2-1.20.1-Create-6.0.6.jar",
+        "hashes": {
+          "sha1": "a6d9803785b48543ff6ee4246dbad30ce469cb44",
+          "sha512": "995f0e7246be508ac33646e723562f1893ae8d8a2e514c0ce321af7558ad5ed6e97d9dbb7e690664879b5b0e4a5b90950811efb5600a8736cf4c84ba70805e0d"
+        }
+      }
+    ]
+  },
+  "recovered_port": {
+    "version": "1.0.9-1.21.1",
+    "sha256": "3cb2032a80019661c388c5204a6ec1c5899d8e743b168f47560fb465d1c6d4bb",
+    "baseline_commit": "6767017",
+    "java_source_units": 194,
+    "compiled_classes": 272
+  },
+  "engine": {
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.253",
+    "java": 21,
+    "create": "6.0.10-280"
+  },
+  "comparison_dependency": {
+    "flansmod": "0.4.316",
+    "note": "Compatible dependency release inspected from its actual binary. This does not establish which dependency version every historical player used."
+  }
+}
