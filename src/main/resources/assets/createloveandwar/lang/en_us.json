@@ -1,4 +1,8 @@
 {
+  "tooltip.createloveandwar.hold_shift_for_parts": "Hold Shift for crafting details",
+  "tooltip.createloveandwar.crafted_from_nothing": "Not crafted from parts",
+  "tooltip.createloveandwar.crafted_from": "Crafted from: %s",
+  "tooltip.createloveandwar.attached": "Attached: %s",
   "gui.createloveandwar.workbench.recipes": "Gun recipes",
   "gui.createloveandwar.workbench.fill_hint": "Click to fill; Shift + right-click to refill or cycle",
   "key.categories.createloveandwar" : "Create: Love & War",

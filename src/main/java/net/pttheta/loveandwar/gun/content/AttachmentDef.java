@@ -15,7 +15,7 @@ public record AttachmentDef(
    List<InputHandler> handlerOverrides,
    List<ActionGroup> actionOverrides,
    List<JsonElement> reloadOverrides,
-   List<InlineAbility> abilities,
+   List<PartDef.TraitRef> abilities,
    String modeOverride,
    boolean overrideFireMode
 ) {
@@ -29,7 +29,7 @@ public record AttachmentDef(
             InputHandler.CODEC.listOf().optionalFieldOf("handlerOverrides", List.of()).forGetter(AttachmentDef::handlerOverrides),
             ActionGroup.CODEC.listOf().optionalFieldOf("actionOverrides", List.of()).forGetter(AttachmentDef::actionOverrides),
             ContentCodecs.RAW_JSON.listOf().optionalFieldOf("reloadOverrides", List.of()).forGetter(AttachmentDef::reloadOverrides),
-            InlineAbility.CODEC.listOf().optionalFieldOf("abilities", List.of()).forGetter(AttachmentDef::abilities),
+            PartDef.TraitRef.CODEC.listOf().optionalFieldOf("abilities", List.of()).forGetter(AttachmentDef::abilities),
             Codec.STRING.optionalFieldOf("modeOverride", "").forGetter(AttachmentDef::modeOverride),
             Codec.BOOL.optionalFieldOf("overrideFireMode", false).forGetter(AttachmentDef::overrideFireMode)
          )

@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
 import net.pttheta.loveandwar.gun.content.ActionGroup;
-import net.pttheta.loveandwar.gun.content.AttachmentDef;
 import net.pttheta.loveandwar.gun.content.GunDef;
-import net.pttheta.loveandwar.gun.content.InlineAbility;
 import net.pttheta.loveandwar.gun.content.stat.Modifier;
 import net.pttheta.loveandwar.gun.content.stat.ModifierSource;
 
@@ -23,15 +21,11 @@ public final class StatSources {
             GunLookup.attachmentDef(stack).ifPresent(def -> {
                String id = "attachment:" + GunLookup.contentKey(stack);
                sources.add(ModifierSource.of(id, def.modifiers()));
-               addAttachmentAlwaysOn(sources, def, id);
             });
          }
       }
 
-      for (InlineAbility ability : gun.staticAbilities()) {
-         addAlwaysOn(sources, "gun-static", ability);
-      }
-
+      // Original ActionStack never dispatches AlwaysOn; declared abilities are not unconditional stat sources.
       return sources;
    }
 
@@ -41,20 +35,4 @@ public final class StatSources {
       return sources;
    }
 
-   private static void addAlwaysOn(List<ModifierSource> sources, String idPrefix, InlineAbility ability) {
-      boolean alwaysOn = ability.startTriggers().stream().anyMatch(t -> "AlwaysOn".equals(t.triggerType()));
-      if (alwaysOn) {
-         for (InlineAbility.EffectRef effect : ability.effects()) {
-            if ("ApplyModifier".equals(effect.effectType())) {
-               sources.add(ModifierSource.of(idPrefix + ":ability", effect.modifiers()));
-            }
-         }
-      }
-   }
-
-   public static void addAttachmentAlwaysOn(List<ModifierSource> sources, AttachmentDef def, String id) {
-      for (InlineAbility ability : def.abilities()) {
-         addAlwaysOn(sources, id, ability);
-      }
-   }
 }

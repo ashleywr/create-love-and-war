@@ -22,7 +22,7 @@ Development tasks: `runClient`, `runServer` and `runGameTestServer`. Development
 
 Run `./gradlew build runGameTestServer` to execute the unit and NeoForge regression tests. Test sources are separate from the distributed mod JAR.
 
-Gunsmithing uses a selected recipe and ordered ingredient slots, as in the official release. Choose a gun on the right, add matching parts, and take the immediate result. Click an empty ingredient slot to fill it from your inventory; Shift + right-click refills it or cycles material variants in creative mode. Finished guns retain the part identities used to craft them. Trait behavior is still being restored; see the migration status before relying on this build for gameplay.
+Gunsmithing uses a selected recipe and ordered ingredient slots, as in the official release. Choose a gun on the right, add matching parts, and take the immediate result. Click an empty ingredient slot to fill it from your inventory; Shift + right-click refills it or cycles material variants in creative mode. Finished guns retain their crafting parts and display their combined material traits; hold Shift for crafting details. Some trait triggers and other gun behavior are still being restored; see the migration status before relying on this build for gameplay.
 
 ## Credits and provenance
 

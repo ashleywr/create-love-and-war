@@ -1,5 +1,7 @@
 package net.pttheta.loveandwar.gun.runtime;
 
+import java.util.List;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -8,6 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.level.Level;
 
@@ -21,6 +24,12 @@ public class GunItem extends Item {
 
    public String gunName() {
       return this.gunName;
+   }
+
+   @Override
+   public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+      super.appendHoverText(stack, context, tooltip, flag);
+      tooltip.addAll(GunTraitTooltips.lines(stack, false));
    }
 
    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
