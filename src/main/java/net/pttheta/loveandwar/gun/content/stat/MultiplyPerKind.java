@@ -4,6 +4,8 @@ public enum MultiplyPerKind {
    PER_LEVEL("PerLevel"),
    PER_ATTACHMENT("PerAttachment"),
    PER_STACKS("PerStacks"),
+   PER_MAG_FULLNESS("PerMagFullness"),
+   PER_MAG_EMPTINESS("PerMagEmptiness"),
    UNKNOWN("");
 
    private final String key;

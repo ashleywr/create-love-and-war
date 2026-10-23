@@ -80,6 +80,7 @@ public final class GunProjectile extends Projectile {
         // Impact effects need the firing context after save/reload; no global entity-ID lookup table.
         var flat = modifiers.stream().flatMap(source -> source.modifiers().stream()).toList();
         payload.put("Modifiers", MODIFIERS.encodeStart(NbtOps.INSTANCE, flat).getOrThrow());
+        payload.putInt("AttachmentCount", ModifierContext.attachmentCount(modifiers));
         entityData.set(CONTEXT, payload);
         entityData.set(LOCK, target == null ? -1 : target.getId());
         lockTargetUuid = target == null ? null : target.getUUID();
@@ -99,7 +100,7 @@ public final class GunProjectile extends Projectile {
         bulletId = ResourceLocation.tryParse(payload.getString("Bullet"));
         definition = ProjectileDef.CODEC.parse(NbtOps.INSTANCE, payload.getCompound("Definition")).result().orElse(null);
         var modifiers = payload.contains("Modifiers") ? MODIFIERS.parse(NbtOps.INSTANCE, payload.get("Modifiers")).result().orElse(List.of()) : List.<Modifier>of();
-        sources = List.of(ModifierSource.of("projectile", modifiers));
+        sources = List.of(ModifierSource.of("projectile", modifiers), ModifierSource.gunInputs(payload.getInt("AttachmentCount")));
     }
 
     public ProjectileDef definition() { refreshContext(); return definition; }

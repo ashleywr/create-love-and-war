@@ -15,15 +15,18 @@ public final class StatSources {
    public static List<ModifierSource> forFiring(GunDef gun, ActionGroup group, GunAttachments attachments) {
       List<ModifierSource> sources = new ArrayList<>();
       sources.add(ModifierSource.of("group:" + group.key(), group.modifiers()));
+      int attachmentCount = 0;
 
       for (String category : new String[]{"barrel", "grip", "stock", "scope", "generic"}) {
          for (ItemStack stack : attachments.forCategory(category)) {
+            if (!stack.isEmpty()) attachmentCount++;
             GunLookup.attachmentDef(stack).ifPresent(def -> {
                String id = "attachment:" + GunLookup.contentKey(stack);
                sources.add(ModifierSource.of(id, def.modifiers()));
             });
          }
       }
+      sources.add(ModifierSource.gunInputs(attachmentCount));
 
       // Original ActionStack never dispatches AlwaysOn; declared abilities are not unconditional stat sources.
       return sources;

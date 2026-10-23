@@ -22,13 +22,17 @@ public final class StatResolver {
       float running = base;
       float stackablePercentSum = 0.0F;
       List<Float> independentPercents = new ArrayList<>();
+      int attachmentCount = -1;
 
       for (ModifierSource source : sources) {
          for (Modifier modifier : source.modifiers()) {
             // Quirk kept: original active ModifierCache/StatHolder paths never call ModifierDefinition.AppliesTo.
             if (modifier.stat().equals(stat) && !modifier.isOverride()) {
                for (Accumulator acc : modifier.accumulators()) {
-                  float scaled = acc.value() * ctx.multiplierFor(acc.multiplyPer());
+                  if (attachmentCount < 0 && acc.multiplyPer().contains(MultiplyPerKind.PER_ATTACHMENT)) {
+                     attachmentCount = ModifierContext.attachmentCount(sources);
+                  }
+                  float scaled = acc.value() * ctx.multiplierFor(acc.multiplyPer(), Math.max(0, attachmentCount));
                   switch (acc.operation()) {
                      case BASE_ADD:
                         running += scaled;

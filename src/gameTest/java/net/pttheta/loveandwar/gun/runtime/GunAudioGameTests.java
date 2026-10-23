@@ -64,6 +64,27 @@ public final class GunAudioGameTests {
     }
 
     @GameTest(template = "empty", templateNamespace = "createloveandwar")
+    public static void audioUsesActualAttachmentInput(GameTestHelper helper) throws ReflectiveOperationException {
+        try (var listener = new Listener(helper)) {
+            var gun = GunContent.gun("g11k2").orElseThrow();
+            var group = gun.actionGroups().stream().filter(g -> g.key().equals("primary_fire")).findFirst().orElseThrow();
+            var action = group.actions().stream().filter(a -> a.actionType().equals("PlaySound")).findFirst().orElseThrow();
+            var modifier = net.pttheta.loveandwar.gun.content.stat.Modifier.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE,
+                    com.google.gson.JsonParser.parseString("{\"stat\":\"loudness\",\"accumulators\":[{\"operation\":\"BaseAdd\",\"value\":2,\"multiplyPer\":[\"PerAttachment\"]}]}" )).getOrThrow();
+            for (int count : new int[]{0, 2}) {
+                listener.packets.clear();
+                var attachments = count == 0 ? GunAttachments.EMPTY : GunAttachments.EMPTY.with("generic", List.of(new ItemStack(net.minecraft.world.item.Items.APPLE), new ItemStack(net.minecraft.world.item.Items.STICK)));
+                var sources = new ArrayList<>(StatSources.forFiring(gun, group, attachments));
+                sources.add(net.pttheta.loveandwar.gun.content.stat.ModifierSource.of("test", List.of(modifier)));
+                GunSounds.send(listener.player, group, action, sources);
+                var packet = (SGunSound)((ClientboundCustomPayloadPacket)listener.packets.getFirst()).payload();
+                helper.assertTrue(packet.volumeMultiplier() == 1 + 2 * count, "Playback loudness must use attachment input " + count);
+            }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "createloveandwar")
     public static void bundledSoundTransmitsAuthoredDefinitionAndOrigin(GameTestHelper helper) throws ReflectiveOperationException {
         try (var listener = new Listener(helper)) {
             var gun = GunContent.gun("g11k2").orElseThrow();
