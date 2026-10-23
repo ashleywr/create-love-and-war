@@ -4,6 +4,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup.Provider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -13,8 +14,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -22,7 +21,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
 import net.pttheta.loveandwar.gun.workbench.GunFabricationRecipe;
-import net.pttheta.loveandwar.gun.workbench.ModWorkbenchRecipes;
 import net.pttheta.loveandwar.gun.workbench.PartsInput;
 import net.pttheta.loveandwar.gun.workbench.WorkbenchDef;
 import net.pttheta.loveandwar.gun.workbench.WorkbenchDefs;
@@ -51,6 +49,9 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
    private ResourceLocation craftingRecipeId;
    private int craftTicksRemaining;
    private int craftTicksTotal;
+   @Nullable
+   private ResourceLocation selectedGunRecipeId;
+   private long inputsRevision;
 
    public WorkbenchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
       super(type, pos, state);
@@ -59,7 +60,7 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
       int slots = this.def != null ? Math.max(1, this.def.gunCrafting().maxSlots()) : 10;
       this.partsInv = new ItemStackHandler(slots) {
          protected void onContentsChanged(int slot) {
-            WorkbenchBlockEntity.this.setChanged();
+            WorkbenchBlockEntity.this.inputsChanged();
          }
       };
    }
@@ -92,22 +93,22 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
       return this.craftTicksTotal;
    }
 
-   public void tryStartCraft(Level level) {
-      if (!level.isClientSide && this.def != null && this.craftingRecipeId == null) {
-         PartsInput input = new PartsInput(this.partsInv);
+   @Nullable
+   public ResourceLocation selectedGunRecipeId() {
+      return this.selectedGunRecipeId;
+   }
 
-         for (RecipeHolder<GunFabricationRecipe> holder : level.getRecipeManager().getAllRecipesFor(ModWorkbenchRecipes.GUN_FABRICATION_TYPE.get())) {
-            GunFabricationRecipe recipe = (GunFabricationRecipe)holder.value();
-            ItemStack result = recipe.getResultItem(level.registryAccess());
-            if (this.def.canCraft(result) && !recipe.planConsumption(input).isEmpty() && this.canAcceptOutput(result)) {
-               this.craftingRecipeId = holder.id();
-               this.craftTicksTotal = Math.max(1, recipe.craftTimeTicks());
-               this.craftTicksRemaining = this.craftTicksTotal;
-               this.setChanged();
-               return;
-            }
-         }
-      }
+   public void selectGunRecipe(@Nullable ResourceLocation id) {
+      this.selectedGunRecipeId = id;
+   }
+
+   public long inputsRevision() {
+      return this.inputsRevision;
+   }
+
+   public void inputsChanged() {
+      this.inputsRevision++;
+      this.setChanged();
    }
 
    private boolean canAcceptOutput(ItemStack result) {
@@ -116,6 +117,7 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
    }
 
    public static void serverTick(Level level, BlockPos pos, BlockState state, WorkbenchBlockEntity be) {
+      // Only finish countdowns saved by the recovered port. New gun crafts use the original immediate output slot.
       if (be.craftingRecipeId != null) {
          be.craftTicksRemaining--;
          if (be.craftTicksRemaining > 0) {
@@ -132,9 +134,9 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
       if (id != null) {
          level.getRecipeManager().byKey(id).ifPresent(holder -> {
             if (holder.value() instanceof GunFabricationRecipe recipe) {
-               PartsInput var5 = new PartsInput(this.partsInv);
-               recipe.planConsumption(var5).ifPresent(amounts -> {
-                  ItemStack result = recipe.getResultItem(level.registryAccess());
+               PartsInput input = new PartsInput(this.partsInv);
+               recipe.planConsumption(input).ifPresent(amounts -> {
+                  ItemStack result = recipe.assemble(input, level.registryAccess());
                   if (this.canAcceptOutput(result)) {
                      for (int i = 0; i < amounts.length; i++) {
                         if (amounts[i] > 0) {
@@ -167,6 +169,7 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
 
    public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buf) {
       buf.writeBlockPos(this.getBlockPos());
+      buf.writeResourceLocation(BuiltInRegistries.BLOCK.getKey(this.getBlockState().getBlock()));
    }
 
    protected void saveAdditional(CompoundTag tag, Provider registries) {
@@ -193,5 +196,6 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
       } else {
          this.craftingRecipeId = null;
       }
+      this.inputsChanged();
    }
 }

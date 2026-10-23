@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.HolderLookup.Provider;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
@@ -13,14 +12,27 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
+import net.pttheta.loveandwar.gun.runtime.CraftedParts;
+import net.pttheta.loveandwar.item.ModDataComponents;
 
-public record GunFabricationRecipe(List<SizedIngredient> ingredients, Item result, int craftTimeTicks, boolean showNotification) implements Recipe<RecipeInput> {
+public record GunFabricationRecipe(List<SizedIngredient> ingredients, ItemStack result, int craftTimeTicks, boolean showNotification) implements Recipe<RecipeInput> {
+   public GunFabricationRecipe {
+      ingredients = List.copyOf(ingredients);
+      result = result.copy();
+   }
+
+   @Override
+   public ItemStack result() {
+      return this.result.copy();
+   }
    public boolean matches(RecipeInput input, Level level) {
       return this.planConsumption(input).isPresent();
    }
 
    public ItemStack assemble(RecipeInput input, Provider registries) {
-      return new ItemStack(this.result);
+      ItemStack assembled = this.result.copy();
+      assembled.set(ModDataComponents.CRAFTED_PARTS, CraftedParts.from(input));
+      return assembled;
    }
 
    public boolean canCraftInDimensions(int width, int height) {
@@ -28,7 +40,7 @@ public record GunFabricationRecipe(List<SizedIngredient> ingredients, Item resul
    }
 
    public ItemStack getResultItem(Provider registries) {
-      return new ItemStack(this.result);
+      return this.result.copy();
    }
 
    public RecipeSerializer<?> getSerializer() {
@@ -50,35 +62,13 @@ public record GunFabricationRecipe(List<SizedIngredient> ingredients, Item resul
    }
 
    public Optional<int[]> planConsumption(RecipeInput input) {
-      int size = input.size();
-      int[] remaining = new int[size];
-
-      for (int i = 0; i < size; i++) {
-         remaining[i] = input.getItem(i).getCount();
+      if (this.ingredients.isEmpty() || input.size() < this.ingredients.size()) return Optional.empty();
+      int[] toConsume = new int[input.size()];
+      // GunFabricationRecipe in the reference matches each ingredient to its own slot.
+      for (int i = 0; i < this.ingredients.size(); i++) {
+         if (!this.ingredients.get(i).test(input.getItem(i))) return Optional.empty();
+         toConsume[i] = this.ingredients.get(i).count();
       }
-
-      int[] toConsume = new int[size];
-
-      for (SizedIngredient ingredient : this.ingredients) {
-         int need = ingredient.count();
-
-         for (int i = 0; i < size && need > 0; i++) {
-            if (remaining[i] > 0) {
-               ItemStack stack = input.getItem(i);
-               if (!stack.isEmpty() && ingredient.ingredient().test(stack)) {
-                  int take = Math.min(need, remaining[i]);
-                  remaining[i] -= take;
-                  toConsume[i] += take;
-                  need -= take;
-               }
-            }
-         }
-
-         if (need > 0) {
-            return Optional.empty();
-         }
-      }
-
       return Optional.of(toConsume);
    }
 }

@@ -1,4 +1,6 @@
 {
+  "gui.createloveandwar.workbench.recipes": "Gun recipes",
+  "gui.createloveandwar.workbench.fill_hint": "Click to fill; Shift + right-click to refill or cycle",
   "key.categories.createloveandwar" : "Create: Love & War",
   "key.createloveandwar.fire2" : "Gun: Secondary Fire",
   "key.createloveandwar.reload1" : "Gun: Reload",

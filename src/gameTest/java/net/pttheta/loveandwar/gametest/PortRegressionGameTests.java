@@ -49,7 +49,7 @@ public final class PortRegressionGameTests {
     }
 
     @GameTest(template = "empty", templateNamespace = "createloveandwar")
-    public static void menuRetainsReceivedCraftingProgress(GameTestHelper helper) {
+    public static void menuRetainsReceivedLegacyCraftingProgress(GameTestHelper helper) {
         var position = helper.absolutePos(new BlockPos(2, 2, 2));
         var block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse("createloveandwar:law_workbench"));
         helper.getLevel().setBlockAndUpdate(position, block.defaultBlockState());
@@ -60,7 +60,7 @@ public final class PortRegressionGameTests {
         menu.setData(1, 25);
         menu.setData(2, 100);
         helper.assertTrue(menu.isCrafting() && menu.craftTicksRemaining() == 25 && menu.craftTicksTotal() == 100,
-                "Menu progress packets must update the data read by the client screen");
+                "Legacy pending-craft progress packets must retain their values in menu data");
         helper.succeed();
     }
 

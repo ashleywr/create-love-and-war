@@ -9,11 +9,15 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredRegister.DataComponents;
 import net.pttheta.loveandwar.gun.runtime.GunActionState;
+import net.pttheta.loveandwar.gun.runtime.CraftedParts;
 import net.pttheta.loveandwar.gun.runtime.GunAttachments;
 import net.pttheta.loveandwar.item.custom.AmmoPouchContents;
 
 public class ModDataComponents {
    public static final DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, "createloveandwar");
+   public static final DeferredHolder<DataComponentType<?>, DataComponentType<CraftedParts>> CRAFTED_PARTS = COMPONENTS.registerComponentType(
+      "crafted_parts", builder -> builder.persistent(CraftedParts.CODEC).networkSynchronized(CraftedParts.STREAM_CODEC)
+   );
    public static final DeferredHolder<DataComponentType<?>, DataComponentType<AmmoPouchContents>> AMMO_POUCH_CONTENTS = COMPONENTS.registerComponentType(
       "ammo_pouch_contents", builder -> builder.persistent(AmmoPouchContents.CODEC).networkSynchronized(AmmoPouchContents.STREAM_CODEC)
    );

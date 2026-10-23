@@ -19,7 +19,10 @@ The official project metadata declares MIT. Its binary retains an `All Rights Re
 | --- | --- | --- |
 | Bench shape and occlusion | Flans used `box(1,0,1,15,12,15)`; replacement inherited a full cube and hid neighboring terrain | Baseline GameTests failed; six bench shapes and 24 orientations now pass; isolated client screenshot inspected |
 | Bench inventory drops | Replacement omitted original `onRemove` drop behavior | Baseline dropped zero stored items; test now recovers all three inventories and prevents drops on facing changes |
-| Craft progress synchronization | Menu discarded received data and screen read stale block entity fields | Menu now stores synchronized data and screen reads it; packet-data path GameTest passes |
+| Legacy craft progress synchronization | Menu discarded received countdown data | Menu retains received values; countdown completion is now limited to saved crafts from the recovered port |
+| Gun crafting selection and timing | Rewrite chose the first matching recipe, ignored ingredient positions, and added a countdown absent from original gun crafting | Ordered matching, explicit server-validated selection, immediate result preview and take restored; all 45 bench-allowed recipes craft in GameTests; selection/take observed in a client |
+| Crafted-part persistence | Rewrite assembled a bare gun | Ordered canonical part IDs saved and synchronized as an immutable component; item NBT and packet round trips verified; runtime trait effects remain pending |
+| Bench opening packet | Client required an existing world block entity and disconnected if the menu arrived first | Menu now constructs its own synchronized inventory from server-provided bench identity; baseline client disconnect reproduced, corrected client opens successfully; packet-construction regression test |
 | Missing fluid models | Seven fluid blockstates and seven inventory models absent in both official and port binaries | Added vanilla-compatible fluid block models and existing bucket inventory parents; client model loading reports no missing mod models/textures |
 | Missing ammunition/egg texture references | Buckshot skin and unused egg texture absent upstream | Buckshot uses the existing matching grenade skin; egg uses vanilla spawn-egg parent; direct reference audit and client load verified |
 | Tungsten armor slot values | Port read old helmet/chest/legs/boots array in reverse slot convention | Baseline failed; registered material now gives 5/7/5/4 in the original order |
@@ -29,16 +32,16 @@ The official project metadata declares MIT. Its binary retains an `All Rights Re
 | Content self-check expectation | Smoke check encoded the incorrect percentage interpretation | All bundled content parses; corrected authored spread/damage assertions pass |
 | Existing JEI category namespace | Create's string builder overload used `create:` IDs | Builder now receives explicit `createloveandwar:` resource locations; compile verified; JEI visual run remains pending |
 
-Latest verification: `gradlew build runGameTestServer` succeeded with **7 GameTests and 4 JUnit tests**. GameTests run through normal NeoForge loading in disposable worlds, not a mocked Minecraft bootstrap. Release JAR inspected to exclude GameTest classes, templates and AutoMine. Development client loaded a world with the target dependency set; this is not a full Magitema compatibility test.
+Latest verification: `gradlew build runGameTestServer` succeeded with **20 GameTests and 4 JUnit tests**, including saved-countdown migration. GameTests run through normal NeoForge loading in disposable worlds, not a mocked Minecraft bootstrap. Release JAR inspected to exclude GameTest classes, templates and AutoMine. Development client selected and took a Chassepot, with five part IDs and zero inputs confirmed by the server; pagination and final slot layout inspected. This is not a full Magitema compatibility test.
 
 ## Adaptation matrix and remaining work
 
 | Subsystem | Assessment | Next verification or repair |
 | --- | --- | --- |
 | Registry IDs/content catalog | Original ModItems/ModBlocks IDs retained; six benches, 49 gun registrations, 25 bullets, 87 part registrations, 11 attachments | Check actual runtime registry/catalog consistency and orphaned definitions |
-| Bench rendering/storage | Core shape, terrain visibility, item preservation and progress repaired | Dedicated-server client reconnect, persisted inventory and attachment scenarios |
-| Gun recipe selection | **P1: missing**; five equal-input recipe groups make eleven outputs unreachable | Add explicit server-validated selection, recipe preview and choice UI; keep original ingredients |
-| Crafted materials/traits | **P1: missing**; crafting returns a bare gun and runtime ignores part provenance/trait abilities | Persist inputs as components; implement stat/trigger effects; compare material variants after save/reconnect |
+| Bench rendering/storage | Core shape, terrain visibility, item preservation and menu-opening race repaired | Dedicated-server client reconnect, persisted inventory and attachment scenarios |
+| Gun recipe selection | Implemented/tested: explicit choices, original ordered inputs and immediate take, all 45 allowed recipes reachable | Dedicated multiplayer/reload scenarios; original has one additional orphaned optical-scope recipe |
+| Crafted materials/traits | Provenance implemented/tested; **P1: runtime trait abilities still missing** | Resolve capped trait levels and stat/trigger effects from parts/attachments; compare material variants after reconnect |
 | Burst firing | **P1: incorrect**; held input restarts bursts and release cancels remaining shots | Restore finite server-scheduled bursts and press/release tests |
 | Projectile engine | **P1: partial replacement**; acceleration, drag, gravity, guidance/fuses and bullet-specific models ignored or absent | Reconstruct authored projectile behavior; controlled original/target scenarios |
 | Ammunition pouches | **P1/P2: registered but inert**; 278-line bundle-like item became a capacity/tag holder | Restore insert/extract/drop/persistence/tooltips and accepted-ammo/capacity rules |
@@ -64,6 +67,17 @@ Latest verification: `gradlew build runGameTestServer` succeeded with **7 GameTe
 The original 107 Java source units were inventoried across subsystem reviews, with mapped original sources retained privately. The target gun replacement and selected Flans engine paths were inspected separately. This is not a line-by-line certification of the entire Flans engine, every model/animation, or every runtime interaction.
 
 All custom data filenames in the inspected gun families survive: 49 guns, 25 bullets, 11 attachments, 40 magazines, 14 traits, 78 parts, 13 materials. Successful decoding does not mean those fields are executed. Resource comparison, after target directory-name migration, found 1,883 byte-identical entries, 465 JSON-equivalent entries, 498 changed entries and 32 unmatched paths. Unmatched paths include build caches, metadata, renamed Forge/NeoForge/common-tag locations and an orphaned loot table; they are **not** 32 confirmed missing gameplay features.
+
+## Gun crafting reference decisions
+
+Reference paths: Flans `GunFabricationRecipe`, `GunCraftingOutputSlot`, `WorkbenchMenuGunCrafting`, `AbstractWorkbench` and `FlanItem` from the pinned dependency. Three baseline GameTests failed for missing selection, shapeless matching and bare results before repair.
+
+- Original gun crafting is immediate. `craft_time` is serialized (default 20) but does not drive a gun countdown; the original countdown path belongs to part crafting. Existing saved NeoForge countdowns are finished once into real output storage; new crafts use a computed preview.
+- **Quirk kept:** input order matters, extra unused slots are ignored for consumption, but every recognized part stack in the input inventory contributes one canonical part ID. Stack count and arbitrary input NBT are not copied into provenance. The output slot yields one gun per take even if a custom recipe declares a larger result count.
+- **Quirk kept:** the official `gun_fabrication/stg57_scope` recipe produces `optical_scope`, which no authored bench allows. The remaining 45 recipes are allowed by at least one of the six benches. The recipe and filters are unchanged; the regression test identifies this exact orphan rather than treating it as an inaccessible gun.
+- The six authored benches enable modification but do not enable painting. Removed the replacement's free paint-cycle button/request. Magazine upgrade parity remains separate work.
+- UI adaptation: stable recipe-ID order with paged choices; click an empty ingredient slot to auto-fill, or Shift + right-click to refill/cycle. Survival transfer validates capacity before returning an existing stack, preventing the original partial-insertion loss risk. Creative cycles matching material variants.
+- Previews are transient menu data and never saved/dropped as inventory. Normal pickup, hotbar swap, shift-click/full-inventory refusal, stale/distant requests, breaking a previewing bench, item/recipe serialization and unused-part contribution have regression coverage. The catalog is built once per open menu; assembled previews are cached until inputs or recipe identity change. These are structural reductions in repeated work, not a measured end-to-end performance result.
 
 ## Verification boundaries and release criteria
 
