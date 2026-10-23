@@ -34,9 +34,11 @@ public final class GunLeftClickFire {
       } else if (event.isAttack()) {
          Player player = Minecraft.getInstance().player;
          if (player != null && player.getMainHandItem().getItem() instanceof GunItem) {
-            ModMessages.sendToServer(new CGunInput("Fire1", true));
-            GunPrediction.onInputSent("Fire1");
-            firing = true;
+            if (!firing) {
+               ModMessages.sendToServer(new CGunInput("Fire1", true));
+               GunPrediction.onInputSent("Fire1");
+               firing = true;
+            }
             event.setSwingHand(false);
             event.setCanceled(true);
          }
@@ -56,12 +58,9 @@ public final class GunLeftClickFire {
             && mc.screen == null
             && mc.player != null
             && mc.player.getMainHandItem().getItem() instanceof GunItem;
-         if (stillHeld) {
-            ModMessages.sendToServer(new CGunInput("Fire1", true));
-            GunPrediction.onInputSent("Fire1");
-         } else {
+         if (!stillHeld) {
             firing = false;
-            ModMessages.sendToServer(new CGunInput("Fire1", false));
+            if (mc.player != null && mc.getConnection() != null) ModMessages.sendToServer(new CGunInput("Fire1", false));
          }
       }
    }

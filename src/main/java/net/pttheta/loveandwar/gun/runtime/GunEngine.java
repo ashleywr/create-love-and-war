@@ -46,10 +46,15 @@ public final class GunEngine {
    public static void handleInput(ServerPlayer player, ItemStack gunStack, InteractionHand hand, String inputType, boolean pressed) {
       if (!pressed) {
          if ("Fire1".equals(inputType)) {
-            GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
-            gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.released());
+            // Release belongs to the player's trigger, including a gun moved out of the selected slot.
+            GunFireScheduler.releaseAll(player);
+            if (gunStack.getItem() instanceof GunItem) {
+               GunActionState state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+               gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.released());
+            }
          }
       } else {
+         if (!(gunStack.getItem() instanceof GunItem) || player.isSpectator() || !player.isAlive()) return;
          Optional<GunDef> defOpt = GunLookup.gunDef(gunStack);
          if (defOpt.isEmpty()) {
             if (gunStack.getItem() instanceof GunItem) {
@@ -61,6 +66,7 @@ public final class GunEngine {
             if (handler.isEmpty()) {
                diag("Gun '{}' has no inputHandlers entry for inputType '{}'", GunLookup.contentKey(gunStack), inputType);
             } else {
+               if ("Fire1".equals(inputType) && !GunFireScheduler.press(player, gunStack)) return;
                GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                GunAttachments attachments = (GunAttachments)gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
                AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
@@ -73,7 +79,7 @@ public final class GunEngine {
                   );
                } else {
                   if (resolved.isPresent()) {
-                     tryTrigger(player, gunStack, def, resolved.get(), attachments, state, rounds);
+                     tryTrigger(player, gunStack, def, resolved.get(), attachments, state);
                   } else if (LOGGER.isDebugEnabled()) {
                      diag(
                         "Gun '{}': no node under inputType '{}' resolved to a satisfied action group (out of ammo / busy / no attachment installed / failed modalCheck are the usual reasons)",
@@ -138,6 +144,7 @@ public final class GunEngine {
    }
 
    public static void tick(ServerPlayer player, ItemStack gunStack) {
+      if (GunFireScheduler.tick(player, gunStack)) return;
       GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
       if (!state.activeGroup().isEmpty()) {
          Optional<GunDef> defOpt = GunLookup.gunDef(gunStack);
@@ -153,6 +160,21 @@ public final class GunEngine {
                }
             }
          }
+      }
+   }
+
+   static void tryHeldFire(ServerPlayer player, ItemStack gunStack) {
+      var definition = GunLookup.gunDef(gunStack);
+      var rounds = gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
+      if (definition.isEmpty() || rounds.isEmpty()) return;
+      var def = definition.get();
+      var handler = def.inputHandlers().stream().filter(h -> h.inputType().equals("Fire1")).findFirst();
+      if (handler.isEmpty()) return;
+      var state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+      var attachments = gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
+      var resolved = resolveNode(def, attachments, state, rounds, handler.get().nodes(), "Fire1", Optional.empty());
+      if (resolved.isPresent() && resolveActionGroup(def, resolved.get()).map(g -> GunFireMode.of(g.repeatMode()) == GunFireMode.FULL_AUTO).orElse(false)) {
+         tryTrigger(player, gunStack, def, resolved.get(), attachments, state);
       }
    }
 
@@ -285,61 +307,38 @@ public final class GunEngine {
       GunDef def,
       GunEngine.Resolved resolved,
       GunAttachments attachments,
-      GunActionState state,
-      AmmoPouchContents rounds
+      GunActionState state
    ) {
       Optional<ActionGroup> groupOpt = resolveActionGroup(def, resolved);
       if (groupOpt.isEmpty()) {
          LOGGER.warn("tryTrigger called with unresolvable action group '{}'", resolved.groupKey());
-      } else {
-         ActionGroup group = groupOpt.get();
-         GunFireMode mode = GunFireMode.of(group.repeatMode());
-         if (mode == GunFireMode.TOGGLE) {
-            boolean turningOn = !state.activeToggles().contains(group.key());
-            gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(group.key(), turningOn));
-            if (turningOn) {
-               runImmediateActions(player, gunStack, def, group, attachments);
-            }
-         } else {
-            boolean firesRound = group.actions().stream().anyMatch(a -> "Shoot".equals(a.actionType()));
-            if (mode == GunFireMode.SEMI_AUTO && firesRound && state.waitingForRelease()) {
-               diag("Action group '{}' blocked: SemiAuto already fired for this press (release and re-press Fire1)", group.key());
-            } else {
-               long now = player.level().getGameTime();
-               if (firesRound && now < state.cooldownUntilGameTime()) {
-                  diag("Action group '{}' blocked: repeatDelay cooldown ({} ticks remaining)", group.key(), state.cooldownUntilGameTime() - now);
-               } else {
-                  Optional<GunDef.ReloadDef> reloadDef = def.reloads().stream().filter(rd -> rd.startActionKey().equals(group.key())).findFirst();
-                  if (reloadDef.isPresent()) {
-                     GunReload.start(player, gunStack, def, reloadDef.get(), state);
-                  } else {
-                     if (mode == GunFireMode.BURST_FIRE) {
-                        int remaining = state.burstRemaining() > 0 ? state.burstRemaining() : Math.max(1, group.repeatCount());
-                        if (remaining <= 0) {
-                           diag("Action group '{}' blocked: no burst shots remaining", group.key());
-                           return;
-                        }
-
-                        state = state.withBurstRemaining(remaining - 1);
-                     }
-
-                     int totalTicks = groupDurationTicks(group);
-                     GunActionState next = state.withGroup(group.key(), totalTicks, List.of());
-                     if (firesRound) {
-                        next = next.withCooldown(now + Math.round(group.repeatDelay() * 20.0F));
-                     }
-
-                     if (mode == GunFireMode.SEMI_AUTO && firesRound) {
-                        next = next.withWaitingForRelease(true);
-                     }
-
-                     gunStack.set(ModDataComponents.GUN_ACTION_STATE, next);
-                     runImmediateActions(player, gunStack, def, group, attachments);
-                  }
-               }
-            }
-         }
+         return;
       }
+      ActionGroup group = groupOpt.get();
+      GunFireMode mode = GunFireMode.of(group.repeatMode());
+      if (mode == GunFireMode.TOGGLE) {
+         boolean turningOn = !state.activeToggles().contains(group.key());
+         gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(group.key(), turningOn));
+         if (turningOn) runImmediateActions(player, gunStack, def, group, attachments);
+         return;
+      }
+      boolean firesRound = group.actions().stream().anyMatch(a -> "Shoot".equals(a.actionType()));
+      if (firesRound && (mode == GunFireMode.SEMI_AUTO || mode == GunFireMode.FULL_AUTO || mode == GunFireMode.BURST_FIRE)) {
+         GunFireScheduler.start(player, gunStack, def, group, attachments);
+         return;
+      }
+      long now = player.level().getGameTime();
+      if (firesRound && now < state.cooldownUntilGameTime()) return;
+      Optional<GunDef.ReloadDef> reloadDef = def.reloads().stream().filter(rd -> rd.startActionKey().equals(group.key())).findFirst();
+      if (reloadDef.isPresent()) {
+         GunFireScheduler.cancel(player, gunStack);
+         GunReload.start(player, gunStack, def, reloadDef.get(), state.withBurstRemaining(0));
+         return;
+      }
+      GunActionState next = state.withGroup(group.key(), groupDurationTicks(group), List.of());
+      if (firesRound) next = next.withCooldown(now + Math.round(group.repeatDelay() * 20.0F));
+      gunStack.set(ModDataComponents.GUN_ACTION_STATE, next);
+      runImmediateActions(player, gunStack, def, group, attachments);
    }
 
    static int groupDurationTicks(ActionGroup group) {
@@ -352,7 +351,7 @@ public final class GunEngine {
       return max;
    }
 
-   private static void runImmediateActions(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, GunAttachments attachments) {
+   static void runImmediateActions(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, GunAttachments attachments) {
       List<ModifierSource> sources = RealisticDamage.apply(GunLookup.contentKey(gunStack), group, StatSources.forFiring(def, group, attachments));
 
       for (ActionDef action : group.actions()) {

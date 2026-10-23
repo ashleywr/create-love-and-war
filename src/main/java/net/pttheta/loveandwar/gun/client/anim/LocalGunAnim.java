@@ -12,6 +12,7 @@ public final class LocalGunAnim {
    private static String key = "";
    private static long startNanos;
    private static int lastElapsed;
+   private static int lastGroupTotal;
    private static boolean predicted;
    private static String baseKey = "";
    private static int baseElapsed;
@@ -49,6 +50,8 @@ public final class LocalGunAnim {
 
       String serverKey = state.activeGroup();
       int serverElapsed = state.groupTicksElapsed();
+      boolean retriggered = serverKey.equals(key) && state.groupTotalTicks() > lastGroupTotal;
+      lastGroupTotal = state.groupTotalTicks();
       if (predicted) {
          float age = ticksSince(now);
          boolean fresh = serverKey.equals(key) && (!key.equals(baseKey) || serverElapsed < baseElapsed);
@@ -70,10 +73,10 @@ public final class LocalGunAnim {
          return key.isEmpty() ? null : new LocalGunAnim.Playing(key, ticksSince(now), true);
       }
 
-      if (!serverKey.equals(key) || serverElapsed < lastElapsed) {
+      if (!serverKey.equals(key) || serverElapsed < lastElapsed || retriggered) {
          carry = serverKey.equals(key) ? ticksSince(now) : -1.0F;
          key = serverKey;
-         startNanos = now - (serverElapsed > 3 ? serverElapsed * 50000000L : 0L);
+         startNanos = now - (!retriggered && serverElapsed > 3 ? serverElapsed * 50000000L : 0L);
       }
 
       lastElapsed = serverElapsed;
@@ -85,6 +88,7 @@ public final class LocalGunAnim {
       carry = -1.0F;
       predicted = false;
       lastElapsed = 0;
+      lastGroupTotal = 0;
    }
 
    private static float ticksSince(long now) {

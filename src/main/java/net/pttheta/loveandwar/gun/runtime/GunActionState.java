@@ -77,6 +77,10 @@ public record GunActionState(
       );
    }
 
+   public GunActionState withFiringFrame(String group, int elapsed, int total, long cooldown, int remaining, boolean waiting) {
+      return new GunActionState(group, elapsed, total, List.of(), this.modeValues, this.activeToggles, cooldown, remaining, waiting);
+   }
+
    public GunActionState tickedGroup() {
       return new GunActionState(
          this.activeGroup,
@@ -184,7 +188,7 @@ public record GunActionState(
          this.modeValues,
          this.activeToggles,
          this.cooldownUntilGameTime,
-         0,
+         this.burstRemaining,
          false
       );
    }
