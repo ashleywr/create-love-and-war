@@ -84,4 +84,5 @@ Reference paths: Flans `GunFabricationRecipe`, `GunCraftingOutputSlot`, `Workben
 - Current evidence is strongest for the small repaired paths with failing baseline tests.
 - Machine operation, gun parity, natural worldgen, multiplayer and full-pack interactions remain partially or wholly unverified.
 - No new JAR was installed into Prism or the remote server. No saves or existing pack snapshots were replaced.
+- Packaging uses stable archive ordering and fixed timestamps. Two separate `clean build` runs in the pinned local environment produced identical SHA-256 hashes for both mod and source JARs. This verifies same-environment rebuilds; cross-machine reproduction remains unverified.
 - Keep the experimental artifact out of a public release until the P1 queue and representative original/target scenarios are resolved. Publication remains a later, separately requested action.

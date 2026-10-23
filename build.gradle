@@ -69,6 +69,10 @@ dependencies {
 }
 
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
 tasks.named('test', Test) {
     useJUnitPlatform()
     workingDir = file('../private/run-unit-tests')
