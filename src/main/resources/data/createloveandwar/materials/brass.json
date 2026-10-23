@@ -1,0 +1,33 @@
+{
+  "sources": [
+    {
+      "matchItems": [],
+      "matchTags": [
+        "c:nuggets/brass",
+        "c:nuggets/brass"
+      ],
+      "count": 1,
+      "icon": "nugget"
+    },
+    {
+      "matchItems": [],
+      "matchTags": [
+        "c:ingots/brass",
+        "c:ingots/brass"
+      ],
+      "count": 9,
+      "icon": "ingot"
+    },
+    {
+      "matchItems": [],
+      "matchTags": [
+        "c:storage_blocks/brass",
+        "c:storage_blocks/brass"
+      ],
+      "count": 81,
+      "icon": "block"
+    }
+  ],
+  "craftingTier": 2,
+  "materialType": "Metal"
+}

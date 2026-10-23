@@ -1,0 +1,30 @@
+{
+    "tags": [
+        "flansvendersgame:fc_hawk"
+    ],
+    "modifiers": [
+        {
+            "stat": "impact_damage",
+            "matchGroupPaths": [],
+            "accumulators": [],
+            "setValue": ""
+        }
+    ],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 3,
+    "numRounds": 4,
+    "allRoundsMustBeIdentical": false,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    }
+}

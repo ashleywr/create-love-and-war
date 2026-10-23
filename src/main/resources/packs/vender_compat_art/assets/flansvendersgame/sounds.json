@@ -1,0 +1,31 @@
+{
+  "gunshot_cycle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_cycle",
+        "type": "file"
+      }
+    ]
+  },
+
+  "cycle_bolt": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/cycle_bolt",
+        "type": "file"
+      }
+    ]
+  },
+
+  "gunshot_revolver": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_revolver",
+        "type": "file"
+      }
+    ]
+  }
+}

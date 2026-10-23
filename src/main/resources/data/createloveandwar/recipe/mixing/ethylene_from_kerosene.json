@@ -1,0 +1,23 @@
+{
+  "type": "create:mixing",
+  "heat_requirement": "heated",
+  "ingredients": [
+    {
+      "type": "neoforge:tag",
+      "amount": 250,
+      "tag": "c:kerosene"
+    },
+    {
+      "item": "createloveandwar:catalyst"
+    }
+  ],
+  "results": [
+    {
+      "amount": 250,
+      "id": "createloveandwar:ethylene"
+    },
+    {
+      "id": "createloveandwar:catalyst"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "createloveandwar:grip_wood"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "   ",
+    "PG ",
+    "   "
+  ],
+  "result": {
+    "id": "flansvendersgame:fc_premium_foregrip"
+  },
+  "show_notification": true
+}

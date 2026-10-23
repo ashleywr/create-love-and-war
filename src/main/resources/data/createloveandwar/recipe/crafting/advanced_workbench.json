@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:brass_casing"
+    },
+    "A": {
+      "tag": "c:plates/brass"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "pattern": [
+    "ALA",
+    "LCL",
+    "L L"
+  ],
+  "result": {
+    "id": "createloveandwar:advanced_workbench"
+  },
+  "show_notification": true
+}

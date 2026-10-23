@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:gepard_m3"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 5,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "createloveandwar:heavy_rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "spawnBulletCasing": "createloveandwar:heavy_rifle_casing"
+}

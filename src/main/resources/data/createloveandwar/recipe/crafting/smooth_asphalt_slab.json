@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "createloveandwar:smooth_asphalt"
+    }
+  },
+  "pattern": [
+    "   ",
+    "   ",
+    "SSS"
+  ],
+  "result": {
+    "count": 6,
+    "id": "createloveandwar:smooth_asphalt_slab"
+  },
+  "show_notification": true
+}

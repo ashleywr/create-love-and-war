@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:martinilauncher"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 1,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:launchable_grenade"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "spawnBulletCasing": "createloveandwar:rifle_casing"
+}

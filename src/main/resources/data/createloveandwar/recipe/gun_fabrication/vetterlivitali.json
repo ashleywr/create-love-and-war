@@ -1,0 +1,56 @@
+{
+  "type": "createloveandwar:gun_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal"
+      ],
+      "tag": "flansmod:barrel",
+      "min": 1,
+      "max": 2
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Wood"
+      ],
+      "tag": "flansmod:handguard",
+      "min": 1,
+      "max": 3
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal"
+      ],
+      "tag": "flansmod:bolt_action",
+      "min": 1,
+      "max": 2
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal"
+      ],
+      "tag": "flansmod:lower_receiver",
+      "min": 1,
+      "max": 2
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Wood"
+      ],
+      "tag": "flansmod:stock",
+      "min": 1,
+      "max": 3
+    }
+  ],
+  "result": {
+    "id": "createloveandwar:vetterlivitali"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

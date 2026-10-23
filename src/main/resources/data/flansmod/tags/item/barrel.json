@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:barrel_brass",
+    "createloveandwar:barrel_duraplas",
+    "createloveandwar:barrel_iron",
+    "createloveandwar:barrel_netherite",
+    "createloveandwar:barrel_polymer",
+    "createloveandwar:barrel_resin",
+    "createloveandwar:barrel_sturdy",
+    "createloveandwar:barrel_tungsten",
+    "createloveandwar:barrel_steel"
+  ]
+}

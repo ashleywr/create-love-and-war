@@ -1,0 +1,13 @@
+{
+  "type": "createloveandwar:stamping",
+  "input": {
+    "tag": "c:plates/brass"
+  },
+  "template": {
+    "id": "createloveandwar:template_revolver_action"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:revolver_action_brass"
+  }
+}

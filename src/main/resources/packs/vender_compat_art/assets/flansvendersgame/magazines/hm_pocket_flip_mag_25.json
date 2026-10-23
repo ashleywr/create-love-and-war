@@ -1,0 +1,32 @@
+{
+    "tags": [
+        "flansvendersgame:hm_pocket"
+    ],
+    "modifiers": [
+        {
+            "stat": "duration",
+            "matchGroupPaths": [
+                "reload_primary"
+            ],
+            "accumulators": [],
+            "setValue": ""
+        }
+    ],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 2,
+    "numRounds": 25,
+    "allRoundsMustBeIdentical": false,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:pistol_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    }
+}

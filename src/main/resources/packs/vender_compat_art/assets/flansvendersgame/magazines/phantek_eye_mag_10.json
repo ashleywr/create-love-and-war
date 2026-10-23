@@ -1,0 +1,23 @@
+{
+    "tags": [
+        "flansvendersgame:phantek_eye"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 2,
+    "numRounds": 10,
+    "allRoundsMustBeIdentical": false,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    }
+}

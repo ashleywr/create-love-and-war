@@ -1,0 +1,1590 @@
+{
+  "keyframes": [
+    {
+      "name": "idle",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    },
+    {
+      "name": "kick",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "0",
+            "3"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-10"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    },
+    {
+      "name": "load_pose",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "35",
+            "-5",
+            "-15"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    },
+    {
+      "name": "load_eject",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "load_ejected",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "load_load_start",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "flapSide",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "load_load_0",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "flapSide",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "90",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "0",
+            "-0.5",
+            "1.5"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "load_load_1",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "flapSide",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "70",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "1",
+            "-1",
+            "1.5"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "load_load_2",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "flapSide",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "4",
+            "-2",
+            "1.5"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "load_ejected_2",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "load_pose"
+      ]
+    },
+    {
+      "name": "reload_pose",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "35",
+            "-15",
+            "-15"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    },
+    {
+      "name": "reload_eject",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-15"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "-40",
+            "40",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "idle"
+      ]
+    },
+    {
+      "name": "reload_ejected",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "-40",
+            "40",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "reload_pose"
+      ]
+    },
+    {
+      "name": "reload_load_start",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "-2",
+            "-12",
+            "5"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "25"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "reload_pose"
+      ]
+    },
+    {
+      "name": "reload_load_0",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "-3",
+            "5",
+            "2"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "25"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "reload_pose"
+      ]
+    },
+    {
+      "name": "reload_load_1",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "-3",
+            "2",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "15"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "reload_pose"
+      ]
+    },
+    {
+      "name": "reload_load_2",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "-3",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "reload_pose"
+      ]
+    },
+    {
+      "name": "reload_load_3",
+      "poses": [
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "ammo_0",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "reload_pose"
+      ]
+    },
+    {
+      "name": "topup_pose",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "35",
+            "-15",
+            "-15"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "flapTop",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "-90",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    },
+    {
+      "name": "topup_load_start",
+      "poses": [
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "0",
+            "-12",
+            "-5"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "topup_pose"
+      ]
+    },
+    {
+      "name": "topup_load_0",
+      "poses": [
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "0",
+            "5",
+            "-2"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "topup_pose"
+      ]
+    },
+    {
+      "name": "topup_load_1",
+      "poses": [
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "0",
+            "2",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "topup_pose"
+      ]
+    },
+    {
+      "name": "topup_load_2",
+      "poses": [
+        {
+          "applyTo": "ammo_1",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": [
+        "topup_pose"
+      ]
+    },
+    {
+      "name": "look_pose_0",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "2",
+            "0"
+          ],
+          "rotation": [
+            "25",
+            "-45",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    },
+    {
+      "name": "look_pose_1",
+      "poses": [
+        {
+          "applyTo": "body",
+          "position": [
+            "0",
+            "2",
+            "0"
+          ],
+          "rotation": [
+            "60",
+            "-45",
+            "0"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "lever",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "-90"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "applyTo": "breech",
+          "position": [
+            "0",
+            "0",
+            "0"
+          ],
+          "rotation": [
+            "0",
+            "0",
+            "24"
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      ],
+      "parents": []
+    }
+  ],
+  "sequences": [
+    {
+      "name": "shoot",
+      "ticks": 23,
+      "frames": [
+        {
+          "tick": 0,
+          "entry": "linear",
+          "exit": "instant",
+          "frame": "idle"
+        },
+        {
+          "tick": 1,
+          "entry": "instant",
+          "exit": "linear",
+          "frame": "kick"
+        },
+        {
+          "tick": 6,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "idle"
+        },
+        {
+          "tick": 8,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "load_eject"
+        },
+        {
+          "tick": 9,
+          "entry": "smooth",
+          "exit": "smooth",
+          "frame": "load_eject"
+        },
+        {
+          "tick": 10,
+          "entry": "instant",
+          "exit": "smooth",
+          "frame": "load_load_start"
+        },
+        {
+          "tick": 14,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "load_load_start"
+        },
+        {
+          "tick": 16,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "load_load_0"
+        },
+        {
+          "tick": 17,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "load_load_1"
+        },
+        {
+          "tick": 18,
+          "entry": "linear",
+          "exit": "instant",
+          "frame": "load_load_2"
+        },
+        {
+          "tick": 21,
+          "entry": "instant",
+          "exit": "linear",
+          "frame": "load_ejected_2"
+        },
+        {
+          "tick": 23,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "idle"
+        }
+      ]
+    },
+    {
+      "name": "reload_start",
+      "ticks": 3,
+      "frames": [
+        {
+          "tick": 0,
+          "entry": "linear",
+          "exit": "smooth",
+          "frame": "idle"
+        },
+        {
+          "tick": 3,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "idle"
+        }
+      ]
+    },
+    {
+      "name": "reload_eject",
+      "ticks": 27,
+      "frames": [
+        {
+          "tick": 0,
+          "entry": "instant",
+          "exit": "smooth",
+          "frame": "idle"
+        },
+        {
+          "tick": 3,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "reload_eject"
+        },
+        {
+          "tick": 5,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "reload_ejected"
+        },
+        {
+          "tick": 7,
+          "entry": "instant",
+          "exit": "linear",
+          "frame": "reload_load_start"
+        },
+        {
+          "tick": 12,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "reload_load_0"
+        },
+        {
+          "tick": 15,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "reload_load_1"
+        },
+        {
+          "tick": 18,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "reload_load_2"
+        },
+        {
+          "tick": 22,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "reload_load_3"
+        },
+        {
+          "tick": 25,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "reload_pose"
+        },
+        {
+          "tick": 27,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "topup_pose"
+        }
+      ]
+    },
+    {
+      "name": "reload_load_one",
+      "ticks": 20,
+      "frames": [
+        {
+          "tick": 0,
+          "entry": "instant",
+          "exit": "instant",
+          "frame": "topup_pose"
+        },
+        {
+          "tick": 5,
+          "entry": "instant",
+          "exit": "linear",
+          "frame": "topup_load_start"
+        },
+        {
+          "tick": 10,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "topup_load_0"
+        },
+        {
+          "tick": 15,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "topup_load_1"
+        },
+        {
+          "tick": 18,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "topup_load_2"
+        },
+        {
+          "tick": 20,
+          "entry": "linear",
+          "exit": "linear",
+          "frame": "topup_pose"
+        }
+      ]
+    },
+    {
+      "name": "reload_end",
+      "ticks": 10,
+      "frames": [
+        {
+          "tick": 0,
+          "entry": "instant",
+          "exit": "smooth",
+          "frame": "topup_pose"
+        },
+        {
+          "tick": 10,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "idle"
+        }
+      ]
+    },
+    {
+      "name": "look_at",
+      "ticks": 20,
+      "frames": [
+        {
+          "tick": 0,
+          "entry": "linear",
+          "exit": "smooth",
+          "frame": "idle"
+        },
+        {
+          "tick": 5,
+          "entry": "smooth",
+          "exit": "smooth",
+          "frame": "look_pose_0"
+        },
+        {
+          "tick": 7,
+          "entry": "smooth",
+          "exit": "smooth",
+          "frame": "look_pose_1"
+        },
+        {
+          "tick": 12,
+          "entry": "smooth",
+          "exit": "smooth",
+          "frame": "look_pose_1"
+        },
+        {
+          "tick": 14,
+          "entry": "smooth",
+          "exit": "smooth",
+          "frame": "look_pose_0"
+        },
+        {
+          "tick": 20,
+          "entry": "smooth",
+          "exit": "linear",
+          "frame": "idle"
+        }
+      ]
+    }
+  ]
+}

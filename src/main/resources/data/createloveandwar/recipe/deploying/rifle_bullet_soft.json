@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "createloveandwar:filled_rifle_casing"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:rifle_bullet_soft"
+    }
+  ]
+}

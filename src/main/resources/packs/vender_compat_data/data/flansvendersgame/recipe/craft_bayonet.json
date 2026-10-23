@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "createloveandwar:barrel_iron"
+    },
+    "S": {
+      "item": "minecraft:iron_sword"
+    }
+  },
+  "pattern": [
+    "   ",
+    " I ",
+    " S "
+  ],
+  "result": {
+    "id": "flansvendersgame:fc_bayonet"
+  },
+  "show_notification": true
+}

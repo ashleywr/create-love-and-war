@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "createloveandwar:glass_lens"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    },
+    "R": {
+      "item": "createloveandwar:redstone_circuit"
+    }
+  },
+  "pattern": [
+    "NIN",
+    "OTR",
+    "III"
+  ],
+  "result": {
+    "id": "createloveandwar:attachment_laser_scope"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,33 @@
+{
+    "sources": [
+        {
+            "matchItems": [],
+            "matchTags": [
+                "forge:nuggets/netherite",
+                "forge:nuggets/netherite"
+            ],
+            "count": 1,
+            "icon": "nugget"
+        },
+        {
+            "matchItems": [],
+            "matchTags": [
+                "forge:ingots/netherite",
+                "forge:ingots/netherite"
+            ],
+            "count": 9,
+            "icon": "ingot"
+        },
+        {
+            "matchItems": [],
+            "matchTags": [
+                "forge:storage_blocks/netherite",
+                "forge:storage_blocks/netherite"
+            ],
+            "count": 81,
+            "icon": "block"
+        }
+    ],
+    "craftingTier": 4,
+    "materialType": "Metal"
+}

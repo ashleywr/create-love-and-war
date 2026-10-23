@@ -1,0 +1,160 @@
+{
+    "itemSettings": {
+        "maxStackSize": 1,
+        "tags": [
+            "flansmod:attach_to_any",
+            "flansmod:sights_attach"
+        ]
+    },
+    "attachmentType": "Sights",
+    "modifiers": [
+        {
+            "stat": "spread",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 75.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        }
+    ],
+    "mechaEffects": [],
+    "mechaEffectFilter": "",
+    "handlerOverrides": [
+        {
+            "inputType": "Fire2",
+            "nodes": [
+                {
+                    "actionGroupToTrigger": "ads",
+                    "modalCheck": "",
+                    "canTriggerWhileReloading": false,
+                    "deferToAttachment": false,
+                    "attachmentType": "Barrel",
+                    "attachmentIndex": 0,
+                    "andContinueEvaluating": false
+                }
+            ]
+        },
+        {
+            "inputType": "SpecialKey2",
+            "nodes": [
+                {
+                    "actionGroupToTrigger": "gadget_button",
+                    "modalCheck": "",
+                    "canTriggerWhileReloading": true,
+                    "deferToAttachment": false,
+                    "attachmentType": "Barrel",
+                    "attachmentIndex": 0,
+                    "andContinueEvaluating": false
+                }
+            ]
+        }
+    ],
+    "actionOverrides": [
+        {
+            "key": "ads",
+            "canActUnderwater": true,
+            "canActUnderOtherLiquid": true,
+            "canBeOverriden": false,
+            "twoHanded": false,
+            "repeatMode": "Toggle",
+            "repeatDelay": 0.05,
+            "repeatCount": 0,
+            "spinUpDuration": 0.0,
+            "loudness": 0.0,
+            "autoCancelIfNotInMode": "",
+            "actions": [
+                {
+                    "actionType": "AimDownSights",
+                    "duration": 0.0,
+                    "sounds": [],
+                    "itemStack": "",
+                    "scopeOverlay": "",
+                    "anim": ""
+                }
+            ],
+            "modifiers": [
+                {
+                    "stat": "fov_factor",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 1.4,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                }
+            ]
+        },
+        {
+            "key": "gadget_button",
+            "canActUnderwater": true,
+            "canActUnderOtherLiquid": true,
+            "canBeOverriden": false,
+            "twoHanded": false,
+            "repeatMode": "Toggle",
+            "repeatDelay": 0.0,
+            "repeatCount": 0,
+            "spinUpDuration": 0.0,
+            "loudness": 0.0,
+            "autoCancelIfNotInMode": "",
+            "actions": [
+                {
+                    "actionType": "Laser",
+                    "duration": 0.0,
+                    "sounds": [],
+                    "itemStack": "",
+                    "scopeOverlay": "",
+                    "anim": ""
+                }
+            ],
+            "modifiers": [
+                {
+                    "stat": "laser_red",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 1.0,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                },
+                {
+                    "stat": "laser_green",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 0.0,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                },
+                {
+                    "stat": "laser_blue",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 0.4,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                }
+            ]
+        }
+    ],
+    "reloadOverrides": [],
+    "abilities": [],
+    "modeOverride": "FullAuto",
+    "overrideFireMode": false
+}

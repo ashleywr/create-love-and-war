@@ -1,0 +1,30 @@
+{
+  "type": "flansmod:part_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:fiberglass",
+      "count": 72
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "flansbasicparts:redstone_circuitry"
+      ],
+      "count": 3
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "minecraft:glass_pane"
+      ],
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_pinpoint_sight"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

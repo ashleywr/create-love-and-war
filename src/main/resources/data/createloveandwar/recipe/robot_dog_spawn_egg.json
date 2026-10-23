@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "create:brass_ingot"
+    },
+    "P": {
+      "item": "create:precision_mechanism"
+    },
+    "R": {
+      "item": "createloveandwar:quantum_circuit"
+    },
+    "T": {
+      "item": "createloveandwar:tungsten"
+    }
+  },
+  "pattern": [
+    " RB",
+    "BPB",
+    "T T"
+  ],
+  "result": {
+    "id": "createloveandwar:robot_dog_spawn_egg"
+  },
+  "show_notification": true
+}

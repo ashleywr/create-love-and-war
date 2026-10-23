@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "createloveandwar:ammopouch"
+    },
+    {
+      "item": "createloveandwar:shotgun_casing"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:ammopouch_shotgun"
+  },
+  "show_notification": true
+}

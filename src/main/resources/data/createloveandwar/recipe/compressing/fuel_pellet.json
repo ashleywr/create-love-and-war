@@ -1,0 +1,16 @@
+{
+  "type": "create:compacting",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "createloveandwar:diesel"
+    }
+  ],
+  "results": [
+    {
+      "count": 1,
+      "id": "createloveandwar:fuel_pellet"
+    }
+  ]
+}

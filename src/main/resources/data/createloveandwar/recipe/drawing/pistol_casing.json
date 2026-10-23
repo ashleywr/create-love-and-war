@@ -1,0 +1,10 @@
+{
+  "type": "createloveandwar:drawing",
+  "input": {
+    "item": "createloveandwar:brass_cup"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:pistol_casing"
+  }
+}

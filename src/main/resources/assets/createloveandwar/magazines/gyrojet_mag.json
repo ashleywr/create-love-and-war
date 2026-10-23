@@ -1,0 +1,23 @@
+{
+    "tags": [
+        "createloveandwar:gyrojet"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 7,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "createloveandwar:gyrojet_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    }
+}

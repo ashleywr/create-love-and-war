@@ -1,0 +1,977 @@
+{
+    "keyframes": [
+        {
+            "name": "idle",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_spent",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "shot_fired",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "-5",
+                        "1",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "ready_to_reload",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "0",
+                        "3"
+                    ],
+                    "rotation": [
+                        "15",
+                        "0",
+                        "-5"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "bolt_up",
+            "poses": [
+                {
+                    "applyTo": "leverAction",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "90",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "5",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload"
+            ]
+        },
+        {
+            "name": "bolt_open_eject",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "-5",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_elevator",
+                    "position": [
+                        "0",
+                        "1.5",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_spent",
+                    "position": [
+                        "-5",
+                        "5",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "-90"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "20",
+                        "0",
+                        "-10"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload",
+                "bolt_up"
+            ]
+        },
+        {
+            "name": "bolt_closed",
+            "poses": [
+                {
+                    "applyTo": "leverAction",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "90",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "5",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "3.5",
+                        "1",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_elevator",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_spent",
+                    "position": [
+                        "-5",
+                        "5",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "-90"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload"
+            ]
+        },
+        {
+            "name": "bolt_open",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "-5",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "20",
+                        "0",
+                        "-10"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload",
+                "bolt_up"
+            ]
+        },
+        {
+            "name": "cycled",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "0",
+                        "3"
+                    ],
+                    "rotation": [
+                        "10",
+                        "0",
+                        "-5"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_spent",
+                    "position": [
+                        "-5",
+                        "5",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "-90"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload"
+            ]
+        },
+
+        {
+            "name": "reload_pose",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "0",
+                        "-2"
+                    ],
+                    "rotation": [
+                        "50",
+                        "0",
+                        "-15"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "ammo_load_start",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "0",
+                        "-20",
+                        "10"
+                    ],
+                    "rotation": [
+                        "-160",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "reload_pose"
+            ]
+        },
+        {
+            "name": "ammo_load_ready",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "-1",
+                        "0",
+                        "3"
+                    ],
+                    "rotation": [
+                        "0",
+                        "-15",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "reload_pose"
+            ]
+        },
+        {
+            "name": "ammo_load_end",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "reload_pose"
+            ]
+        },
+        {
+            "name": "ammo_whack_it",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "0",
+                        "-2"
+                    ],
+                    "rotation": [
+                        "55",
+                        "0",
+                        "-17"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "reload_pose"
+            ]
+        },
+
+        {
+            "name": "reload_bolt_open",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "30",
+                        "0",
+                        "-15"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "0",
+                        "-2",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "bolt_open"
+            ]
+        },
+        {
+            "name": "reloaded_bolt_open",
+            "poses": [
+                {
+                    "applyTo": "leverAction",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "90",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "5",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "reloaded"
+            ]
+        },
+        {
+            "name": "reloaded",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "0",
+                        "3"
+                    ],
+                    "rotation": [
+                        "10",
+                        "0",
+                        "-5"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+
+        {
+            "name": "look_at_0",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "-2"
+                    ],
+                    "rotation": [
+                        "0",
+                        "-80",
+                        "-30"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "look_at_1",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "5",
+                        "-2"
+                    ],
+                    "rotation": [
+                        "140",
+                        "-70",
+                        "20"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "look_at_open_bolt",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "-5",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "look_at_1"
+            ]
+        }
+    ],
+    "sequences": [
+        {
+            "name": "shoot",
+            "ticks": 35,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "instant",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 1,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "shot_fired"
+                },
+                {
+                    "tick": 12,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 16,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "ready_to_reload"
+                },
+                {
+                    "tick": 18,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "bolt_up"
+                },
+                {
+                    "tick": 20,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "bolt_open_eject"
+                },
+                {
+                    "tick": 24,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "bolt_open_eject"
+                },
+                {
+                    "tick": 27,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "bolt_closed"
+                },
+                {
+                    "tick": 29,
+                    "entry": "linear",
+                    "exit": "instant",
+                    "frame": "cycled"
+                },
+                {
+                    "tick": 30,
+                    "entry": "instant",
+                    "exit": "linear",
+                    "frame": "ready_to_reload"
+                },
+                {
+                    "tick": 35,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "idle"
+                }
+            ]
+        },
+        {
+            "name": "reload_start",
+            "ticks": 12,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 12,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "reload_pose"
+                }
+            ]
+        },
+        {
+            "name": "reload_load_one",
+            "ticks": 15,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ammo_load_start"
+                },
+                {
+                    "tick": 6,
+                    "entry": "smooth",
+                    "exit": "smooth",
+                    "frame": "ammo_load_ready"
+                },
+                {
+                    "tick": 10,
+                    "entry": "smooth",
+                    "exit": "smooth",
+                    "frame": "ammo_load_end"
+                },
+                {
+                    "tick": 12,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "ammo_whack_it"
+                },
+                {
+                    "tick": 15,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ammo_load_end"
+                }
+            ]
+        },
+        {
+            "name": "reload_end",
+            "ticks": 30,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "smooth",
+                    "frame": "ammo_load_end"
+                },
+                {
+                    "tick": 5,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "reload_pose"
+                },
+                {
+                    "tick": 10,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "ready_to_reload"
+                },
+                {
+                    "tick": 12,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "bolt_up"
+                },
+                {
+                    "tick": 14,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "bolt_open_eject"
+                },
+                {
+                    "tick": 18,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "bolt_open_eject"
+                },
+                {
+                    "tick": 21,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "bolt_closed"
+                },
+                {
+                    "tick": 23,
+                    "entry": "linear",
+                    "exit": "instant",
+                    "frame": "cycled"
+                },
+                {
+                    "tick": 24,
+                    "entry": "instant",
+                    "exit": "linear",
+                    "frame": "ready_to_reload"
+                },
+                {
+                    "tick": 30,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "idle"
+                }
+            ]
+        },
+        {
+            "name": "reload_eject",
+            "ticks": 5,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "smooth",
+                    "frame": "reload_pose"
+                },
+                {
+                    "tick": 5,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "reload_pose"
+                }
+            ]
+        },
+        {
+            "name": "look_at",
+            "ticks": 40,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "smooth",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 10,
+                    "entry": "smooth",
+                    "exit": "smooth",
+                    "frame": "look_at_0"
+                },
+                {
+                    "tick": 20,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "look_at_1"
+                },
+                {
+                    "tick": 25,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "look_at_open_bolt"
+                },
+                {
+                    "tick": 30,
+                    "entry": "linear",
+                    "exit": "smooth",
+                    "frame": "look_at_1"
+                },
+                {
+                    "tick": 40,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "idle"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:revolver_action_brass",
+    "createloveandwar:revolver_action_duraplas",
+    "createloveandwar:revolver_action_iron",
+    "createloveandwar:revolver_action_netherite",
+    "createloveandwar:revolver_action_polymer",
+    "createloveandwar:revolver_action_resin",
+    "createloveandwar:revolver_action_sturdy",
+    "createloveandwar:revolver_action_tungsten",
+    "createloveandwar:revolver_action_steel"
+  ]
+}

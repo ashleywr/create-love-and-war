@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:attachment_wood_stock",
+    "createloveandwar:attachment_impact_stock",
+    "createloveandwar:attachment_red_dot",
+    "createloveandwar:attachment_telescopic_sight",
+    "createloveandwar:attachment_laser_scope",
+    "createloveandwar:attachment_extended_barrel",
+    "createloveandwar:attachment_wood_grip",
+    "createloveandwar:attachment_silencer",
+    "createloveandwar:attachment_polymer_grip",
+    "createloveandwar:attachment_tank_brake",
+    "createloveandwar:attachment_suit_sight"
+  ]
+}

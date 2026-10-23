@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "createloveandwar:item/filled_heavy_rifle_casing"
+  }
+}

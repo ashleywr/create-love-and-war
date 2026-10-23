@@ -1,0 +1,719 @@
+{
+    "keyframes": [
+        {
+            "name": "idle",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "shot_fired",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "-5",
+                        "1",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "leverAction",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "45"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "fired",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                },
+                {
+                    "applyTo": "leverAction",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "45"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "ready_to_reload",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "0",
+                        "-7"
+                    ],
+                    "rotation": [
+                        "-5",
+                        "0",
+                        "-80"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "ready_to_reload_2",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "1",
+                        "-25",
+                        "-5"
+                    ],
+                    "rotation": [
+                        "-15",
+                        "0",
+                        "-80"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "ammo_load_start",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "-45",
+                        "-20",
+                        "-20"
+                    ],
+                    "rotation": [
+                        "0",
+                        "-180",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ammo_load_charge",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "4.25",
+                        "0",
+                        "-0.75"
+                    ],
+                    "rotation": [
+                        "0",
+                        "-45",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ammo_load_insert",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "6",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "180"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ammo_load_end",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "180"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ammo_loaded",
+            "poses": [
+                {
+                    "applyTo": "ammo_0",
+                    "position": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ram_start",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "30",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ram_ready",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "30",
+                        "1",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "180",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ram_insert",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "-7",
+                        "1",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "180",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "ram_insert_2",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "3",
+                        "1",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "180",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "ready_to_reload_2"
+            ]
+        },
+        {
+            "name": "keyframe_8",
+            "poses": [],
+            "parents": []
+        },
+        {
+            "name": "keyframe_9",
+            "poses": [],
+            "parents": []
+        },
+        {
+            "name": "keyframe_10",
+            "poses": [],
+            "parents": []
+        },
+        {
+            "name": "look_at_0",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "0",
+                        "-2"
+                    ],
+                    "rotation": [
+                        "0",
+                        "-80",
+                        "-30"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "look_at_1",
+            "poses": [
+                {
+                    "applyTo": "body",
+                    "position": [
+                        "0",
+                        "5",
+                        "-2"
+                    ],
+                    "rotation": [
+                        "140",
+                        "-70",
+                        "20"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": []
+        },
+        {
+            "name": "look_at_open_bolt",
+            "poses": [
+                {
+                    "applyTo": "slide",
+                    "position": [
+                        "-5",
+                        "0",
+                        "0"
+                    ],
+                    "rotation": [
+                        "0",
+                        "0",
+                        "0"
+                    ],
+                    "scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ]
+                }
+            ],
+            "parents": [
+                "look_at_1"
+            ]
+        }
+    ],
+    "sequences": [
+        {
+            "name": "shoot",
+            "ticks": 30,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "instant",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 1,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "shot_fired"
+                },
+                {
+                    "tick": 18,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "fired"
+                },
+                {
+                    "tick": 20,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "idle"
+                }
+            ]
+        },
+        {
+            "name": "reload_start",
+            "ticks": 10,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 5,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload"
+                },
+                {
+                    "tick": 9,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload_2"
+                },
+                {
+                    "tick": 10,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload_2"
+                }
+            ]
+        },
+        {
+            "name": "reload_load_one",
+            "ticks": 70,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload_2"
+                },
+                {
+                    "tick": 10,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_start"
+                },
+                {
+                    "tick": 15,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_ready"
+                },
+                {
+                    "tick": 25,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_insert"
+                },
+                {
+                    "tick": 38,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_insert_2"
+                },
+                {
+                    "tick": 45,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_insert"
+                },
+                {
+                    "tick": 55,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_ready"
+                },
+                {
+                    "tick": 65,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ram_start"
+                },
+                {
+                    "tick": 70,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload_2"
+                }
+            ]
+        },
+        {
+            "name": "reload_end",
+            "ticks": 10,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload_2"
+                },
+                {
+                    "tick": 5,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ready_to_reload"
+                },
+                {
+                    "tick": 10,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "idle"
+                }
+            ]
+        },
+        {
+            "name": "reload_eject",
+            "ticks": 31,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ammo_load_start"
+                },
+                {
+                    "tick": 10,
+                    "entry": "smooth",
+                    "exit": "smooth",
+                    "frame": "ammo_load_charge"
+                },
+                {
+                    "tick": 20,
+                    "entry": "smooth",
+                    "exit": "smooth",
+                    "frame": "ammo_load_charge"
+                },
+                {
+                    "tick": 24,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "ammo_load_insert"
+                },
+                {
+                    "tick": 27,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "ammo_load_insert"
+                },
+                {
+                    "tick": 32,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "ammo_load_end"
+                },
+                {
+                    "tick": 33,
+                    "entry": "instant",
+                    "exit": "instant",
+                    "frame": "ready_to_reload_2"
+                }
+            ]
+        },
+        {
+            "name": "look_at",
+            "ticks": 40,
+            "frames": [
+                {
+                    "tick": 0,
+                    "entry": "linear",
+                    "exit": "smooth",
+                    "frame": "idle"
+                },
+                {
+                    "tick": 10,
+                    "entry": "smooth",
+                    "exit": "smooth",
+                    "frame": "look_at_0"
+                },
+                {
+                    "tick": 20,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "look_at_1"
+                },
+                {
+                    "tick": 25,
+                    "entry": "linear",
+                    "exit": "linear",
+                    "frame": "look_at_open_bolt"
+                },
+                {
+                    "tick": 30,
+                    "entry": "linear",
+                    "exit": "smooth",
+                    "frame": "look_at_1"
+                },
+                {
+                    "tick": 40,
+                    "entry": "smooth",
+                    "exit": "linear",
+                    "frame": "idle"
+                }
+            ]
+        }
+    ]
+}

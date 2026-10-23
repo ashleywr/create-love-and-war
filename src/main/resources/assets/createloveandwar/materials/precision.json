@@ -1,0 +1,12 @@
+{
+    "sources": [
+        {
+            "matchItems": ["createloveandwar:precision_circuit"],
+            "matchTags": [],
+            "count": 1,
+            "icon": "ingot"
+        }
+    ],
+    "craftingTier": 2,
+    "materialType": "Electronic"
+}

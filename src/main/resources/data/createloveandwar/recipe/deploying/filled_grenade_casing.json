@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "createloveandwar:grenade_casing"
+    },
+    {
+      "tag": "createloveandwar:propellant"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:filled_grenade_casing"
+    }
+  ]
+}

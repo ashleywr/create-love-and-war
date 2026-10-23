@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "createloveandwar:slime_resin"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:slime_resin_sheet"
+    }
+  ]
+}

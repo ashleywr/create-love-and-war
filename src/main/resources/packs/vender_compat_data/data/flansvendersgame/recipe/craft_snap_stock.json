@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "createloveandwar:stock_iron"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "   ",
+    "PS ",
+    "   "
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_snap_stock"
+  },
+  "show_notification": true
+}

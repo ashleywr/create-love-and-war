@@ -1,0 +1,33 @@
+{
+  "sources": [
+    {
+      "matchItems": [],
+      "matchTags": [
+        "c:nuggets/iron",
+        "c:nuggets/iron"
+      ],
+      "count": 1,
+      "icon": "nugget"
+    },
+    {
+      "matchItems": [],
+      "matchTags": [
+        "c:ingots/iron",
+        "c:ingots/iron"
+      ],
+      "count": 9,
+      "icon": "ingot"
+    },
+    {
+      "matchItems": [],
+      "matchTags": [
+        "c:storage_blocks/iron",
+        "c:storage_blocks/iron"
+      ],
+      "count": 81,
+      "icon": "block"
+    }
+  ],
+  "craftingTier": 1,
+  "materialType": "Metal"
+}

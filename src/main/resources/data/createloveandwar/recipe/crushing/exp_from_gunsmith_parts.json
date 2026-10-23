@@ -1,0 +1,15 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "createloveandwar:forgotten_gunsmith_parts"
+    }
+  ],
+  "processing_time": 350,
+  "results": [
+    {
+      "id": "create:experience_nugget",
+      "count": 8
+    }
+  ]
+}

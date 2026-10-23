@@ -1,0 +1,32 @@
+{
+  "key": "polymer",
+  "category": "misc",
+  "primary": 3,
+  "secondary": 1,
+  "tertiary": 7,
+  "durability": 600,
+  "integrityCost": 1,
+  "integrityGain": 4,
+  "magicCapacity": 80,
+  "toolLevel": "minecraft:iron",
+  "toolEfficiency": 6.5,
+  "tints": {
+    "glyph": "d6bfd4",
+    "texture": "d6bfd4"
+  },
+  "textures": [
+    "metal",
+    "default"
+  ],
+  "material": {
+    "items": [
+      "createloveandwar:polymer_ingot"
+    ]
+  },
+  "improvements": {
+    "workable": 2
+  },
+  "requiredTools": {
+    "hammer_dig": "minecraft:iron"
+  }
+}

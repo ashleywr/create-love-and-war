@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "createloveandwar:barrel_iron"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    }
+  },
+  "pattern": [
+    "  P",
+    " PI",
+    "  P"
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_pocket_silencer"
+  },
+  "show_notification": true
+}

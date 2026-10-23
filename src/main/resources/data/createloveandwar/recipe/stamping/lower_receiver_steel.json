@@ -1,0 +1,13 @@
+{
+  "type": "createloveandwar:stamping",
+  "input": {
+    "tag": "c:plates/steel"
+  },
+  "template": {
+    "id": "createloveandwar:template_lower_receiver"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:lower_receiver_steel"
+  }
+}

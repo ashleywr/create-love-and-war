@@ -1,0 +1,23 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": false,
+  "key": {
+    "B": {
+      "item": "createloveandwar:launcher_barrel"
+    },
+    "U": {
+      "item": "createloveandwar:bolt_action_sturdy"
+    },
+    "G": {
+      "item": "createloveandwar:grip_wood"
+    }
+  },
+  "pattern": [
+    "BBBU",
+    " G  "
+  ],
+  "result": {
+    "id": "createloveandwar:pvg43"
+  },
+  "show_notification": true
+}

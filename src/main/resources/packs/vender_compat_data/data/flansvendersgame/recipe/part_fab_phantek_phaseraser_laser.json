@@ -1,0 +1,28 @@
+{
+  "type": "flansmod:part_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:phantex",
+      "count": 72
+    },
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:quartz",
+      "count": 5
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "minecraft:diamond"
+      ],
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:phantek_phaseraser_laser"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

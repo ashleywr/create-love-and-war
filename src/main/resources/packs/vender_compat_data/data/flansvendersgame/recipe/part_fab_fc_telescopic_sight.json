@@ -1,0 +1,30 @@
+{
+  "type": "flansmod:part_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:steel",
+      "count": 45
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "flansbasicparts:redstone_circuitry"
+      ],
+      "count": 3
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "minecraft:glass_pane"
+      ],
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:fc_telescopic_sight"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

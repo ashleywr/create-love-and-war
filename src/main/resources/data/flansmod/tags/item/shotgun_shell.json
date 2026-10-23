@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:buckshot_shell",
+    "createloveandwar:explosive_shell",
+    "createloveandwar:flechette_shell",
+    "createloveandwar:slug_shell"
+  ]
+}

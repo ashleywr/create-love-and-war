@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "createloveandwar:gyrojet_case"
+    },
+    {
+      "item": "createloveandwar:propellant"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:gyrojet_basic"
+    }
+  ]
+}

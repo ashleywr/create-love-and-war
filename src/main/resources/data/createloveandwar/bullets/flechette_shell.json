@@ -1,0 +1,90 @@
+{
+  "itemSettings": {
+    "maxStackSize": 32,
+    "tags": [
+      "flansmod:bullet",
+      "flansmod:shotgun_shell"
+    ]
+  },
+  "roundsPerItem": 1,
+  "hitscans": [
+    {
+      "shotCount": 3,
+      "splashRadius": 0.0,
+      "impacts": [
+        {
+          "targetType": "ShotEntity",
+          "impactEffects": [
+            {
+              "effectType": "ApplyDamage",
+              "modifiers": [
+                {
+                  "stat": "impact_damage",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "StackablePercentage",
+                      "value": -67.5,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": ""
+                },
+                {
+                  "stat": "spread",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "StackablePercentage",
+                      "value": -50.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "targetType": "ShotBlock",
+          "impactEffects": [
+            {
+              "effectType": "ApplyDecal",
+              "modifiers": [
+                {
+                  "stat": "decal_texture",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "StackablePercentage",
+                      "value": 50.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": "flansmod:effects/bullet_decal"
+                },
+                {
+                  "stat": "decal_duration",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "BaseAdd",
+                      "value": 30.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "penetrationPower": 0.0
+    }
+  ],
+  "projectiles": [],
+  "triggers": [],
+  "actionGroups": []
+}

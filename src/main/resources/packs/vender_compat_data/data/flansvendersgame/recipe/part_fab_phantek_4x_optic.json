@@ -1,0 +1,30 @@
+{
+  "type": "flansmod:part_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:phantex",
+      "count": 108
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "flansbasicparts:quartz_circuitry"
+      ],
+      "count": 2
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "minecraft:glass_pane"
+      ],
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:phantek_4x_optic"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

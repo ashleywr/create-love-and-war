@@ -1,0 +1,12 @@
+{
+    "sources": [
+        {
+            "matchItems": ["createloveandwar:quantum_circuit"],
+            "matchTags": [],
+            "count": 1,
+            "icon": "ingot"
+        }
+    ],
+    "craftingTier": 3,
+    "materialType": "Electronic"
+}

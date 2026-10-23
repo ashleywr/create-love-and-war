@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "createloveandwar:filled_artillery_casing"
+    },
+    {
+      "item": "createloveandwar:tungsten"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:artillery_shell_ap"
+    }
+  ]
+}

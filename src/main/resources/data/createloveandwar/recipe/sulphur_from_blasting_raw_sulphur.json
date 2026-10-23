@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.25,
+  "group": "sulphur",
+  "ingredient": {
+    "item": "createloveandwar:raw_sulphur"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:sulphur"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "airhorn": {
+    "subtitles": "sounds.createloveandwar.airhorn",
+    "sounds" : [
+      "createloveandwar:airhorn",
+      "createloveandwar:airhorn2",
+      "createloveandwar:airhorn3"
+    ]
+  },
+
+  "mushroom": {
+    "subtitles": "sounds.createloveandwar.mushroom",
+    "sounds" : [
+      "createloveandwar:mushroom"
+    ]
+  },
+
+  "lamentor_step": {
+    "subtitles": "sounds.createloveandwar.lamentor_step",
+    "sounds" : [
+      "createloveandwar:lamentorstep"
+    ]
+  },
+
+  "lamentor_howl": {
+    "subtitles": "sounds.createloveandwar.lamentor_howl",
+    "sounds" : [
+      "createloveandwar:lamentorhowl"
+    ]
+  },
+
+  "lamentor_scream": {
+    "subtitles": "sounds.createloveandwar.lamentor_scream",
+    "sounds" : [
+      "createloveandwar:lamentorscream"
+    ]
+  },
+
+  "lamentor_hurt": {
+    "subtitles": "sounds.createloveandwar.lamentor_hurt",
+    "sounds" : [
+      "createloveandwar:lamentorhurt"
+    ]
+  },
+
+  "lamentor_activate": {
+    "subtitles": "sounds.createloveandwar.lamentor_activate",
+    "sounds" : [
+      "createloveandwar:lamentoractivate"
+    ]
+  },
+
+  "gunshot_cycle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_cycle",
+        "type": "file"
+      }
+    ]
+  },
+
+  "bullet_drop_large": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/bullet_drop_large",
+        "type": "file"
+      }
+    ]
+  },
+
+  "rocket_launch": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/rocket_launch",
+        "type": "file"
+      }
+    ]
+  },
+
+  "cycle_bolt": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/cycle_bolt",
+        "type": "file"
+      }
+    ]
+  },
+
+  "gunshot_revolver": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_revolver",
+        "type": "file"
+      }
+    ]
+  },
+
+  "gunshot_huge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_huge",
+        "type": "file"
+      }
+    ]
+  },
+
+  "gunshot_huge_cycle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_huge_cycle",
+        "type": "file"
+      }
+    ]
+  },
+
+  "gunshot_huge_cycle_2": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "createloveandwar:guns/gunshot_huge_cycle_2",
+        "type": "file"
+      }
+    ]
+  },
+
+  "gunshot": {
+    "subtitles": "sounds.createloveandwar.gunshot",
+    "sounds" : [
+      "createloveandwar:gunshot"
+    ]
+  },
+
+  "robotdog_ambient": {
+    "subtitles": "sounds.createloveandwar.robotdog_ambient",
+    "sounds" : [
+      "createloveandwar:robotdog_ambient"
+    ]
+  },
+
+  "servo": {
+    "subtitles": "sounds.createloveandwar.servo",
+    "sounds" : [
+      "createloveandwar:servo"
+    ]
+  },
+
+
+  "klaxon": {
+    "subtitles": "sounds.createloveandwar.klaxon",
+    "sounds" : [
+      "createloveandwar:klaxon"
+    ]
+  }
+}

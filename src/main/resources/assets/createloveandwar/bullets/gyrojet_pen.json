@@ -1,0 +1,131 @@
+{
+    "itemSettings": {
+        "maxStackSize": 32,
+        "tags": [
+            "flansmod:bullet",
+            "createloveandwar:gyrojet"
+        ]
+    },
+    "roundsPerItem": 1,
+    "hitscans": [],
+    "projectiles": [
+        {
+        "shotCount": 1,
+        "splashRadius": 0.0,
+        "impacts": [
+            {
+                "targetType": "ShotEntity",
+                "impactEffects": [
+                    {
+                        "effectType": "ApplyDamage",
+                        "modifiers": [
+                            {
+                                "stat": "impact_damage",
+                                "matchGroupPaths": [],
+                                "accumulators": [
+                                    {
+                                        "operation": "StackablePercentage",
+                                        "value": 10.0,
+                                        "multiplyPer": []
+                                    }
+                                ],
+                                "setValue": ""
+                            },
+                            {
+                                "stat": "knockback",
+                                "matchGroupPaths": [],
+                                "accumulators": [
+                                    {
+                                        "operation": "BaseAdd",
+                                        "value": 8.0,
+                                        "multiplyPer": []
+                                    }
+                                ],
+                                "setValue": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "targetType": "ShotBlock",
+                "impactEffects": [
+                    {
+                        "effectType": "ApplyDecal",
+                        "modifiers": [
+                            {
+                                "stat": "decal_texture",
+                                "matchGroupPaths": [],
+                                "accumulators": [
+                                    {
+                                        "operation": "StackablePercentage",
+                                        "value": 20.0,
+                                        "multiplyPer": []
+                                    }
+                                ],
+                                "setValue": "createloveandwar:effects/big_hit"
+                            },
+                            {
+                                "stat": "decal_duration",
+                                "matchGroupPaths": [],
+                                "accumulators": [
+                                    {
+                                        "operation": "BaseAdd",
+                                        "value": 30.0,
+                                        "multiplyPer": []
+                                    }
+                                ],
+                                "setValue": ""
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "penetrationPower": 6.0,
+            "launchSpeed": 1,
+            "acceleration" : 20,
+            "maxSpeed": 80.0,
+        "particleTrails": [
+            {
+                "particle": "minecraft:flame",
+                "speed": 0,
+                "fromTick": 3,
+                "toTick": 4,
+                "spawnPoints": [
+                    "body"
+                ]
+            },
+            {
+                "particle": "minecraft:poof",
+                "speed": 0,
+                "fromTick": 3,
+                "toTick": 4,
+                "spawnPoints": [
+                    "body"
+                ]
+            },
+            {
+                "particle": "minecraft:smoke",
+                "speed": 0,
+                "fromTick": 4,
+                "spawnPoints": [
+                    "body"
+                ]
+            }
+        ],
+        "sticky": false,
+        "fuseTime": 400.0,
+        "turnRate": 0.1,
+        "dragInAir": 0.0,
+        "airParticles": "",
+        "dragInWater": 0.0,
+        "waterParticles": "",
+        "timeBetweenTrailParticles": 0.0,
+        "responseToBlock": "Bounce",
+        "responseToEntity": "Detonate",
+        "responseToVehicle": "PassThrough"
+    }],
+    "triggers": [],
+    "actionGroups": []
+}

@@ -1,0 +1,10 @@
+{
+  "type": "createloveandwar:drawing",
+  "input": {
+    "item": "createloveandwar:copper_cup"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:gyrojet_case"
+  }
+}

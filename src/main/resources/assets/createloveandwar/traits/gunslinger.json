@@ -1,0 +1,62 @@
+{
+    "maxLevel": 5,
+    "abilities": [
+        {
+            "startTriggers": [
+                {
+                    "triggerType": "AlwaysOn",
+                    "triggerConditions": []
+                }
+            ],
+            "endTriggers": [],
+            "targets": [
+                {
+                    "targetType": "Shooter",
+                    "matchIDs": [],
+                    "matchTags": []
+                }
+            ],
+            "effects": [
+                {
+                    "effectType": "ApplyModifier",
+                    "modifiers": [
+                        {
+                            "stat": "repeatDelay",
+                            "matchGroupPaths": [],
+                            "accumulators": [
+                                {
+                                    "operation": "StackablePercentage",
+                                    "value": -10.0,
+                                    "multiplyPer": [
+                                        "PerLevel"
+                                    ]
+                                }
+                            ],
+                            "setValue": ""
+                        },
+                        {
+                            "stat": "vertical_recoil",
+                            "matchGroupPaths": [],
+                            "accumulators": [
+                                {
+                                    "operation": "StackablePercentage",
+                                    "value": -10.0,
+                                    "multiplyPer": [
+                                        "PerLevel"
+                                    ]
+                                }
+                            ],
+                            "setValue": ""
+                        }
+                    ]
+                }
+            ],
+            "stacking": {
+                "stackingKey": "",
+                "maxStacks": 1,
+                "decayAllAtOnce": false,
+                "decayTime": 0.0
+            }
+        }
+    ]
+}

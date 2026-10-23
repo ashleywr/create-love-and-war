@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "createloveandwar:barrel_iron"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "   ",
+    "IIN",
+    "   "
+  ],
+  "result": {
+    "id": "createloveandwar:attachment_extended_barrel"
+  },
+  "show_notification": true
+}

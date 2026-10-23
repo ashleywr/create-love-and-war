@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:andesite_casing"
+    },
+    "T": {
+      "item": "createloveandwar:tungsten"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    " S ",
+    " C ",
+    " T "
+  ],
+  "result": {
+    "id": "createloveandwar:drawing_press"
+  },
+  "show_notification": true
+}

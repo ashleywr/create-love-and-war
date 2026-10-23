@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "createloveandwar:glass_lens"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "G": {
+      "item": "minecraft:green_dye"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "R": {
+      "item": "createloveandwar:redstone_circuit"
+    }
+  },
+  "pattern": [
+    "III",
+    "OGR",
+    "ITI"
+  ],
+  "result": {
+    "id": "flansvendersgame:phantek_phaseraser_laser"
+  },
+  "show_notification": true
+}

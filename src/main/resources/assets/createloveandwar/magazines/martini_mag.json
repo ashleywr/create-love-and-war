@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:martinihenry"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 1,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "spawnBulletCasing": "createloveandwar:rifle_casing"
+}

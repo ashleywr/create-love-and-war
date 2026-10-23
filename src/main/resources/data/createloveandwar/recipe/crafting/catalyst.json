@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "create:crushed_raw_gold"
+    },
+    "Z": {
+      "item": "create:crushed_raw_zinc"
+    }
+  },
+  "pattern": [
+    "GZG",
+    "ZGZ",
+    "GZG"
+  ],
+  "result": {
+    "id": "createloveandwar:catalyst"
+  },
+  "show_notification": true
+}

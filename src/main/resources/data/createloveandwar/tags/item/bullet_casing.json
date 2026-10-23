@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:rifle_casing",
+    "createloveandwar:pistol_casing",
+    "createloveandwar:shotgun_casing",
+    "createloveandwar:heavy_rifle_casing",
+    "createloveandwar:grenade_casing",
+    "createloveandwar:artillery_casing"
+  ]
+}

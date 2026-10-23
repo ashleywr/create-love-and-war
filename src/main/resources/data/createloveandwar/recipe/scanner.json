@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "item": "createloveandwar:tungsten"
+    }
+  },
+  "pattern": [
+    " T ",
+    "GRG",
+    " T "
+  ],
+  "result": {
+    "id": "createloveandwar:scanner"
+  },
+  "show_notification": true
+}

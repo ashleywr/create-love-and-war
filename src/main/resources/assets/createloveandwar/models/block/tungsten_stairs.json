@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/stairs",
+  "textures": {
+    "bottom": "createloveandwar:block/tungsten_block",
+    "side": "createloveandwar:block/tungsten_block",
+    "top": "createloveandwar:block/tungsten_block"
+  }
+}

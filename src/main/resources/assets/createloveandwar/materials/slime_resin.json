@@ -1,0 +1,22 @@
+{
+    "sources": [
+        {
+            "matchItems": [
+                "createloveandwar:slime_resin"
+            ],
+            "matchTags": [],
+            "count": 1,
+            "icon": "planks"
+        },
+        {
+            "matchItems": [
+                "createloveandwar:slime_resin_block"
+            ],
+            "matchTags": [],
+            "count": 4,
+            "icon": "block"
+        }
+    ],
+    "craftingTier": 1,
+    "materialType": "Composite"
+}

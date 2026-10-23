@@ -1,0 +1,78 @@
+{
+ "itemSettings": {
+  "maxStackSize": 16,
+  "tags": [
+   "flansmod:bullet",
+   "flansmod:artillery_shell"
+  ]
+ },
+ "roundsPerItem": 1,
+ "hitscans": [],
+ "projectiles": [
+  {
+   "shotCount": 1,
+   "splashRadius": 0.0,
+   "penetrationPower": 25.0,
+   "impacts": [
+    {
+     "targetType": "ShotPosition",
+     "impactEffects": [
+      {
+       "effectType": "Explode",
+       "modifiers": [
+        {
+         "stat": "explosion_radius",
+         "matchGroupPaths": [],
+         "accumulators": [
+          {
+           "operation": "BaseAdd",
+           "value": 5.0,
+           "multiplyPer": []
+          }
+         ],
+         "setValue": ""
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "guidanceType": "none",
+   "launchSpeed": 8,
+   "gravityFactor": 0.1,
+   "particleTrails": [
+    {
+     "particle": "minecraft:poof",
+     "speed": 1,
+     "fromTick": 0,
+     "toTick": 4,
+     "spawnPoints": [
+      "body"
+     ]
+    },
+    {
+     "particle": "minecraft:smoke",
+     "speed": 0.3,
+     "fromTick": 8,
+     "spawnPoints": [
+      "body",
+      "body"
+     ]
+    }
+   ],
+   "responseToBlock": "Detonate",
+   "responseToEntity": "Detonate",
+   "responseToVehicle": "Detonate",
+   "sticky": false,
+   "fuseTime": 0.0,
+   "turnRate": 0.0,
+   "dragInAir": 0.0,
+   "airParticles": "",
+   "dragInWater": 0.0,
+   "waterParticles": "",
+   "timeBetweenTrailParticles": 0.0
+  }
+ ],
+ "triggers": [],
+ "actionGroups": []
+}

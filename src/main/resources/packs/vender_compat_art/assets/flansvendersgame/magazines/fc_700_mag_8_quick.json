@@ -1,0 +1,32 @@
+{
+    "tags": [
+        "flansvendersgame:fc_700"
+    ],
+    "modifiers": [
+        {
+            "stat": "duration",
+            "matchGroupPaths": [
+                "reload_primary"
+            ],
+            "accumulators": [],
+            "setValue": ""
+        }
+    ],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 8,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    }
+}

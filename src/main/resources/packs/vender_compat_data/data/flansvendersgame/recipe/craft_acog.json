@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "createloveandwar:optical_scope"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " R ",
+    " O ",
+    "III"
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_acog"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,109 @@
+{
+    "itemSettings": {
+        "maxStackSize": 64,
+        "tags": [
+            "flansmod:attach_to_any",
+            "flansmod:sights_attach"
+        ]
+    },
+    "attachmentType": "Sights",
+    "modifiers": [
+        {
+            "stat": "spread",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 40.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "vertical_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 80.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "horizontal_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 80.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        }
+    ],
+    "mechaEffects": [],
+    "mechaEffectFilter": "",
+    "handlerOverrides": [
+        {
+            "inputType": "Fire2",
+            "nodes": [
+                {
+                    "actionGroupToTrigger": "ads",
+                    "modalCheck": "",
+                    "canTriggerWhileReloading": false,
+                    "deferToAttachment": false,
+                    "attachmentType": "Barrel",
+                    "attachmentIndex": 0,
+                    "andContinueEvaluating": false
+                }
+            ]
+        }
+    ],
+    "actionOverrides": [
+        {
+            "key": "ads",
+            "canActUnderwater": true,
+            "canActUnderOtherLiquid": true,
+            "canBeOverriden": false,
+            "twoHanded": false,
+            "repeatMode": "Toggle",
+            "repeatDelay": 0.05,
+            "repeatCount": 0,
+            "spinUpDuration": 0.0,
+            "loudness": 0.0,
+            "autoCancelIfNotInMode": "",
+            "actions": [
+                {
+                    "actionType": "Scope",
+                    "duration": 0.0,
+                    "sounds": [],
+                    "itemStack": "",
+                    "scopeOverlay": "createloveandwar:suit_scope",
+                    "anim": ""
+                }
+            ],
+            "modifiers": [
+                {
+                    "stat": "fov_factor",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 4.0,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                }
+            ]
+        }
+    ],
+    "reloadOverrides": [],
+    "abilities": [],
+    "modeOverride": "FullAuto",
+    "overrideFireMode": false
+}

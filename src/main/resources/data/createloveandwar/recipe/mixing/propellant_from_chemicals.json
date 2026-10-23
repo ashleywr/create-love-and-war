@@ -1,0 +1,22 @@
+{
+  "type": "create:mixing",
+  "ingredients": [
+    {
+      "type": "neoforge:tag",
+      "amount": 25,
+      "tag": "c:ethylene"
+    },
+    {
+      "item": "createloveandwar:fuel_pellet"
+    },
+    {
+      "item": "minecraft:sugar"
+    }
+  ],
+  "results": [
+    {
+      "count": 8,
+      "id": "createloveandwar:propellant"
+    }
+  ]
+}

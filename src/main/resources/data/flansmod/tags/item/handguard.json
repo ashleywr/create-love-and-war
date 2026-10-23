@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:handguard_brass",
+    "createloveandwar:handguard_duraplas",
+    "createloveandwar:handguard_iron",
+    "createloveandwar:handguard_netherite",
+    "createloveandwar:handguard_polymer",
+    "createloveandwar:handguard_resin",
+    "createloveandwar:handguard_sturdy",
+    "createloveandwar:handguard_tungsten",
+    "createloveandwar:handguard_wood",
+    "createloveandwar:handguard_steel"
+  ]
+}

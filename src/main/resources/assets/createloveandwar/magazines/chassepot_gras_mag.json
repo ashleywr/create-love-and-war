@@ -1,0 +1,25 @@
+{
+    "tags": [
+        "createloveandwar:chassepot_c"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 1,
+    "numRounds": 1,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "spawnBulletCasing": "createloveandwar:rifle_casing",
+    "casingModelOverride": "flansmod:effects/casing_rifle"
+}

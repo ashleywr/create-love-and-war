@@ -1,0 +1,7 @@
+{
+  "replace": true,
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_end",
+  "features": "createloveandwar:oil_well_placed",
+  "step": "underground_ores"
+}

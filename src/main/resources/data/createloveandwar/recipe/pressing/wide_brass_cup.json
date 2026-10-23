@@ -1,0 +1,14 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "createloveandwar:brass_cup",
+      "count": 2
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:wide_brass_cup"
+    }
+  ]
+}

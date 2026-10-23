@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:stock_brass",
+    "createloveandwar:stock_duraplas",
+    "createloveandwar:stock_iron",
+    "createloveandwar:stock_netherite",
+    "createloveandwar:stock_polymer",
+    "createloveandwar:stock_resin",
+    "createloveandwar:stock_sturdy",
+    "createloveandwar:stock_tungsten",
+    "createloveandwar:stock_wood",
+    "createloveandwar:stock_steel"
+  ]
+}

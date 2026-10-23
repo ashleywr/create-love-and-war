@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "createloveandwar"
+version = "1.0.9-1.21.1"
+displayName = "Create: Love and War"
+authors = "Proto, Alcoholism"
+description = '''A huge collection of crafting recipes with some guns attached somewhere'''
+
+[[dependencies.createloveandwar]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.createloveandwar]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.createloveandwar]]
+modId = "create"
+type = "required"
+versionRange = "[6.0.10,)"
+ordering = "AFTER"
+side = "BOTH"
+
+# The 1.20.1 build depended on `flansmod` for all gun content. Flan's Mod: Reloaded
+# has no 1.21.1 release, so that system is reimplemented in-mod (see gun/ package)
+# and the dependency is intentionally gone.

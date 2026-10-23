@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "createloveandwar:block/oil_sand_bottom",
+    "side": "createloveandwar:block/oil_sand",
+    "top": "createloveandwar:block/oil_sand_top"
+  }
+}

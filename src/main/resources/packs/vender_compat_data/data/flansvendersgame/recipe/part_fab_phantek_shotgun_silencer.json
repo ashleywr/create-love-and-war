@@ -1,0 +1,23 @@
+{
+  "type": "flansmod:part_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:phantex",
+      "count": 72
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "tags": [
+        "minecraft:wool"
+      ],
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:phantek_shotgun_silencer"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

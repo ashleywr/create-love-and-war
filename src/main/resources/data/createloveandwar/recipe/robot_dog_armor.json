@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "item": "createloveandwar:tungsten"
+    }
+  },
+  "pattern": [
+    "   ",
+    "TIT",
+    "TIT"
+  ],
+  "result": {
+    "id": "createloveandwar:robot_dog_armor"
+  },
+  "show_notification": true
+}

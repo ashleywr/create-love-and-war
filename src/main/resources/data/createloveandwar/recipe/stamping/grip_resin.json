@@ -1,0 +1,13 @@
+{
+  "type": "createloveandwar:stamping",
+  "input": {
+    "item": "createloveandwar:slime_resin_sheet"
+  },
+  "template": {
+    "id": "createloveandwar:template_grip"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:grip_resin"
+  }
+}

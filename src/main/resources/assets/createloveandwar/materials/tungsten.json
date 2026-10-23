@@ -1,0 +1,33 @@
+{
+    "sources": [
+        {
+            "matchItems": [],
+            "matchTags": [
+                "forge:nuggets/tungsten",
+                "forge:nuggets/tungsten"
+            ],
+            "count": 1,
+            "icon": "nugget"
+        },
+        {
+            "matchItems": [],
+            "matchTags": [
+                "forge:ingots/tungsten",
+                "forge:ingots/tungsten"
+            ],
+            "count": 9,
+            "icon": "ingot"
+        },
+        {
+            "matchItems": [],
+            "matchTags": [
+                "forge:storage_blocks/tungsten",
+                "forge:storage_blocks/tungsten"
+            ],
+            "count": 81,
+            "icon": "block"
+        }
+    ],
+    "craftingTier": 2,
+    "materialType": "Metal"
+}

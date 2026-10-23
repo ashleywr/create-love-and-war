@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "createloveandwar:propellant"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:propellant_sheet"
+    }
+  ]
+}

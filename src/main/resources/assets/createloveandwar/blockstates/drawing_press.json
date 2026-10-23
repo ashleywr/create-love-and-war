@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "createloveandwar:block/drawing_press/block",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "createloveandwar:block/drawing_press/block"
+    },
+    "facing=south": {
+      "model": "createloveandwar:block/drawing_press/block",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "createloveandwar:block/drawing_press/block",
+      "y": 270
+    }
+  }
+}

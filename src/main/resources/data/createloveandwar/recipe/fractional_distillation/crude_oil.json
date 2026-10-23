@@ -1,0 +1,30 @@
+{
+  "type": "createloveandwar:fractional_distillation",
+  "ingredients": [
+    {
+      "type": "neoforge:tag",
+      "amount": 100,
+      "tag": "c:crude_oil"
+    }
+  ],
+  "heat_requirement": "heated",
+  "processing_time": 100,
+  "results": [
+    {
+      "amount": 25,
+      "id": "createloveandwar:bitumen_fluid"
+    },
+    {
+      "amount": 25,
+      "id": "createloveandwar:diesel"
+    },
+    {
+      "amount": 25,
+      "id": "createloveandwar:kerosene"
+    },
+    {
+      "amount": 25,
+      "id": "createloveandwar:ethylene"
+    }
+  ]
+}

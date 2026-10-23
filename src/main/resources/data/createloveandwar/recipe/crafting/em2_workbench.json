@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "createloveandwar:em2blueprint"
+    },
+    "P": {
+      "item": "createloveandwar:polymer_ingot"
+    },
+    "W": {
+      "item": "createloveandwar:law_workbench"
+    }
+  },
+  "pattern": [
+    "BBB",
+    "PWP",
+    "P P"
+  ],
+  "result": {
+    "id": "createloveandwar:em2_workbench"
+  },
+  "show_notification": true
+}

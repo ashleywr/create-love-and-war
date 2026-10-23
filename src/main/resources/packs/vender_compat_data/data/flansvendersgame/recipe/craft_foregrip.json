@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "pattern": [
+    " P ",
+    "LIL",
+    "   "
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_steady_foregrip"
+  },
+  "show_notification": true
+}

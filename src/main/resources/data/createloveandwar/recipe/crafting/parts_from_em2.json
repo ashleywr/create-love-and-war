@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "createloveandwar:em2blueprint"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:forgotten_gunsmith_parts"
+  },
+  "show_notification": true
+}

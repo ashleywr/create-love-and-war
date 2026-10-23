@@ -1,0 +1,68 @@
+{
+  "type": "createloveandwar:gun_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:barrel",
+      "min": 4,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Composite"
+      ],
+      "tag": "flansmod:handguard",
+      "min": 2,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:upper_receiver",
+      "min": 3,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:lower_receiver",
+      "min": 3,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Composite"
+      ],
+      "tag": "flansmod:grip",
+      "min": 2,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Composite"
+      ],
+      "tag": "flansmod:stock",
+      "min": 2,
+      "max": 99
+    }
+  ],
+  "result": {
+    "id": "createloveandwar:stg57"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

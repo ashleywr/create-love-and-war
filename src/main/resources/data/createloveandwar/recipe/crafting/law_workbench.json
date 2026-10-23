@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:andesite_casing"
+    },
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "pattern": [
+    "ALA",
+    "LCL",
+    "L L"
+  ],
+  "result": {
+    "id": "createloveandwar:law_workbench"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,29 @@
+{
+  "key": "tungsten",
+  "category": "metal",
+  "primary": 6,
+  "secondary": 4.2,
+  "tertiary": 2,
+  "durability": 600,
+  "integrityCost": 2,
+  "integrityGain": 6,
+  "magicCapacity": 87,
+  "toolLevel": "minecraft:iron",
+  "toolEfficiency": 6.5,
+  "tints": {
+    "glyph": "acbac8",
+    "texture": "acbac8"
+  },
+  "textures": [
+    "metal",
+    "default"
+  ],
+  "material": {
+    "items": [
+      "createloveandwar:tungsten"
+    ]
+  },
+  "requiredTools": {
+    "hammer_dig": "minecraft:iron"
+  }
+}

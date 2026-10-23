@@ -1,0 +1,21 @@
+Sound assets in assets/flansmod/ are taken from Flan's Mod: Reloaded
+(flansmod-1.20.1-0.4.316.jar), MIT licensed, https://github.com/FlansMods/FlansModReloaded
+Included because Create: Love & War's gun data references flansmod:-namespaced sound events
+and the 1.21.1 port no longer depends on Flan's Mod, which previously supplied them.
+
+flanimations/rifle_magazine_fed_linear.json and flanimations/g11.json are likewise from
+Flan's Mod: Reloaded. Five guns (aai_acr, g11k2, mas62, sa81, stg57) declare
+flansmod:-namespaced animationSets; without these files they render unanimated.
+Flansmod's rifle_magazine_fed_linear differs from this mod's own same-named file, so the
+originals are shipped rather than remapping the ids, to preserve 1.20.1 behaviour.
+
+Muzzle flash effect models and skins
+------------------------------------
+assets/flansmod/models/item/effects/muzzle_flash_{small,medium,large}.json
+assets/flansmod/textures/skins/muzzle_flash_{small,medium}.png
+
+Vendored unmodified from Flan's Mod: Reloaded 0.4.316 (1.20.1) for the same reason as the
+sounds: L&W's gun data drives its muzzle flash through Flan's AttachEffect action, whose
+defaults are flash_model=flansmod:effects/muzzle_flash_small and
+flash_texture=flansmod:textures/skins/muzzle_flash_small.png. There is no Flan's on 1.21.1
+to supply them, and without them every gun fires with no visible muzzle flash at all.

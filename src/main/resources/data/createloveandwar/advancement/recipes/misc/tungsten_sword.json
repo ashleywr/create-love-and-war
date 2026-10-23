@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "createloveandwar:tungsten_sword"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_tungsten": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "createloveandwar:tungsten"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_tungsten",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "createloveandwar:tungsten_sword"
+    ]
+  },
+  "sends_telemetry_event": false
+}

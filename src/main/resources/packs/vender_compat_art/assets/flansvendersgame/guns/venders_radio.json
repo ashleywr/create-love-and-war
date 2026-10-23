@@ -1,0 +1,99 @@
+{
+    "itemSettings": {
+        "maxStackSize": 1,
+        "tags": [
+            "flansmod:gun"
+        ]
+    },
+    "paints": {
+        "paintjobs": []
+    },
+    "inputHandlers": [
+        {
+            "inputType": "Fire2",
+            "nodes": [
+                {
+                    "actionGroupToTrigger": "primary_fire",
+                    "modalCheck": "",
+                    "canTriggerWhileReloading": false,
+                    "deferToAttachment": false,
+                    "attachmentType": "Generic",
+                    "attachmentIndex": 0,
+                    "andContinueEvaluating": false
+                }
+            ]
+        }
+    ],
+    "actionGroups": [
+        {
+            "key": "primary_fire",
+            "canActUnderwater": false,
+            "canActUnderOtherLiquid": false,
+            "canBeOverriden": true,
+            "twoHanded": false,
+            "repeatMode": "SemiAuto",
+            "repeatDelay": 0.05,
+            "repeatCount": 0,
+            "spinUpDuration": 1.5,
+            "loudness": 150.0,
+            "autoCancelIfNotInMode": "",
+            "actions": [
+                {
+                    "actionType": "SummonNpc",
+                    "duration": 2.0,
+                    "sounds": [],
+                    "itemStack": "",
+                    "scopeOverlay": "",
+                    "anim": ""
+                },
+                {
+                    "actionType": "Animation",
+                    "duration": 2.0,
+                    "sounds": [],
+                    "itemStack": "",
+                    "scopeOverlay": "",
+                    "anim": "speaking"
+                }
+            ],
+            "modifiers": []
+        }
+    ],
+    "magazines": [],
+    "staticAbilities": [],
+    "reloads": [],
+    "modes": [],
+    "loopingSounds": [],
+    "barrelAttachments": {
+        "matchNames": [],
+        "matchTags": [],
+        "numAttachmentSlots": 0,
+        "hideDefaultMesh": true
+    },
+    "gripAttachments": {
+        "matchNames": [],
+        "matchTags": [],
+        "numAttachmentSlots": 0,
+        "hideDefaultMesh": true
+    },
+    "stockAttachments": {
+        "matchNames": [],
+        "matchTags": [],
+        "numAttachmentSlots": 0,
+        "hideDefaultMesh": true
+    },
+    "scopeAttachments": {
+        "matchNames": [],
+        "matchTags": [],
+        "numAttachmentSlots": 1,
+        "hideDefaultMesh": true
+    },
+    "genericAttachments": {
+        "matchNames": [],
+        "matchTags": [],
+        "numAttachmentSlots": 0,
+        "hideDefaultMesh": true
+    },
+    "modelParts": [],
+    "animationSet": "flansmod:radio",
+    "particleCount": 1
+}

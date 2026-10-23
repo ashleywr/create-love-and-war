@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "accept_mirrored": false,
+  "key": {
+    "F": {
+      "item": "minecraft:flint_and_steel"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "S": {
+      "item": "createloveandwar:stock_wood"
+    },
+    "H": {
+      "item": "createloveandwar:handguard_wood"
+    }
+  },
+  "pattern": [
+    " IF",
+    " HS"
+  ],
+  "result": {
+    "id": "createloveandwar:p61_enfield"
+  },
+  "show_notification": true
+}

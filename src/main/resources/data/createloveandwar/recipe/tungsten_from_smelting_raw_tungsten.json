@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 200,
+  "experience": 0.25,
+  "group": "tungsten",
+  "ingredient": {
+    "item": "createloveandwar:raw_tungsten"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:tungsten"
+  }
+}

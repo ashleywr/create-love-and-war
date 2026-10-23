@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "createloveandwar:block/smooth_asphalt_slab"
+    },
+    "type=double": {
+      "model": "createloveandwar:block/smooth_asphalt"
+    },
+    "type=top": {
+      "model": "createloveandwar:block/smooth_asphalt_slab_top"
+    }
+  }
+}

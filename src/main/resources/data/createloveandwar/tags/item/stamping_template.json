@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:template_barrel",
+    "createloveandwar:template_bolt_action",
+    "createloveandwar:template_grip",
+    "createloveandwar:template_handguard",
+    "createloveandwar:template_lower_receiver",
+    "createloveandwar:template_revolver_action",
+    "createloveandwar:template_stock",
+    "createloveandwar:template_upper_receiver",
+    "createloveandwar:template_propellant_block"
+  ]
+}

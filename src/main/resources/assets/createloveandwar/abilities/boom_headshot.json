@@ -1,0 +1,34 @@
+{
+    "maxLevel": 5,
+    "startTrigger": "ShotEntity",
+    "endTrigger": "Instant",
+    "triggerConditions": [],
+    "targetType": "Shooter",
+    "effectType": "ApplyMobEffect",
+    "effectParameters": [
+        "flansbasicparts:boom_headshot"
+    ],
+    "modifiers": [
+        {
+            "Stat": "duration",
+            "Filter": "",
+            "Add": 0.0,
+            "Multiply": 0.25,
+            "SetValue": "",
+            "ApplyFilters": [
+                "reload_primary"
+            ]
+        }
+    ],
+    "baseIntensity": 1.0,
+    "addIntensityPerLevel": 0.0,
+    "mulIntensityPerAttachment": 0.0,
+    "mulIntensityForFullMag": 0.0,
+    "invertMagFullness": false,
+    "baseDuration": 2.0,
+    "extraDurationPerLevel": 2.0,
+    "stackAmount": false,
+    "maxAmount": 1.0,
+    "stackDuration": false,
+    "maxDuration": 1.0
+}

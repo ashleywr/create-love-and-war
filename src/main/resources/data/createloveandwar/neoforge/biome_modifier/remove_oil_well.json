@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:remove_features",
+  "biomes": "#minecraft:is_deep_ocean",
+  "features": "createloveandwar:oil_well_placed",
+  "step": "underground_ores"
+}

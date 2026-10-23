@@ -1,0 +1,32 @@
+{
+  "key": "duraplas",
+  "category": "misc",
+  "primary": 5.5,
+  "secondary": 2,
+  "tertiary": 9,
+  "durability": 600,
+  "integrityCost": 1,
+  "integrityGain": 8,
+  "magicCapacity": 75,
+  "toolLevel": "minecraft:diamond",
+  "toolEfficiency": 6.5,
+  "tints": {
+    "glyph": "897097",
+    "texture": "897097"
+  },
+  "textures": [
+    "metal",
+    "default"
+  ],
+  "material": {
+    "items": [
+      "createloveandwar:duraplas_ingot"
+    ]
+  },
+  "improvements": {
+    "workable": 1
+  },
+  "requiredTools": {
+    "hammer_dig": "minecraft:diamond"
+  }
+}

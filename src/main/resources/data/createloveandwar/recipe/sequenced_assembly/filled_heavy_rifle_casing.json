@@ -1,0 +1,53 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "createloveandwar:heavy_rifle_casing"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "createloveandwar:filled_heavy_rifle_casing"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createloveandwar:heavy_rifle_casing"
+        },
+        [
+          {
+            "tag": "createloveandwar:propellant"
+          }
+        ]
+      ],
+      "results": [
+        {
+          "id": "createloveandwar:heavy_rifle_casing"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createloveandwar:heavy_rifle_casing"
+        },
+        [
+          {
+            "tag": "createloveandwar:propellant"
+          }
+        ]
+      ],
+      "results": [
+        {
+          "id": "createloveandwar:heavy_rifle_casing"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "createloveandwar:heavy_rifle_casing"
+  }
+}

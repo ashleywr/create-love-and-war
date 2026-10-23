@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "T": {
+      "item": "createloveandwar:tungsten"
+    }
+  },
+  "pattern": [
+    " T ",
+    " S ",
+    " S "
+  ],
+  "result": {
+    "id": "createloveandwar:tungsten_shovel"
+  },
+  "show_notification": true
+}

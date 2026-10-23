@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_robot_dog_spawn_egg": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "createloveandwar:robot_dog_spawn_egg"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "createloveandwar:robot_dog_armor"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_robot_dog_spawn_egg",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "createloveandwar:robot_dog_armor"
+    ]
+  },
+  "sends_telemetry_event": false
+}

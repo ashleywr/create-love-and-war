@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:chassepot"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 1,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "createloveandwar:black_powder"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "ejectCasings": false
+}

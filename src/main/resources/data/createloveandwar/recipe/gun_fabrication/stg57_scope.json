@@ -1,0 +1,21 @@
+{
+  "type": "createloveandwar:gun_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:barrel",
+      "min": 4,
+      "max": 99
+    }
+  ],
+  "result": {
+    "id": "createloveandwar:optical_scope"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

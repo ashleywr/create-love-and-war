@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "createloveandwar:item/lower_receiver_tungsten"
+  }
+}

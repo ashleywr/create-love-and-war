@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:artillery_shell",
+    "createloveandwar:artillery_shell_ap",
+    "createloveandwar:artillery_shell_he",
+    "createloveandwar:buckshot_shell",
+    "createloveandwar:explosive_shell",
+    "createloveandwar:flechette_shell",
+    "createloveandwar:grenade_round_he",
+    "createloveandwar:pistol_bullet",
+    "createloveandwar:pistol_bullet_ap",
+    "createloveandwar:pistol_bullet_soft",
+    "createloveandwar:rifle_bullet",
+    "createloveandwar:rifle_bullet_ap",
+    "createloveandwar:rifle_bullet_soft",
+    "createloveandwar:slug_shell"
+  ]
+}

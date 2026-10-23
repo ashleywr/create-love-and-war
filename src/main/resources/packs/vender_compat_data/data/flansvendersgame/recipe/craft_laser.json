@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": {
+      "item": "createloveandwar:glass_lens"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "R": {
+      "item": "createloveandwar:redstone_circuit"
+    }
+  },
+  "pattern": [
+    "III",
+    "OTR",
+    "III"
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_micro_laser"
+  },
+  "show_notification": true
+}

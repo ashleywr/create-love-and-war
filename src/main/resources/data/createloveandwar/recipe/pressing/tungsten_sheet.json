@@ -1,0 +1,13 @@
+{
+  "type": "create:pressing",
+  "ingredients": [
+    {
+      "item": "createloveandwar:tungsten"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:tungsten_sheet"
+    }
+  ]
+}

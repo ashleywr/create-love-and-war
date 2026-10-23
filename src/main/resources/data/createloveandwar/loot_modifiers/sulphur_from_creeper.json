@@ -1,0 +1,10 @@
+{
+  "type": "createloveandwar:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:entities/creeper"
+    }
+  ],
+  "item": "createloveandwar:raw_sulphur"
+}

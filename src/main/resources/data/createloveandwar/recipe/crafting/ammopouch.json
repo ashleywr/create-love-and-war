@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "I": {
+      "tag": "c:nuggets/iron"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    " L ",
+    "SIS",
+    "SLS"
+  ],
+  "result": {
+    "id": "createloveandwar:ammopouch"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:pvg43"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 0,
+    "numRounds": 1,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:artillery_shell"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "spawnBulletCasing": "createloveandwar:artillery_casing"
+}

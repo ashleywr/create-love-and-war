@@ -1,0 +1,30 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": false,
+  "key": {
+    "B": {
+      "item": "createloveandwar:barrel_netherite"
+    },
+    "U": {
+      "item": "createloveandwar:upper_receiver_sturdy"
+    },
+    "L": {
+      "item": "createloveandwar:lower_receiver_sturdy"
+    },
+    "S": {
+      "item": "createloveandwar:stock_wood"
+    },
+    "G": {
+      "item": "createloveandwar:grip_wood"
+    }
+  },
+  "pattern": [
+    "BU ",
+    "GLS",
+    " G "
+  ],
+  "result": {
+    "id": "createloveandwar:thompson"
+  },
+  "show_notification": true
+}

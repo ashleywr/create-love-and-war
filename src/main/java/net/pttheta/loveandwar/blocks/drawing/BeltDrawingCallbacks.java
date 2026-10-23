@@ -1,0 +1,80 @@
+package net.pttheta.loveandwar.blocks.drawing;
+
+import com.simibubi.create.Create;
+import com.simibubi.create.content.kinetics.belt.BeltHelper;
+import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
+import com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour.ProcessingResult;
+import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour.TransportedResult;
+import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import net.minecraft.world.item.ItemStack;
+
+public class BeltDrawingCallbacks {
+   static ProcessingResult onItemReceived(TransportedItemStack transported, TransportedItemStackHandlerBehaviour handler, DrawingBehaviour behaviour) {
+      if (behaviour.specifics.getKineticSpeed() == 0.0F) {
+         return ProcessingResult.PASS;
+      }
+
+      if (behaviour.running) {
+         return ProcessingResult.HOLD;
+      }
+
+      if (!behaviour.specifics.tryProcessOnBelt(transported, (List<ItemStack>)null, true)) {
+         return ProcessingResult.PASS;
+      }
+
+      behaviour.start(DrawingBehaviour.Mode.BELT);
+      return ProcessingResult.HOLD;
+   }
+
+   static ProcessingResult whenItemHeld(TransportedItemStack transported, TransportedItemStackHandlerBehaviour handler, DrawingBehaviour behaviour) {
+      if (behaviour.specifics.getKineticSpeed() == 0.0F) {
+         return ProcessingResult.PASS;
+      }
+
+      if (!behaviour.running) {
+         return ProcessingResult.PASS;
+      }
+
+      if (behaviour.runningTicks != 120) {
+         return ProcessingResult.HOLD;
+      }
+
+      behaviour.particleItems.clear();
+      ArrayList<ItemStack> results = new ArrayList<>();
+      if (!behaviour.specifics.tryProcessOnBelt(transported, results, false)) {
+         return ProcessingResult.PASS;
+      }
+
+      boolean bulk = behaviour.specifics.canProcessInBulk() || transported.stack.getCount() == 1;
+      transported.clearFanProcessingData();
+      List<TransportedItemStack> collect = results.stream().map(stack -> {
+         TransportedItemStack copy = transported.copy();
+         boolean centered = BeltHelper.isItemUpright(stack);
+         copy.stack = stack;
+         copy.locked = true;
+         copy.angle = centered ? 180 : Create.RANDOM.nextInt(360);
+         return copy;
+      }).collect(Collectors.toList());
+      if (bulk) {
+         if (collect.isEmpty()) {
+            handler.handleProcessingOnItem(transported, TransportedResult.removeItem());
+         } else {
+            handler.handleProcessingOnItem(transported, TransportedResult.convertTo(collect));
+         }
+      } else {
+         TransportedItemStack left = transported.copy();
+         left.stack.shrink(1);
+         if (collect.isEmpty()) {
+            handler.handleProcessingOnItem(transported, TransportedResult.convertTo(left));
+         } else {
+            handler.handleProcessingOnItem(transported, TransportedResult.convertToAndLeaveHeld(collect, left));
+         }
+      }
+
+      behaviour.blockEntity.sendData();
+      return ProcessingResult.HOLD;
+   }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": false,
+  "key": {
+    "B": {
+      "item": "createloveandwar:barrel_iron"
+    },
+    "U": {
+      "item": "createloveandwar:bolt_action_iron"
+    },
+    "L": {
+      "item": "createloveandwar:lower_receiver_tungsten"
+    },
+    "S": {
+      "item": "createloveandwar:stock_wood"
+    },
+    "H": {
+      "item": "createloveandwar:handguard_wood"
+    }
+  },
+  "pattern": [
+    "BHU ",
+    "  LS"
+  ],
+  "result": {
+    "id": "createloveandwar:leemetford"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:chassepot_c"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "OneBulletAtATime",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 2,
+    "numRounds": 1,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "createloveandwar:gyrojet_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "ejectCasings": false
+}

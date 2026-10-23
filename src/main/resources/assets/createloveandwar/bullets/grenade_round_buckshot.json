@@ -1,0 +1,79 @@
+{
+    "itemSettings": {
+        "maxStackSize": 4,
+        "tags": [
+            "flansmod:bullet",
+            "flansmod:launchable_grenade"
+        ]
+    },
+    "roundsPerItem": 1,
+    "hitscans": [
+        {
+            "shotCount": 20,
+            "splashRadius": 0.0,
+            "impacts": [
+                {
+                    "targetType": "ShotEntity",
+                    "impactEffects": [
+                        {
+                            "effectType": "ApplyDamage",
+                            "modifiers": [
+                                {
+                                    "stat": "impact_damage",
+                                    "matchGroupPaths": [],
+                                    "accumulators": [
+                                        {
+                                            "operation": "StackablePercentage",
+                                            "value": -60.0,
+                                            "multiplyPer": []
+                                        }
+                                    ],
+                                    "setValue": ""
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "targetType": "ShotBlock",
+                    "impactEffects": [
+                        {
+                            "effectType": "ApplyDecal",
+                            "modifiers": [
+                                {
+                                    "stat": "decal_texture",
+                                    "matchGroupPaths": [],
+                                    "accumulators": [
+                                        {
+                                            "operation": "StackablePercentage",
+                                            "value": -60.0,
+                                            "multiplyPer": []
+                                        }
+                                    ],
+                                    "setValue": "flansmod:effects/bullet_decal"
+                                },
+                                {
+                                    "stat": "decal_duration",
+                                    "matchGroupPaths": [],
+                                    "accumulators": [
+                                        {
+                                            "operation": "BaseAdd",
+                                            "value": 30.0,
+                                            "multiplyPer": []
+                                        }
+                                    ],
+                                    "setValue": ""
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "penetrationPower": 2.0
+        }
+    ],
+    "projectiles": [
+    ],
+    "triggers": [],
+    "actionGroups": []
+}

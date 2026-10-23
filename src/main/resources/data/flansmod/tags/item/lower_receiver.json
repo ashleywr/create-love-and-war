@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:lower_receiver_brass",
+    "createloveandwar:lower_receiver_duraplas",
+    "createloveandwar:lower_receiver_iron",
+    "createloveandwar:lower_receiver_netherite",
+    "createloveandwar:lower_receiver_polymer",
+    "createloveandwar:lower_receiver_resin",
+    "createloveandwar:lower_receiver_sturdy",
+    "createloveandwar:lower_receiver_tungsten",
+    "createloveandwar:lower_receiver_steel"
+  ]
+}

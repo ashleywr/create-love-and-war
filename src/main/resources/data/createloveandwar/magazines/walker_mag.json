@@ -1,0 +1,24 @@
+{
+  "tags": [
+    "createloveandwar:walker"
+  ],
+  "modifiers": [],
+  "ammoLoadMode": "OneBulletAtATime",
+  "ammoConsumeMode": "FirstNonEmpty",
+  "upgradeCost": 0,
+  "numRounds": 6,
+  "allRoundsMustBeIdentical": true,
+  "matchingBullets": {
+    "itemIDFilters": [],
+    "itemTagFilters": [
+      {
+        "filterType": "Allow",
+        "matchResourceLocations": [
+          "flansmod:pistol_bullet"
+        ]
+      }
+    ],
+    "materialFilters": []
+  },
+  "spawnBulletCasing": "createloveandwar:pistol_casing"
+}

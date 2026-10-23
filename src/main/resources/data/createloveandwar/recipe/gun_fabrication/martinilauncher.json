@@ -1,0 +1,47 @@
+{
+  "type": "createloveandwar:gun_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "createloveandwar:launcher_barrel"
+      ],
+      "count": 1
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:bolt_action",
+      "min": 2,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:lower_receiver",
+      "min": 1,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Wood"
+      ],
+      "tag": "flansmod:stock",
+      "min": 1,
+      "max": 99
+    }
+  ],
+  "result": {
+    "id": "createloveandwar:martinilauncher"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

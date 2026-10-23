@@ -1,0 +1,22 @@
+{
+    "sources": [
+        {
+            "matchItems": [
+                "createloveandwar:polymer_ingot"
+            ],
+            "matchTags": [],
+            "count": 1,
+            "icon": "planks"
+        },
+        {
+            "matchItems": [
+                "createloveandwar:block_of_polymer"
+            ],
+            "matchTags": [],
+            "count": 9,
+            "icon": "block"
+        }
+    ],
+    "craftingTier": 2,
+    "materialType": "Composite"
+}

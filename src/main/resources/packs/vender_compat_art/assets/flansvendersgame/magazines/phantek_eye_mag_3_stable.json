@@ -1,0 +1,36 @@
+{
+    "tags": [
+        "flansvendersgame:phantek_eye"
+    ],
+    "modifiers": [
+        {
+            "stat": "vertical_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [],
+            "setValue": ""
+        },
+        {
+            "stat": "horizontal_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [],
+            "setValue": ""
+        }
+    ],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 2,
+    "numRounds": 3,
+    "allRoundsMustBeIdentical": false,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "flansmod:rifle_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    }
+}

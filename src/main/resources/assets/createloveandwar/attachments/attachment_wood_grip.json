@@ -1,0 +1,59 @@
+{
+    "itemSettings": {
+        "maxStackSize": 1,
+        "tags": [
+            "flansmod:attach_to_any",
+            "flansmod:grip_attach",
+            "flansbasicparts:add_to_part_fab"
+        ]
+    },
+    "attachmentType": "Grip",
+    "modifiers": [
+        {
+            "stat": "vertical_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 50.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "horizontal_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 50.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "duration",
+            "matchGroupPaths": [
+                "primary_reload"
+            ],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 80.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        }
+    ],
+    "mechaEffects": [],
+    "mechaEffectFilter": "",
+    "handlerOverrides": [],
+    "actionOverrides": [],
+    "reloadOverrides": [],
+    "abilities": [],
+    "modeOverride": "FullAuto",
+    "overrideFireMode": false
+}

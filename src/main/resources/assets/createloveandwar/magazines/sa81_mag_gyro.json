@@ -1,0 +1,24 @@
+{
+    "tags": [
+        "createloveandwar:sa81"
+    ],
+    "modifiers": [],
+    "ammoLoadMode": "FullMag",
+    "ammoConsumeMode": "FirstNonEmpty",
+    "upgradeCost": 2,
+    "numRounds": 15,
+    "allRoundsMustBeIdentical": true,
+    "matchingBullets": {
+        "itemIDFilters": [],
+        "itemTagFilters": [
+            {
+                "filterType": "Allow",
+                "matchResourceLocations": [
+                    "createloveandwar:gyrojet_bullet"
+                ]
+            }
+        ],
+        "materialFilters": []
+    },
+    "ejectCasings": false
+}

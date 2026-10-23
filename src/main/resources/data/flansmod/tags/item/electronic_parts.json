@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:redstone_circuit",
+    "createloveandwar:precision_circuit",
+    "createloveandwar:quantum_circuit"
+  ]
+}

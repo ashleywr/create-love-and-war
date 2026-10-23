@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "createloveandwar:gyrojet_basic"
+    },
+    {
+      "item": "createloveandwar:seeker_unit"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:gyrojet_heatseeker"
+    }
+  ]
+}

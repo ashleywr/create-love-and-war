@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "T": {
+      "tag": "c:plates/tungsten"
+    },
+    "N": {
+      "tag": "c:nuggets/iron"
+    }
+  },
+  "pattern": [
+    "TNT",
+    "T T",
+    "TIT"
+  ],
+  "result": {
+    "id": "createloveandwar:magazine_upgrade"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,64 @@
+{
+    "itemSettings": {
+        "maxStackSize": 1,
+        "tags": [
+            "flansmod:attach_to_pistol",
+            "flansmod:attach_to_rifle",
+            "flansmod:barrel_attach"
+        ]
+    },
+    "attachmentType": "Barrel",
+    "modifiers": [
+        {
+            "stat": "spread",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "IndependentPercentage",
+                    "value": 50.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "vertical_recoil",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "StackablePercentage",
+                    "value": 60.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "impact_damage",
+            "matchGroupPaths": [],
+            "accumulators": [
+                {
+                    "operation": "StackablePercentage",
+                    "value": 50.0,
+                    "multiplyPer": []
+                }
+            ],
+            "setValue": ""
+        },
+        {
+            "stat": "flash_attach_point",
+            "matchGroupPaths": [],
+            "accumulators": [
+            ],
+            "setValue": "shoot_origin"
+        }
+    ],
+    "mechaEffects": [],
+    "mechaEffectFilter": "",
+    "handlerOverrides": [],
+    "actionOverrides": [],
+    "reloadOverrides": [],
+    "abilities": [],
+    "modeOverride": "FullAuto",
+    "overrideFireMode": false
+}

@@ -1,0 +1,16 @@
+{
+  "type": "create:compacting",
+  "ingredients": [
+    {
+      "type": "neoforge:single",
+      "amount": 250,
+      "fluid": "createloveandwar:bitumen_fluid"
+    }
+  ],
+  "results": [
+    {
+      "count": 32,
+      "id": "createloveandwar:bitumen"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "type": "create:crushing",
+  "ingredients": [
+    {
+      "item": "createloveandwar:deepslate_sulphur_ore"
+    }
+  ],
+  "processing_time": 350,
+  "results": [
+    {
+      "id": "createloveandwar:raw_sulphur"
+    },
+    {
+      "chance": 0.75,
+      "id": "createloveandwar:raw_sulphur"
+    },
+    {
+      "chance": 0.75,
+      "id": "create:experience_nugget"
+    },
+    {
+      "chance": 0.125,
+      "id": "minecraft:deepslate"
+    }
+  ]
+}

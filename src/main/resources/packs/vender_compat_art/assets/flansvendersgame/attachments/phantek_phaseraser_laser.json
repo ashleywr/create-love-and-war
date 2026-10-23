@@ -1,0 +1,96 @@
+{
+    "itemSettings": {
+        "maxStackSize": 1,
+        "tags": [
+            "flansmod:attach_to_any",
+            "flansmod:grip"
+        ]
+    },
+    "attachmentType": "Grip",
+    "modifiers": [],
+    "mechaEffects": [],
+    "mechaEffectFilter": "",
+    "handlerOverrides": [
+        {
+            "inputType": "SpecialKey2",
+            "nodes": [
+                {
+                    "actionGroupToTrigger": "gadget_button",
+                    "modalCheck": "",
+                    "canTriggerWhileReloading": true,
+                    "deferToAttachment": false,
+                    "attachmentType": "Barrel",
+                    "attachmentIndex": 0,
+                    "andContinueEvaluating": false
+                }
+            ]
+        }
+    ],
+    "actionOverrides": [
+        {
+            "key": "gadget_button",
+            "canActUnderwater": true,
+            "canActUnderOtherLiquid": true,
+            "canBeOverriden": false,
+            "twoHanded": false,
+            "repeatMode": "Toggle",
+            "repeatDelay": 0.0,
+            "repeatCount": 0,
+            "spinUpDuration": 0.0,
+            "loudness": 0.0,
+            "autoCancelIfNotInMode": "",
+            "actions": [
+                {
+                    "actionType": "Laser",
+                    "duration": 0.0,
+                    "sounds": [],
+                    "itemStack": "",
+                    "scopeOverlay": "",
+                    "anim": ""
+                }
+            ],
+            "modifiers": [
+                {
+                    "stat": "laser_red",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 0.4,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                },
+                {
+                    "stat": "laser_green",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 0.9,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                },
+                {
+                    "stat": "laser_blue",
+                    "matchGroupPaths": [],
+                    "accumulators": [
+                        {
+                            "operation": "BaseAdd",
+                            "value": 0.3,
+                            "multiplyPer": []
+                        }
+                    ],
+                    "setValue": ""
+                }
+            ]
+        }
+    ],
+    "reloadOverrides": [],
+    "abilities": [],
+    "modeOverride": "FullAuto",
+    "overrideFireMode": false
+}

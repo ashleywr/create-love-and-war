@@ -1,0 +1,23 @@
+{
+  "type": "flansmod:part_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "flansmod:tiered_material",
+      "material": "flansbasicparts:fiberglass",
+      "count": 72
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "minecraft:glowstone_dust"
+      ],
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:hm_flashlight_mini"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

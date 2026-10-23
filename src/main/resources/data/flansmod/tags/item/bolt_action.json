@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "createloveandwar:bolt_action_brass",
+    "createloveandwar:bolt_action_duraplas",
+    "createloveandwar:bolt_action_iron",
+    "createloveandwar:bolt_action_netherite",
+    "createloveandwar:bolt_action_polymer",
+    "createloveandwar:bolt_action_resin",
+    "createloveandwar:bolt_action_sturdy",
+    "createloveandwar:bolt_action_tungsten",
+    "createloveandwar:bolt_action_steel"
+  ]
+}

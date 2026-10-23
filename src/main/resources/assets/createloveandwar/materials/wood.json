@@ -1,0 +1,22 @@
+{
+    "sources": [
+        {
+            "matchItems": [],
+            "matchTags": [
+                "minecraft:planks"
+            ],
+            "count": 1,
+            "icon": "planks"
+        },
+        {
+            "matchItems": [],
+            "matchTags": [
+                "minecraft:logs"
+            ],
+            "count": 4,
+            "icon": "block"
+        }
+    ],
+    "craftingTier": 2,
+    "materialType": "Wood"
+}

@@ -1,0 +1,124 @@
+{
+  "itemSettings": {
+    "maxStackSize": 16,
+    "tags": [
+      "flansmod:bullet",
+      "createloveandwar:black_powder"
+    ]
+  },
+  "roundsPerItem": 1,
+  "hitscans": [],
+  "projectiles": [
+    {
+      "shotCount": 1,
+      "splashRadius": 0.0,
+      "impacts": [
+        {
+          "targetType": "ShotEntity",
+          "impactEffects": [
+            {
+              "effectType": "ApplyDamage",
+              "modifiers": [
+                {
+                  "stat": "impact_damage",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "StackablePercentage",
+                      "value": 40.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": ""
+                },
+                {
+                  "stat": "knockback",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "BaseAdd",
+                      "value": 8.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": ""
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "targetType": "ShotBlock",
+          "impactEffects": [
+            {
+              "effectType": "ApplyDecal",
+              "modifiers": [
+                {
+                  "stat": "decal_texture",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "StackablePercentage",
+                      "value": 20.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": "createloveandwar:effects/big_hit"
+                },
+                {
+                  "stat": "decal_duration",
+                  "matchGroupPaths": [],
+                  "accumulators": [
+                    {
+                      "operation": "BaseAdd",
+                      "value": 30.0,
+                      "multiplyPer": []
+                    }
+                  ],
+                  "setValue": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "penetrationPower": 1.0,
+      "guidanceType": "none",
+      "launchSpeed": 9,
+      "gravityFactor": 0.1,
+      "particleTrails": [
+        {
+          "particle": "minecraft:poof",
+          "speed": 1,
+          "fromTick": 0,
+          "toTick": 4,
+          "spawnPoints": [
+            "body"
+          ]
+        },
+        {
+          "particle": "minecraft:smoke",
+          "speed": 0.3,
+          "fromTick": 8,
+          "spawnPoints": [
+            "body",
+            "body"
+          ]
+        }
+      ],
+      "sticky": false,
+      "fuseTime": 0.0,
+      "turnRate": 0.0,
+      "dragInAir": 0.0,
+      "airParticles": "",
+      "dragInWater": 0.0,
+      "waterParticles": "",
+      "timeBetweenTrailParticles": 0.0,
+      "responseToBlock": "Detonate",
+      "responseToEntity": "Detonate",
+      "responseToVehicle": "Detonate"
+    }
+  ],
+  "triggers": [],
+  "actionGroups": []
+}

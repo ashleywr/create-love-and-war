@@ -1,0 +1,13 @@
+{
+  "type": "createloveandwar:stamping",
+  "input": {
+    "item": "createloveandwar:cut_netherite_sheet"
+  },
+  "template": {
+    "id": "createloveandwar:template_barrel"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:barrel_netherite"
+  }
+}

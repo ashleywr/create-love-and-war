@@ -1,0 +1,10 @@
+{
+  "type": "createloveandwar:drawing",
+  "input": {
+    "item": "createloveandwar:steel_cup"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:heavy_rifle_casing"
+  }
+}

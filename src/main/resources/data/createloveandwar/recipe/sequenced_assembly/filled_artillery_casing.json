@@ -1,0 +1,71 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "createloveandwar:artillery_casing"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "id": "createloveandwar:filled_artillery_casing"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createloveandwar:artillery_casing"
+        },
+        [
+          {
+            "tag": "createloveandwar:propellant"
+          }
+        ]
+      ],
+      "results": [
+        {
+          "id": "createloveandwar:artillery_casing"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createloveandwar:artillery_casing"
+        },
+        [
+          {
+            "tag": "createloveandwar:propellant"
+          }
+        ]
+      ],
+      "results": [
+        {
+          "id": "createloveandwar:artillery_casing"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "createloveandwar:artillery_casing"
+        },
+        [
+          {
+            "tag": "createloveandwar:propellant"
+          }
+        ]
+      ],
+      "results": [
+        {
+          "id": "createloveandwar:artillery_casing"
+        }
+      ]
+    }
+  ],
+  "transitional_item": {
+    "id": "createloveandwar:artillery_casing"
+  }
+}

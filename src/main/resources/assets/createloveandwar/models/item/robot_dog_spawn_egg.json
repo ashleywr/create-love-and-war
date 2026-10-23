@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "createloveandwar:item/robot_dog_spawn_egg"
+  }
+}

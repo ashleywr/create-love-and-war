@@ -1,0 +1,13 @@
+{
+    "sources": [
+
+        {
+            "matchItems": ["create:sturdy_sheet"],
+            "matchTags": [],
+            "count": 9,
+            "icon": "ingot"
+        }
+    ],
+    "craftingTier": 3,
+    "materialType": "Metal"
+}

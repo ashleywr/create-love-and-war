@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:nuggets/zinc"
+    },
+    {
+      "tag": "c:nuggets/zinc"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    },
+    {
+      "tag": "c:nuggets/copper"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:brass_mix"
+  },
+  "show_notification": true
+}

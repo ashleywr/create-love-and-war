@@ -1,0 +1,24 @@
+{
+  "tags": [
+    "createloveandwar:mat4954"
+  ],
+  "modifiers": [],
+  "ammoLoadMode": "FullMag",
+  "ammoConsumeMode": "FirstNonEmpty",
+  "upgradeCost": 0,
+  "numRounds": 32,
+  "allRoundsMustBeIdentical": true,
+  "matchingBullets": {
+    "itemIDFilters": [],
+    "itemTagFilters": [
+      {
+        "filterType": "Allow",
+        "matchResourceLocations": [
+          "flansmod:pistol_bullet"
+        ]
+      }
+    ],
+    "materialFilters": []
+  },
+  "spawnBulletCasing": "createloveandwar:pistol_casing"
+}

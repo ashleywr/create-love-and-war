@@ -1,0 +1,13 @@
+{
+  "type": "createloveandwar:stamping",
+  "input": {
+    "item": "createloveandwar:polymer_sheet"
+  },
+  "template": {
+    "id": "createloveandwar:template_stock"
+  },
+  "result": {
+    "count": 1,
+    "id": "createloveandwar:stock_polymer"
+  }
+}

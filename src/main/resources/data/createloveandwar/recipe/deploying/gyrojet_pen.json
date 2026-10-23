@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "createloveandwar:gyrojet_basic"
+    },
+    {
+      "item": "createloveandwar:steel_cup"
+    }
+  ],
+  "results": [
+    {
+      "id": "createloveandwar:gyrojet_pen"
+    }
+  ]
+}

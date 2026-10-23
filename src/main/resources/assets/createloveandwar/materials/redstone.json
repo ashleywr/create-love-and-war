@@ -1,0 +1,12 @@
+{
+    "sources": [
+        {
+            "matchItems": ["createloveandwar:redstone_circuit"],
+            "matchTags": [],
+            "count": 1,
+            "icon": "ingot"
+        }
+    ],
+    "craftingTier": 1,
+    "materialType": "Electronic"
+}

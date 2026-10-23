@@ -1,0 +1,22 @@
+{
+    "sources": [
+        {
+            "matchItems": [
+                "createloveandwar:duraplas_ingot"
+            ],
+            "matchTags": [],
+            "count": 1,
+            "icon": "planks"
+        },
+        {
+            "matchItems": [
+                "createloveandwar:block_of_duraplas"
+            ],
+            "matchTags": [],
+            "count": 9,
+            "icon": "block"
+        }
+    ],
+    "craftingTier": 3,
+    "materialType": "Composite"
+}

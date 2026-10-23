@@ -1,0 +1,26 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": false,
+  "key": {
+    "B": {
+      "item": "createloveandwar:launcher_barrel"
+    },
+    "U": {
+      "item": "createloveandwar:bolt_action_tungsten"
+    },
+    "L": {
+      "item": "createloveandwar:lower_receiver_iron"
+    },
+    "S": {
+      "item": "createloveandwar:stock_wood"
+    }
+  },
+  "pattern": [
+    "BU ",
+    " LS"
+  ],
+  "result": {
+    "id": "createloveandwar:martinilauncher"
+  },
+  "show_notification": true
+}

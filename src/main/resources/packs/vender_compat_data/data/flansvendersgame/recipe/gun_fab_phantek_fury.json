@@ -1,0 +1,67 @@
+{
+  "type": "createloveandwar:gun_fabrication",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:upper_receiver",
+      "min": 4,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:lower_receiver",
+      "min": 3,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Metal",
+        "Composite"
+      ],
+      "tag": "flansmod:barrel",
+      "min": 4,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Composite"
+      ],
+      "tag": "flansmod:stock",
+      "min": 2,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:tiered_part",
+      "materials": [
+        "Composite",
+        "Metal"
+      ],
+      "tag": "flansmod:grip",
+      "min": 2,
+      "max": 99
+    },
+    {
+      "type": "createloveandwar:stacked_vanilla",
+      "items": [
+        "createloveandwar:optical_scope"
+      ],
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "flansvendersgame:phantek_fury"
+  },
+  "craft_time": 300,
+  "show_notification": true
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "group": "tungsten",
+  "ingredient": {
+    "item": "createloveandwar:brass_mix"
+  },
+  "result": {
+    "count": 1,
+    "id": "create:brass_nugget"
+  }
+}
