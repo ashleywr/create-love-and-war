@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.pttheta.loveandwar.Config;
@@ -68,7 +69,7 @@ public final class GunEngine {
                GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                GunAttachments attachments = (GunAttachments)gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
                AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
-               Optional<GunEngine.Resolved> resolved = resolveNode(def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty());
+               Optional<GunEngine.Resolved> resolved = resolveNode(player, gunStack, def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty(), true);
                if (resolved.isPresent() && heldTriggerFallthrough(def, resolved.get(), inputType, state)) {
                   diag(
                      "Gun '{}': '{}' needs a fresh Fire1 press, not the held one that fired the last round",
@@ -91,7 +92,7 @@ public final class GunEngine {
       }
    }
 
-   public static Optional<ActionGroup> predictStartedGroup(ItemStack gunStack, String inputType, long gameTime) {
+   public static Optional<ActionGroup> predictStartedGroup(Player shooter, ItemStack gunStack, String inputType, long gameTime) {
       Optional<GunDef> defOpt = GunLookup.gunDef(gunStack);
       if (defOpt.isEmpty()) {
          return Optional.empty();
@@ -106,7 +107,7 @@ public final class GunEngine {
       GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
       GunAttachments attachments = (GunAttachments)gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
       AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
-      Optional<GunEngine.Resolved> resolved = resolveNode(def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty());
+      Optional<GunEngine.Resolved> resolved = resolveNode(shooter, gunStack, def, attachments, state, rounds, handler.get().nodes(), inputType, Optional.empty(), true);
       if (!resolved.isEmpty() && !heldTriggerFallthrough(def, resolved.get(), inputType, state)) {
          Optional<ActionGroup> groupOpt = resolveActionGroup(def, resolved.get());
          if (groupOpt.isEmpty()) {
@@ -126,13 +127,6 @@ public final class GunEngine {
 
          if (firesRound && gameTime < state.cooldownUntilGameTime()) {
             return Optional.empty();
-         }
-
-         if (isReloadStart(def, group.key()) && !def.magazines().isEmpty()) {
-            Optional<MagazineDef> mag = GunLookup.resolveMagazineForSlot(def.magazines().get(0));
-            if (mag.isEmpty() || rounds.items().size() >= mag.get().numRounds()) {
-               return Optional.empty();
-            }
          }
 
          return Optional.of(group);
@@ -185,51 +179,53 @@ public final class GunEngine {
       if (handler.isEmpty()) return;
       var state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
       var attachments = gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
-      var resolved = resolveNode(def, attachments, state, rounds, handler.get().nodes(), "Fire1", Optional.empty());
+      var resolved = resolveNode(player, gunStack, def, attachments, state, rounds, handler.get().nodes(), "Fire1", Optional.empty(), true);
       if (resolved.isPresent() && resolveActionGroup(def, resolved.get()).map(g -> GunFireMode.of(g.repeatMode()) == GunFireMode.FULL_AUTO).orElse(false)) {
          tryTrigger(player, gunStack, def, resolved.get(), attachments, state);
       }
    }
 
    private static Optional<GunEngine.Resolved> resolveNode(
+      Player shooter,
+      ItemStack gunStack,
       GunDef def,
       GunAttachments attachments,
       GunActionState state,
       AmmoPouchContents rounds,
       List<InputNode> nodes,
       String inputType,
-      Optional<AttachmentDef> context
+      Optional<AttachmentDef> context,
+      boolean rootHandler
    ) {
       for (InputNode node : nodes) {
+         // Pinned GunContext applies this gate before expanding an attachment. Nested attachment nodes omit it.
+         if (rootHandler && !node.canTriggerWhileReloading() && isReloadGroup(def, state.activeGroup())) continue;
          if (node.modalCheck().isEmpty() || modalCheckPasses(def, state, node.modalCheck())) {
             if (node.deferToAttachment()) {
                String category = GunAttachments.category(node.attachmentType());
                List<ItemStack> slotStacks = attachments.forCategory(category);
-               boolean claimed = false;
                if (node.attachmentIndex() < slotStacks.size()) {
                   Optional<AttachmentDef> attDef = GunLookup.attachmentDef(slotStacks.get(node.attachmentIndex()));
                   Optional<InputHandler> overrideHandler = attDef.flatMap(
                      ad -> ad.handlerOverrides().stream().filter(h -> h.inputType().equals(inputType)).findFirst()
                   );
                   if (overrideHandler.isPresent()) {
-                     claimed = true;
-                     Optional<GunEngine.Resolved> r = resolveNode(def, attachments, state, rounds, overrideHandler.get().nodes(), inputType, attDef);
+                     Optional<GunEngine.Resolved> r = resolveNode(shooter, gunStack, def, attachments, state, rounds, overrideHandler.get().nodes(), inputType, attDef, false);
                      if (r.isPresent()) {
                         return r;
                      }
                   }
                }
 
-               if (claimed && !node.andContinueEvaluating()) {
-                  return Optional.empty();
-               }
             } else {
                String key = node.actionGroupToTrigger();
                if (!key.isEmpty()) {
                   GunEngine.Resolved candidate = new GunEngine.Resolved(key, context);
-                  if (isSatisfied(def, candidate, rounds, state)) {
+                  if (isSatisfied(shooter, gunStack, def, candidate, rounds, state)) {
                      return Optional.of(candidate);
                   }
+                  // Original attachment expansion stops at a valid child's flag before CanStart runs.
+                  if (!rootHandler && !node.andContinueEvaluating() && resolveActionGroup(def, candidate).isPresent()) return Optional.empty();
                }
             }
          }
@@ -238,7 +234,7 @@ public final class GunEngine {
       return Optional.empty();
    }
 
-   private static boolean isSatisfied(GunDef def, GunEngine.Resolved candidate, AmmoPouchContents rounds, GunActionState state) {
+   private static boolean isSatisfied(Player shooter, ItemStack gunStack, GunDef def, GunEngine.Resolved candidate, AmmoPouchContents rounds, GunActionState state) {
       Optional<ActionGroup> groupOpt = resolveActionGroup(def, candidate);
       if (groupOpt.isEmpty()) {
          LOGGER.warn(
@@ -248,6 +244,11 @@ public final class GunEngine {
          return false;
       } else {
          ActionGroup group = groupOpt.get();
+         if (!GunActionRestrictions.canStart(shooter, group)) return false;
+         if (isReloadStart(def, group.key())) {
+            var magazine = def.magazines().isEmpty() ? Optional.<MagazineDef>empty() : GunLookup.resolveMagazineForSlot(def.magazines().getFirst());
+            if (magazine.isEmpty() || !GunReload.canLoad(shooter, gunStack, magazine.get())) return false;
+         }
          boolean needsAmmo = group.actions().stream().anyMatch(a -> "Shoot".equals(a.actionType()));
          if (needsAmmo && rounds.isEmpty()) {
             diag("Action group '{}' needs ammo but GUN_LOADED_ROUNDS is empty", group.key());

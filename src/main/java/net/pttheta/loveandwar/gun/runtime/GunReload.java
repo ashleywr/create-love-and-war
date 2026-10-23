@@ -3,6 +3,7 @@ package net.pttheta.loveandwar.gun.runtime;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.pttheta.loveandwar.gun.content.ActionGroup;
 import net.pttheta.loveandwar.gun.content.GunDef;
@@ -52,23 +53,28 @@ final class GunReload {
    private static void enter(ServerPlayer player, ItemStack stack, GunDef def, GunDef.ReloadDef reload, String key, GunActionState state, MagazineDef mag) {
       var group = def.actionGroups().stream().filter(value -> value.key().equals(key)).findFirst();
       int duration = group.map(GunEngine::groupDurationTicks).orElse(0);
-      // The original retriggers an active LoadOne instance, retaining progress and increasing duration*triggerCount.
-      stack.set(ModDataComponents.GUN_ACTION_STATE, state.withReloadGroup(key, duration, List.of()));
-      group.ifPresent(value -> GunEngine.triggerActions(player, stack, def, value,
-         stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY)));
+      if (group.filter(value -> GunActionRestrictions.canStart(player, value)).isPresent()) {
+         // The original retriggers an active LoadOne instance, retaining progress and increasing duration*triggerCount.
+         stack.set(ModDataComponents.GUN_ACTION_STATE, state.withReloadGroup(key, duration, List.of()));
+         GunEngine.triggerActions(player, stack, def, group.get(), stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY));
+      } else {
+         // Rejected new stages never start; a rejected same-key retrigger leaves the old group finished.
+         stack.set(ModDataComponents.GUN_ACTION_STATE, state.idled());
+      }
       // EnterReloadState invokes LoadOne after the initial actions. FullMag transfers here too, never at End.
+      // Quirk kept: that invocation is unconditional even when the stage's CanStart was rejected.
       if (key.equals(reload.loadOneActionKey())) {
          if ("FullMag".equals(mag.ammoLoadMode())) consumeFullMag(player, stack, mag);
          else consumeOneBullet(player, stack, mag);
       }
    }
 
-   private static boolean canLoad(ServerPlayer player, ItemStack stack, MagazineDef mag) {
+   static boolean canLoad(Player player, ItemStack stack, MagazineDef mag) {
       return stack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY).items().size() < mag.numRounds()
          && countMatchingBullets(player, stack, mag) > 0;
    }
 
-   private static int countMatchingBullets(ServerPlayer player, ItemStack gunStack, MagazineDef mag) {
+   private static int countMatchingBullets(Player player, ItemStack gunStack, MagazineDef mag) {
       int count = 0;
       var loaded = gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
       String requiredType = mag.allRoundsMustBeIdentical() && !loaded.isEmpty() ? GunLookup.contentKey(loaded.items().getFirst()) : null;

@@ -2,16 +2,22 @@ package net.pttheta.loveandwar.gun.runtime;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -34,6 +40,11 @@ public final class ActionTimingClientSetup {
         final GameType mode;
         final Vec3 position;
         final boolean flying;
+        final boolean invulnerable;
+        final int fireTicks;
+        final Map<BlockPos, BlockState> cells = new LinkedHashMap<>();
+        BlockPos fluidEye, fluidFeet;
+        BlockState forcedFluid;
         final String gun;
         final Set<UUID> initialItems = new HashSet<>(), spawned = new HashSet<>();
         long started = -1;
@@ -44,6 +55,8 @@ public final class ActionTimingClientSetup {
             offhand = player.getInventory().offhand.stream().map(ItemStack::copy).toList();
             selected = player.getInventory().selected; yaw = player.getYRot(); pitch = player.getXRot();
             mode = player.gameMode.getGameModeForPlayer(); position = player.position(); flying = player.getAbilities().flying;
+            invulnerable = player.getAbilities().invulnerable;
+            fireTicks = player.getRemainingFireTicks();
             this.gun = gun;
             player.serverLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(12)).forEach(item -> initialItems.add(item.getUUID()));
         }
@@ -57,6 +70,7 @@ public final class ActionTimingClientSetup {
         GunFireScheduler.releaseAll(player);
         var stack = player.getMainHandItem();
         GunFireScheduler.cancel(player, stack); GunActionTimeline.cancelAll(player, stack);
+        restoreCells(player, session);
         for (var id : session.spawned) {
             var entity = player.serverLevel().getEntity(id);
             if (entity != null) entity.discard();
@@ -65,21 +79,29 @@ public final class ActionTimingClientSetup {
         for (int i = 0; i < session.armor.size(); i++) player.getInventory().armor.set(i, session.armor.get(i).copy());
         for (int i = 0; i < session.offhand.size(); i++) player.getInventory().offhand.set(i, session.offhand.get(i).copy());
         player.getInventory().selected = session.selected;
-        player.setGameMode(session.mode); player.getAbilities().flying = session.flying; player.onUpdateAbilities();
+        player.setGameMode(session.mode); player.getAbilities().flying = session.flying;
+        player.getAbilities().invulnerable = session.invulnerable; player.onUpdateAbilities();
+        player.setRemainingFireTicks(session.fireTicks);
         player.connection.teleport(session.position.x, session.position.y, session.position.z, session.yaw, session.pitch);
         player.inventoryMenu.broadcastChanges();
         LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_TIMING_CLEANUP restored inventory/mode/view gun={}", session.gun);
     }
+    private static void restoreCells(ServerPlayer player, Session session) {
+        session.forcedFluid = null;
+        session.cells.forEach((pos, state) -> player.serverLevel().setBlock(pos, state, 2));
+        session.cells.clear();
+    }
     @SubscribeEvent public static void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean("law.enableClientScenario")) return;
         var command = Commands.literal("law_test_timing_setup").requires(source -> source.hasPermission(2));
-        for (String name : new String[]{"1887", "g11k2", "wz38", "krag", "mat49"}) {
+        for (String name : new String[]{"1887", "g11k2", "wz38", "krag", "mat49", "aai_acr", "mars"}) {
             command.then(Commands.literal(name).executes(context -> {
                 var player = context.getSource().getPlayerOrException(); cleanup(player);
                 SESSIONS.put(player.getUUID(), new Session(player, name));
                 var stack = item(name, 1);
-                String bullet = name.equals("1887") ? "buckshot_shell" : name.equals("g11k2") ? "caseless_bullet" : name.equals("mat49") ? "pistol_bullet" : "rifle_bullet";
-                if (name.equals("krag") || name.equals("mat49")) {
+                String bullet = name.equals("1887") ? "buckshot_shell" : name.equals("g11k2") || name.equals("aai_acr") ? "caseless_bullet"
+                        : name.equals("mat49") || name.equals("mars") ? "pistol_bullet" : "rifle_bullet";
+                if (name.equals("krag") || name.equals("mat49") || name.equals("aai_acr") || name.equals("mars")) {
                     stack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(List.of(item(bullet, 1))));
                 }
                 player.getInventory().selected = 0;
@@ -93,6 +115,41 @@ public final class ActionTimingClientSetup {
             }));
         }
         event.getDispatcher().register(command);
+        var environment = Commands.literal("law_test_restriction_environment").requires(source -> source.hasPermission(2));
+        for (String name : new String[]{"dry", "offhand", "water", "flowing", "lava"}) {
+            environment.then(Commands.literal(name).executes(context -> {
+                var player = context.getSource().getPlayerOrException();
+                var session = SESSIONS.get(player.getUUID());
+                if (session == null) return 0;
+                restoreCells(player, session);
+                player.getInventory().offhand.set(0, name.equals("offhand") ? new ItemStack(Items.STICK) : ItemStack.EMPTY);
+                if (!name.equals("dry") && !name.equals("offhand")) {
+                    var feet = player.blockPosition();
+                    var eye = BlockPos.containing(player.getEyePosition());
+                    for (var cell : BlockPos.betweenClosed(feet.offset(-1, -1, -1), feet.offset(1, 2, 1))) {
+                        if (player.serverLevel().getBlockEntity(cell) != null) throw new IllegalStateException("Scenario chamber must not replace a block entity");
+                    }
+                    for (var cell : BlockPos.betweenClosed(feet.offset(-1, -1, -1), feet.offset(1, 2, 1))) {
+                        var pos = cell.immutable();
+                        session.cells.put(pos, player.serverLevel().getBlockState(pos));
+                        var state = pos.equals(feet) || pos.equals(eye) ? Blocks.AIR.defaultBlockState() : Blocks.BARRIER.defaultBlockState();
+                        player.serverLevel().setBlock(pos, state, 2);
+                    }
+                    var fluid = name.equals("lava") ? Blocks.LAVA.defaultBlockState() : Blocks.WATER.defaultBlockState();
+                    if (name.equals("flowing")) fluid = fluid.setValue(LiquidBlock.LEVEL, 3);
+                    // Sealed cells prevent fluid changes escaping into the disposable world.
+                    player.serverLevel().setBlock(eye, fluid, 2);
+                    player.serverLevel().setBlock(feet, fluid, 2);
+                    session.fluidEye = eye; session.fluidFeet = feet; session.forcedFluid = fluid;
+                }
+                player.getAbilities().invulnerable = true; player.onUpdateAbilities();
+                player.inventoryMenu.broadcastChanges();
+                LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_RESTRICTION_ENVIRONMENT gun={} environment={} eyeFluid={} offhand={}",
+                        session.gun, name, player.serverLevel().getFluidState(BlockPos.containing(player.getEyePosition())), player.getOffhandItem());
+                return 1;
+            }));
+        }
+        event.getDispatcher().register(environment);
         event.getDispatcher().register(Commands.literal("law_test_timing_cleanup").requires(source -> source.hasPermission(2)).executes(context -> {
             cleanup(context.getSource().getPlayerOrException()); return 1;
         }));
@@ -101,6 +158,11 @@ public final class ActionTimingClientSetup {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         var session = SESSIONS.get(player.getUUID());
         if (session == null) return;
+        if (session.forcedFluid != null) {
+            // Hold this diagnostic condition while the client receives it; flowing fluid would otherwise drain before a click.
+            player.serverLevel().setBlock(session.fluidEye, session.forcedFluid, 2);
+            player.serverLevel().setBlock(session.fluidFeet, session.forcedFluid, 2);
+        }
         var stack = player.getMainHandItem();
         var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
         long now = player.level().getGameTime();

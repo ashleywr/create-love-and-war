@@ -20,7 +20,7 @@ public final class GunPrediction {
          ItemStack stack = player.getMainHandItem();
          if (stack.getItem() instanceof GunItem) {
             String gunKey = GunLookup.contentKey(stack);
-            GunEngine.predictStartedGroup(stack, inputType, player.level().getGameTime()).ifPresent(group -> {
+            GunEngine.predictStartedGroup(player, stack, inputType, player.level().getGameTime()).ifPresent(group -> {
                if (LocalGunAnim.wouldPredict(gunKey, group)) {
                   GunActionState state = (GunActionState)stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                   LocalGunAnim.predict(gunKey, state, group);
