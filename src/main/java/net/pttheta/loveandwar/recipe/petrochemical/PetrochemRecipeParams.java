@@ -17,8 +17,8 @@ public class PetrochemRecipeParams extends ProcessingRecipeParams {
       instance -> instance.group(
             CreateCodecs.SIZED_FLUID_INGREDIENT.listOf().fieldOf("ingredients").forGetter(PetrochemRecipeParams::getFluidIngredientList),
             FluidStack.CODEC.listOf().fieldOf("results").forGetter(PetrochemRecipeParams::getFluidResultList),
-            Codec.INT.optionalFieldOf("processingTime", 0).forGetter(rec$ -> rec$.processingDuration()),
-            HeatCondition.CODEC.optionalFieldOf("heatRequirement", HeatCondition.NONE).forGetter(rec$ -> rec$.requiredHeat())
+            Codec.INT.optionalFieldOf("processing_time", 0).forGetter(rec$ -> rec$.processingDuration()),
+            HeatCondition.CODEC.optionalFieldOf("heat_requirement", HeatCondition.NONE).forGetter(rec$ -> rec$.requiredHeat())
          )
          .apply(instance, PetrochemRecipeParams::create)
    );

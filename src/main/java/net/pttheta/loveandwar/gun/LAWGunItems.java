@@ -58,6 +58,7 @@ public final class LAWGunItems {
                .mapColor(MapColor.METAL)
                .strength(3.5F)
                .sound(SoundType.METAL)
+               .noOcclusion()
                .requiresCorrectToolForDrops(),
             name
          )

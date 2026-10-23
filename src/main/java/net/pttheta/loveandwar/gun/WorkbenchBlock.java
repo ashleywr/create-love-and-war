@@ -6,9 +6,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -24,8 +26,11 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WorkbenchBlock extends BaseEntityBlock {
+   private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 12, 15);
    public static final MapCodec<WorkbenchBlock> CODEC = simpleCodec(WorkbenchBlock::new);
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    private final String workbenchName;
@@ -69,10 +74,32 @@ public class WorkbenchBlock extends BaseEntityBlock {
       return RenderShape.MODEL;
    }
 
+   @Override
+   protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+      return SHAPE;
+   }
+
    @Nullable
    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
       BlockEntityType<WorkbenchBlockEntity> type = LAWGunItems.workbenchBlockEntityType(this.workbenchName);
       return type == null ? null : type.create(pos, state);
+   }
+
+   @Override
+   protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moving) {
+      if (!state.is(replacement.getBlock()) && !level.isClientSide
+         && level.getBlockEntity(pos) instanceof WorkbenchBlockEntity bench) {
+         for (var inventory : new net.neoforged.neoforge.items.ItemStackHandler[]{
+            bench.partsInv(), bench.outputHandler(), bench.gunHandler()
+         }) {
+            for (int slot = 0; slot < inventory.getSlots(); slot++) {
+               var stack = inventory.extractItem(slot, Integer.MAX_VALUE, false);
+               Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
+            }
+         }
+         level.updateNeighbourForOutputSignal(pos, this);
+      }
+      super.onRemove(state, level, pos, replacement, moving);
    }
 
    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {

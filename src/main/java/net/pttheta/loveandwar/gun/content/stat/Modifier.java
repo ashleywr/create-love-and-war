@@ -38,7 +38,7 @@ public record Modifier(String stat, List<String> matchGroupPaths, List<Accumulat
       }
 
       if (legacy.multiply() != 1.0F) {
-         float percentage = (legacy.multiply() - 1.0F) * 100.0F;
+         float percentage = legacy.multiply() * 100.0F;
          accumulators.add(new Accumulator(AccumulatorOp.INDEPENDENT_PERCENTAGE, percentage, List.of()));
       }
 

@@ -86,7 +86,7 @@ public final class RealisticDamage {
             return sources;
          }
 
-         float percent = (load.damage() / authored - 1.0F) * 100.0F;
+         float percent = load.damage() / authored * 100.0F;
          Modifier m = new Modifier("impact_damage", List.of(), List.of(new Accumulator(AccumulatorOp.INDEPENDENT_PERCENTAGE, percent, List.of())), "");
          List<ModifierSource> out = new ArrayList<>(sources);
          out.add(ModifierSource.of("realistic-damage:" + gunKey, List.of(m)));

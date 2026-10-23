@@ -442,7 +442,7 @@ public class DistillationColumnBlockEntity extends SmartBlockEntity implements F
    }
 
    private void refreshCapability() {
-      this.fluidCapability = this.handlerForCapability();
+      this.fluidCapability = null;
       this.invalidateCapabilities();
    }
 
@@ -457,10 +457,7 @@ public class DistillationColumnBlockEntity extends SmartBlockEntity implements F
          return null;
       }
 
-      if (this.fluidCapability == null) {
-         this.refreshCapability();
-      }
-
+      this.fluidCapability = this.handlerForCapability();
       return this.fluidCapability;
    }
 
@@ -509,6 +506,7 @@ public class DistillationColumnBlockEntity extends SmartBlockEntity implements F
       if (compound.contains("Controller")) {
          this.controller = NBTHelper.readBlockPos(compound, "Controller");
       }
+      this.refreshCapability();
 
       if (this.isController()) {
          this.window = compound.getBoolean("Window");

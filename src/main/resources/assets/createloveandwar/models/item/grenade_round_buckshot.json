@@ -139,7 +139,7 @@
         }
     },
     "textures": {
-        "default": "createloveandwar:skins/grenade_round_buckshot"
+        "default": "createloveandwar:skins/grenade_round_he"
     },
     "icons": {
         "default": "createloveandwar:item/grenade_round_buckshot"

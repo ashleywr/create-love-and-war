@@ -51,7 +51,7 @@ public final class StatResolver {
       }
 
       for (float pct : independentPercents) {
-         running *= 1.0F + pct / 100.0F;
+         running *= pct / 100.0F;
       }
 
       return running;

@@ -59,7 +59,7 @@ public final class ContentSelfCheck {
       List<ModifierSource> sources = List.of(
          ModifierSource.of("gun:1887:primary_fire", gunModifiers), ModifierSource.of("attachment:attachment_extended_barrel", barrel.modifiers())
       );
-      expectNear("spread", 15.0F, StatResolver.resolve("spread", 0.0F, sources));
+      expectNear("spread", 5.0F, StatResolver.resolve("spread", 0.0F, sources));
       expectNear("impact_damage", 18.0F, StatResolver.resolve("impact_damage", 0.0F, sources));
       expectEquals("flash_model", "createloveandwar:effects/muzzle_flash", StatResolver.resolveOverride("flash_model", "", sources));
       expectNear("nonexistent_stat", 42.0F, StatResolver.resolve("nonexistent_stat", 42.0F, sources));

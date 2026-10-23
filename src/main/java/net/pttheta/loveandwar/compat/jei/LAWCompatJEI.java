@@ -43,7 +43,7 @@ public class LAWCompatJEI implements IModPlugin {
                .catalyst(LAWBlocks.DRAWING_PRESS::get)
                .itemIcon((ItemLike)LAWBlocks.DRAWING_PRESS.get())
                .emptyBackground(177, 53)
-               .build("drawing", DrawingCategory::new)
+               .build(LoveAndWarMod.asResource("drawing"), DrawingCategory::new)
          );
       this.ALL
          .add(
@@ -52,7 +52,7 @@ public class LAWCompatJEI implements IModPlugin {
                .catalyst(LAWBlocks.STAMPING_PRESS::get)
                .itemIcon((ItemLike)LAWBlocks.STAMPING_PRESS.get())
                .emptyBackground(177, 53)
-               .build("stamping", StampingCategory::new)
+               .build(LoveAndWarMod.asResource("stamping"), StampingCategory::new)
          );
       this.ALL
          .add(
@@ -62,7 +62,7 @@ public class LAWCompatJEI implements IModPlugin {
                .catalyst(ModItems.THERMOSTAT::get)
                .doubleItemIcon((ItemLike)AllBlocks.FLUID_TANK.get(), (ItemLike)ModItems.THERMOSTAT.get())
                .emptyBackground(177, 200)
-               .build("fractional_distillation", FractionalDistillationCategory::new)
+               .build(LoveAndWarMod.asResource("fractional_distillation"), FractionalDistillationCategory::new)
          );
       this.ALL.forEach(category -> registration.addRecipeCategories(new IRecipeCategory[]{category}));
    }

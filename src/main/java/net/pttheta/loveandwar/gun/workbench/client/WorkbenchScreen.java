@@ -51,9 +51,9 @@ public class WorkbenchScreen extends AbstractContainerScreen<WorkbenchMenu> {
          graphics.fill(this.leftPos + slot.x - 1, this.topPos + slot.y - 1, this.leftPos + slot.x + 17, this.topPos + slot.y + 17, -13158601);
       }
 
-      if (((WorkbenchMenu)this.menu).blockEntity().isCrafting()) {
-         int total = Math.max(1, ((WorkbenchMenu)this.menu).blockEntity().craftTicksTotal());
-         int remaining = ((WorkbenchMenu)this.menu).blockEntity().craftTicksRemaining();
+      if (((WorkbenchMenu)this.menu).isCrafting()) {
+         int total = Math.max(1, ((WorkbenchMenu)this.menu).craftTicksTotal());
+         int remaining = ((WorkbenchMenu)this.menu).craftTicksRemaining();
          int width = (int)(34.0 * (total - remaining) / total);
          graphics.fill(this.leftPos + 116, this.topPos + 54, this.leftPos + 116 + Math.max(0, width), this.topPos + 58, -12603585);
       }

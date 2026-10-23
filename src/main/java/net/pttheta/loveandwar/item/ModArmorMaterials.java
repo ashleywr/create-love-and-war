@@ -19,7 +19,7 @@ public class ModArmorMaterials {
    public static final Holder<ArmorMaterial> TUNGSTEN = ARMOR_MATERIALS.register(
       "tungsten",
       () -> new ArmorMaterial(
-         defense(5, 7, 5, 4),
+         defense(4, 5, 7, 5),
          25,
          SoundEvents.ARMOR_EQUIP_IRON,
          () -> Ingredient.of(ModTags.Items.TUNGSTEN_REPAIR),

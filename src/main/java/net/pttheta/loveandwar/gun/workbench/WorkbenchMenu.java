@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -27,6 +28,7 @@ public class WorkbenchMenu extends AbstractContainerMenu {
    public static final int CRAFT_BUTTON = 0;
    public static final int PAINT_BUTTON = 1;
    private final WorkbenchBlockEntity blockEntity;
+   private final ContainerData craftingData = new SimpleContainerData(3);
    private final int partsCount;
    private final int gunSlotIndex;
    private final int playerInvStart;
@@ -65,23 +67,7 @@ public class WorkbenchMenu extends AbstractContainerMenu {
          this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 166));
       }
 
-      this.addDataSlots(new ContainerData() {
-         public int get(int index) {
-            return switch (index) {
-               case 0 -> blockEntity.isCrafting() ? 1 : 0;
-               case 1 -> blockEntity.craftTicksRemaining();
-               case 2 -> blockEntity.craftTicksTotal();
-               default -> 0;
-            };
-         }
-
-         public void set(int index, int value) {
-         }
-
-         public int getCount() {
-            return 3;
-         }
-      });
+      this.addDataSlots(this.craftingData);
    }
 
    public static WorkbenchMenu fromNetwork(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf) {
@@ -91,6 +77,28 @@ public class WorkbenchMenu extends AbstractContainerMenu {
       } else {
          throw new IllegalStateException("No workbench block entity at " + pos);
       }
+   }
+
+   @Override
+   public void broadcastChanges() {
+      if (this.blockEntity.getLevel() != null && !this.blockEntity.getLevel().isClientSide) {
+         this.craftingData.set(0, this.blockEntity.isCrafting() ? 1 : 0);
+         this.craftingData.set(1, this.blockEntity.craftTicksRemaining());
+         this.craftingData.set(2, this.blockEntity.craftTicksTotal());
+      }
+      super.broadcastChanges();
+   }
+
+   public boolean isCrafting() {
+      return this.craftingData.get(0) != 0;
+   }
+
+   public int craftTicksRemaining() {
+      return this.craftingData.get(1);
+   }
+
+   public int craftTicksTotal() {
+      return this.craftingData.get(2);
    }
 
    public WorkbenchBlockEntity blockEntity() {
