@@ -19,7 +19,7 @@ import net.pttheta.loveandwar.item.ModArmorMaterials;
 
 @EventBusSubscriber(modid = "createloveandwar")
 public class ModArmorItem extends ArmorItem {
-   private static final Map<Holder<ArmorMaterial>, MobEffectInstance> MATERIAL_TO_EFFECT_MAP = ImmutableMap.builder()
+   private static final Map<Holder<ArmorMaterial>, MobEffectInstance> MATERIAL_TO_EFFECT_MAP = ImmutableMap.<Holder<ArmorMaterial>, MobEffectInstance>builder()
       .put(ModArmorMaterials.TUNGSTEN, new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1, false, false, true))
       .build();
 

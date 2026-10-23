@@ -15,23 +15,23 @@ public class LAWPonderPlugin implements PonderPlugin {
    }
 
    public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-      super.registerScenes(helper);
+      PonderPlugin.super.registerScenes(helper);
       LAWPonder.register(helper);
    }
 
    public void registerTags(PonderTagRegistrationHelper<ResourceLocation> helper) {
-      super.registerTags(helper);
+      PonderPlugin.super.registerTags(helper);
    }
 
    public void registerSharedText(SharedTextRegistrationHelper helper) {
-      super.registerSharedText(helper);
+      PonderPlugin.super.registerSharedText(helper);
    }
 
    public void onPonderLevelRestore(PonderLevel ponderLevel) {
-      super.onPonderLevelRestore(ponderLevel);
+      PonderPlugin.super.onPonderLevelRestore(ponderLevel);
    }
 
    public void indexExclusions(IndexExclusionHelper helper) {
-      super.indexExclusions(helper);
+      PonderPlugin.super.indexExclusions(helper);
    }
 }

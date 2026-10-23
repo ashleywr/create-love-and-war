@@ -553,7 +553,7 @@ public final class TurboRigBakedModel implements BakedModel {
       }
 
       public List<RenderType> getRenderTypes(ItemStack stack, boolean fabulous) {
-         return this.blockRendered ? List.of(RenderType.cutout()) : super.getRenderTypes(stack, fabulous);
+         return this.blockRendered ? List.of(RenderType.cutout()) : BakedModel.super.getRenderTypes(stack, fabulous);
       }
 
       public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random) {

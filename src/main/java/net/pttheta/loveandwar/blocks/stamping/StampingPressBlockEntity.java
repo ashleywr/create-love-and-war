@@ -239,7 +239,7 @@ public class StampingPressBlockEntity extends KineticBlockEntity implements Stam
          return assemblyRecipe;
       }
 
-      for (RecipeHolder<StampingRecipe> holder : this.getLevel().getRecipeManager().getAllRecipesFor((RecipeType)ModRecipes.STAMPING_TYPE.get())) {
+      for (RecipeHolder<StampingRecipe> holder : this.getLevel().getRecipeManager().getAllRecipesFor(ModRecipes.STAMPING_TYPE.get())) {
          StampingRecipe recipe = (StampingRecipe)holder.value();
          if (recipe.getTemplate().getItem() == template.getItem() && recipe.getIngredient().test(item)) {
             return Optional.of(holder);

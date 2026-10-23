@@ -64,6 +64,6 @@ public class ModBlockLootTables extends BlockLootSubProvider {
    }
 
    protected Iterable<Block> getKnownBlocks() {
-      return ModBlocks.BLOCKS.getEntries().stream().map(DeferredHolder::get)::iterator;
+      return ModBlocks.BLOCKS.getEntries().stream().map(holder -> (Block)holder.get())::iterator;
    }
 }

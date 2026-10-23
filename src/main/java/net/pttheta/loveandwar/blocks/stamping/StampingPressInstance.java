@@ -28,7 +28,7 @@ public class StampingPressInstance extends ShaftVisual<StampingPressBlockEntity>
       this.transformModels(partialTick);
    }
 
-   public void beginFrame(Context ctx) {
+   public void beginFrame(dev.engine_room.flywheel.api.visual.DynamicVisual.Context ctx) {
       this.transformModels(ctx.partialTick());
    }
 

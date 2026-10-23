@@ -5,7 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import net.createmod.catnip.utility.VecHelper;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;

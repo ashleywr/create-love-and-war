@@ -17,25 +17,25 @@ import net.pttheta.loveandwar.blocks.petrochem.DistillationColumnModel;
 import net.pttheta.loveandwar.blocks.stamping.StampingPressBlock;
 
 public class LAWBlocks {
-   public static final BlockEntry<DrawingPressBlock> DRAWING_PRESS = ((BlockBuilder)((BlockBuilder)((BlockBuilder)LoveAndWarMod.LAWREGISTRATE
+   public static final BlockEntry<DrawingPressBlock> DRAWING_PRESS = LoveAndWarMod.LAWREGISTRATE
                .block("drawing_press", DrawingPressBlock::new)
                .initialProperties(SharedProperties::stone)
                .properties(p -> p.noOcclusion().mapColor(MapColor.PODZOL))
-               .transform(TagGen.axeOrPickaxe()))
+               .transform(TagGen.axeOrPickaxe())
             .blockstate(BlockStateGen.horizontalBlockProvider(true))
-            .transform(TagGen.axeOrPickaxe()))
+            .transform(TagGen.axeOrPickaxe())
          .item(AssemblyOperatorBlockItem::new)
-         .transform(ModelGen.customItemModel()))
+         .transform(ModelGen.customItemModel())
       .register();
-   public static final BlockEntry<StampingPressBlock> STAMPING_PRESS = ((BlockBuilder)((BlockBuilder)((BlockBuilder)LoveAndWarMod.LAWREGISTRATE
+   public static final BlockEntry<StampingPressBlock> STAMPING_PRESS = LoveAndWarMod.LAWREGISTRATE
                .block("stamping_press", StampingPressBlock::new)
                .initialProperties(SharedProperties::stone)
                .properties(p -> p.noOcclusion().mapColor(MapColor.PODZOL))
-               .transform(TagGen.axeOrPickaxe()))
+               .transform(TagGen.axeOrPickaxe())
             .blockstate(BlockStateGen.horizontalBlockProvider(true))
-            .transform(TagGen.axeOrPickaxe()))
+            .transform(TagGen.axeOrPickaxe())
          .item(AssemblyOperatorBlockItem::new)
-         .transform(ModelGen.customItemModel()))
+         .transform(ModelGen.customItemModel())
       .register();
    public static final BlockEntry<DistillationColumnBlock> DISTILLATION_COLUMN = ((BlockBuilder)((BlockBuilder)LoveAndWarMod.LAWREGISTRATE
             .block("distillation_column", DistillationColumnBlock::new)

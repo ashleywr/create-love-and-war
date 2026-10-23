@@ -18,23 +18,27 @@ public class LAWBlockEntityTypes {
    public static final BlockEntityEntry<DrawingPressBlockEntity> DRAWING_PRESS = LoveAndWarMod.LAWREGISTRATE
       .blockEntity("drawing_press", DrawingPressBlockEntity::new)
       .visual(() -> DrawingPressInstance::new)
-      .validBlocks(new NonNullSupplier[]{LAWBlocks.DRAWING_PRESS})
+      .validBlocks(LAWBlocks.DRAWING_PRESS)
       .renderer(() -> DrawingPressRenderer::new)
       .register();
    public static final BlockEntityEntry<StampingPressBlockEntity> STAMPING_PRESS = LoveAndWarMod.LAWREGISTRATE
       .blockEntity("stamping_press", StampingPressBlockEntity::new)
       .visual(() -> StampingPressInstance::new)
-      .validBlocks(new NonNullSupplier[]{LAWBlocks.STAMPING_PRESS})
+      .validBlocks(LAWBlocks.STAMPING_PRESS)
       .renderer(() -> StampingPressRenderer::new)
       .register();
    public static final BlockEntityEntry<DistillationColumnBlockEntity> DISTILLATION_COLUMN = LoveAndWarMod.LAWREGISTRATE
       .blockEntity("distillation_column_block_entity", DistillationColumnBlockEntity::new)
-      .validBlocks(new NonNullSupplier[]{LAWBlocks.DISTILLATION_COLUMN})
+      .validBlocks(LAWBlocks.DISTILLATION_COLUMN)
       .renderer(() -> DistillationColumnRenderer::new)
       .registerCapability(
-         event -> event.registerBlockEntity(FluidHandler.BLOCK, (BlockEntityType)DISTILLATION_COLUMN.get(), (be, ctx) -> be.getFluidHandlerCapability())
+         event -> event.registerBlockEntity(FluidHandler.BLOCK, distillationColumnType(), (be, ctx) -> be.getFluidHandlerCapability())
       )
       .register();
+
+   private static BlockEntityType<DistillationColumnBlockEntity> distillationColumnType() {
+      return DISTILLATION_COLUMN.get();
+   }
 
    public static void register() {
    }

@@ -15,7 +15,7 @@ public class ModEntities {
       "robotdog", () -> Builder.of(RobotdogEntity::new, MobCategory.CREATURE).sized(1.0F, 1.0F).build("robotdog")
    );
    public static final DeferredHolder<EntityType<?>, EntityType<ShotProjectile>> SHOT_PROJECTILE = ENTITY_TYPES.register(
-      "shot_projectile", () -> Builder.of(ShotProjectile::new, MobCategory.MISC).sized(0.25F, 0.25F).build("shot_projectile")
+      "shot_projectile", () -> Builder.<ShotProjectile>of(ShotProjectile::new, MobCategory.MISC).sized(0.25F, 0.25F).build("shot_projectile")
    );
 
    public static void register(IEventBus eventBus) {

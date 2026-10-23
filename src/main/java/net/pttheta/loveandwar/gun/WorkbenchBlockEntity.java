@@ -96,7 +96,7 @@ public class WorkbenchBlockEntity extends BlockEntity implements MenuProvider {
       if (!level.isClientSide && this.def != null && this.craftingRecipeId == null) {
          PartsInput input = new PartsInput(this.partsInv);
 
-         for (RecipeHolder<GunFabricationRecipe> holder : level.getRecipeManager().getAllRecipesFor((RecipeType)ModWorkbenchRecipes.GUN_FABRICATION_TYPE.get())) {
+         for (RecipeHolder<GunFabricationRecipe> holder : level.getRecipeManager().getAllRecipesFor(ModWorkbenchRecipes.GUN_FABRICATION_TYPE.get())) {
             GunFabricationRecipe recipe = (GunFabricationRecipe)holder.value();
             ItemStack result = recipe.getResultItem(level.registryAccess());
             if (this.def.canCraft(result) && !recipe.planConsumption(input).isEmpty() && this.canAcceptOutput(result)) {
