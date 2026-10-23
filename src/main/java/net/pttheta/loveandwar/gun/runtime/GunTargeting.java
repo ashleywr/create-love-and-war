@@ -1,5 +1,6 @@
 package net.pttheta.loveandwar.gun.runtime;
 
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +30,9 @@ import net.pttheta.loveandwar.item.custom.AmmoPouchContents;
 @EventBusSubscriber(modid = "createloveandwar")
 public final class GunTargeting {
     private static final Map<ServerPlayer, Lock> LOCKS = new WeakHashMap<>();
+    private static final List<Class<? extends Entity>> FLYING_TARGETS = List.of(FlyingMob.class, EnderDragon.class, WitherBoss.class, Blaze.class);
+    private static final List<Class<? extends Entity>> MONSTER_TARGETS = List.of(Monster.class, Raider.class);
+    private static final List<Class<? extends Entity>> OTHER_TARGETS = List.of(Entity.class);
     private static final class Lock {
         ItemStack stack;
         int candidate = -1, confirmed = -1, ticks;
@@ -56,8 +60,10 @@ public final class GunTargeting {
             var candidates = player.level().getEntities(player, new AABB(player.getX() - range, player.getY() - range, player.getZ() - range,
                     player.getX() + range, player.getY() + range, player.getZ() + range));
             float closest = 90000;
-            // Retain authored category ordering/ties, but perform the world query only once.
-            for (String type : def.targetTypes()) for (Entity entity : candidates) {
+            // ProjectileDefinition.Targets expands each category before querying; strict distance preserves class ties.
+            // Reuse one world query, traversing its order separately for every expanded class.
+            for (String type : def.targetTypes()) for (var targetClass : targetClasses(type)) for (Entity entity : candidates) {
+                if (!targetClass.isInstance(entity)) continue;
                 float distance = player.distanceTo(entity);
                 if (matches(type, entity) && distance < closest && ProjectileMotion.withinCone(player.getLookAngle(), entity.position().subtract(player.position()), def.lockCone())
                         && player.level().clip(new ClipContext(player.getEyePosition(), entity.position(), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
@@ -70,6 +76,14 @@ public final class GunTargeting {
         if (target == null) { lock.ticks = 0; lock.confirmed = -1; }
         // Quirk kept: lockTime is ticks, strict greater-than, with no LOS recheck for a retained lock.
         else if (++lock.ticks > def.lockTime()) lock.confirmed = target.getId();
+    }
+
+    private static List<Class<? extends Entity>> targetClasses(String type) {
+        return switch (type) {
+            case "flyingMob" -> FLYING_TARGETS;
+            case "monster" -> MONSTER_TARGETS;
+            default -> OTHER_TARGETS;
+        };
     }
 
     private static boolean matches(String type, Entity entity) {

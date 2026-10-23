@@ -218,6 +218,35 @@ public final class ProjectileContextGameTests {
     }
 
     @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
+    public static void flyingLockTiesPreferOriginalExpandedClassOrder(GameTestHelper helper) {
+        // ProjectileDefinition.Targets: FlyingMob, EnderDragon, WitherBoss, Blaze.
+        // Spawn the lower-priority Blaze first so an unordered union selects the wrong target.
+        assertFlyingLockTie(helper, EntityType.GHAST);
+        assertFlyingLockTie(helper, EntityType.WITHER);
+        helper.succeed();
+    }
+
+    private static void assertFlyingLockTie(GameTestHelper helper, EntityType<? extends net.minecraft.world.entity.Mob> preferredType) {
+        var owner = shooter(helper);
+        var first = helper.spawn(EntityType.BLAZE, new Vec3(2.75, 6.5, 10.5));
+        var preferred = helper.spawn(preferredType, new Vec3(2.25, 6.5, 10.5));
+        first.setNoAi(true); first.setNoGravity(true);
+        preferred.setNoAi(true); preferred.setNoGravity(true);
+        var gun = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:chassepot")));
+        gun.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(List.of(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:gyrojet_heatseeker"))))));
+        owner.setItemInHand(InteractionHand.MAIN_HAND, gun);
+        try {
+            helper.assertTrue(owner.distanceTo(first) == owner.distanceTo(preferred), "Fixture targets must be exactly equidistant");
+            var candidates = helper.getLevel().getEntities(owner, first.getBoundingBox().minmax(preferred.getBoundingBox()).inflate(1));
+            helper.assertTrue(candidates.indexOf(first) >= 0 && candidates.indexOf(first) < candidates.indexOf(preferred),
+                    "Fixture must present the lower-priority Blaze first in the world query");
+            for (int tick = 0; tick < 21; tick++) GunTargeting.tick(owner, gun);
+            helper.assertTrue(GunTargeting.target(owner, gun) == preferred,
+                    "Original expanded flying classes prioritize " + preferred.getType() + " over an equidistant Blaze");
+        } finally { first.discard(); preferred.discard(); }
+    }
+
+    @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
     public static void burstProjectilesSubtractCurrentCycleProgressFromFuse(GameTestHelper helper) {
         var owner = shooter(helper);
         owner.setXRot(-90);
