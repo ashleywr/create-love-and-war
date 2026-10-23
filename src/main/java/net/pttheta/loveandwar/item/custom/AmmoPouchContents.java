@@ -19,4 +19,14 @@ public record AmmoPouchContents(List<ItemStack> items) {
    public boolean isEmpty() {
       return this.items.isEmpty();
    }
+
+   @Override
+   public boolean equals(Object other) {
+      return this == other || other instanceof AmmoPouchContents contents && ItemStack.listMatches(items, contents.items);
+   }
+
+   @Override
+   public int hashCode() {
+      return ItemStack.hashStackList(items);
+   }
 }
