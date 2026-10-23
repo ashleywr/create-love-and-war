@@ -38,6 +38,7 @@ public final class GunProjectile extends Projectile {
     private static final EntityDataAccessor<Integer> LOCK = SynchedEntityData.defineId(GunProjectile.class, EntityDataSerializers.INT);
     private static final Codec<List<Modifier>> MODIFIERS = Modifier.CODEC.listOf();
     private CompoundTag cachedContext;
+    private CompoundTag cachedSaveContext;
     private ProjectileDef definition;
     private ResourceLocation bulletId;
     private List<ModifierSource> sources = List.of();
@@ -74,17 +75,10 @@ public final class GunProjectile extends Projectile {
         var core = authored.core();
         var resolved = new ProjectileDef(new ProjectileDef.Core(core.shotCount(), stat("splash_radius", core.splashRadius(), modifiers, context),
                 core.impacts(), core.penetrationPower()), resolvedMotion, authored.particles(), resolvedBehavior);
-        var payload = new CompoundTag();
-        payload.putString("Bullet", id.toString());
-        payload.put("Definition", ProjectileDef.CODEC.encodeStart(NbtOps.INSTANCE, resolved).getOrThrow());
-        // Impact effects need the firing context after save/reload; no global entity-ID lookup table.
         var flat = modifiers.stream().flatMap(source -> source.modifiers().stream()).toList();
-        payload.put("Modifiers", MODIFIERS.encodeStart(NbtOps.INSTANCE, flat).getOrThrow());
-        payload.putInt("AttachmentCount", ModifierContext.attachmentCount(modifiers));
-        entityData.set(CONTEXT, payload);
+        installContext(id, resolved, flat, ModifierContext.attachmentCount(modifiers));
         entityData.set(LOCK, target == null ? -1 : target.getId());
         lockTargetUuid = target == null ? null : target.getUUID();
-        refreshContext();
         fuseRemaining = resolvedBehavior.fuseTime() > 0 ? Mth.ceil(resolvedBehavior.fuseTime() * 20) - Math.max(0, progressTicks) : 0;
     }
 
@@ -92,10 +86,43 @@ public final class GunProjectile extends Projectile {
         return StatResolver.resolve(name, base, sources, context);
     }
 
+    private static CompoundTag encodeDefinition(ResourceLocation id, ProjectileDef def) {
+        var payload = new CompoundTag();
+        if (id != null && def != null) {
+            payload.putString("Bullet", id.toString());
+            payload.put("Definition", ProjectileDef.CODEC.encodeStart(NbtOps.INSTANCE, def).getOrThrow());
+        }
+        return payload;
+    }
+
+    private void installContext(ResourceLocation id, ProjectileDef resolved, List<Modifier> modifiers, int attachmentCount) {
+        // Observers need motion, responses, trails and identity. Impacts/calculation inputs stay authoritative.
+        var visual = new ProjectileDef(new ProjectileDef.Core(1, 0, List.of(), 0), resolved.motion(), resolved.particles(), resolved.behavior());
+        entityData.set(CONTEXT, encodeDefinition(id, visual));
+        cachedContext = entityData.get(CONTEXT);
+        definition = resolved;
+        bulletId = id;
+        sources = List.of(ModifierSource.of("projectile", List.copyOf(modifiers)), ModifierSource.gunInputs(attachmentCount));
+        cachedSaveContext = null;
+    }
+
+    private CompoundTag saveContext() {
+        refreshContext();
+        if (cachedSaveContext == null) {
+            var payload = encodeDefinition(bulletId, definition);
+            var modifiers = sources.stream().flatMap(source -> source.modifiers().stream()).toList();
+            payload.put("Modifiers", MODIFIERS.encodeStart(NbtOps.INSTANCE, modifiers).getOrThrow());
+            payload.putInt("AttachmentCount", ModifierContext.attachmentCount(sources));
+            cachedSaveContext = payload;
+        }
+        return cachedSaveContext;
+    }
+
     private void refreshContext() {
         var payload = entityData.get(CONTEXT);
         if (payload == cachedContext) return;
         cachedContext = payload;
+        cachedSaveContext = null;
         if (!payload.contains("Definition")) { bulletId = null; definition = null; sources = List.of(); return; }
         bulletId = ResourceLocation.tryParse(payload.getString("Bullet"));
         definition = ProjectileDef.CODEC.parse(NbtOps.INSTANCE, payload.getCompound("Definition")).result().orElse(null);
@@ -216,7 +243,7 @@ public final class GunProjectile extends Projectile {
 
     @Override protected void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.put("GunContext", entityData.get(CONTEXT).copy());
+        tag.put("GunContext", saveContext().copy());
         tag.putInt("Fuse", fuseRemaining); tag.putInt("LifeTime", lifeTime);
         tag.putBoolean("Stuck", stuck); tag.putBoolean("Detonated", detonated);
         if (lockTargetUuid != null) tag.putUUID("LockTarget", lockTargetUuid);
@@ -224,8 +251,18 @@ public final class GunProjectile extends Projectile {
 
     @Override protected void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        entityData.set(CONTEXT, tag.getCompound("GunContext").copy());
-        refreshContext();
+        var payload = tag.getCompound("GunContext");
+        var id = ResourceLocation.tryParse(payload.getString("Bullet"));
+        var def = payload.contains("Definition") ? ProjectileDef.CODEC.parse(NbtOps.INSTANCE, payload.getCompound("Definition")).result().orElse(null) : null;
+        if (def != null && id != null) {
+            var modifiers = payload.contains("Modifiers") ? MODIFIERS.parse(NbtOps.INSTANCE, payload.get("Modifiers")).result().orElse(List.of()) : List.<Modifier>of();
+            installContext(id, def, modifiers, payload.getInt("AttachmentCount"));
+            cachedSaveContext = payload.copy();
+        } else {
+            entityData.set(CONTEXT, new CompoundTag());
+            cachedContext = null;
+            refreshContext();
+        }
         fuseRemaining = tag.getInt("Fuse"); lifeTime = tag.getInt("LifeTime");
         stuck = tag.getBoolean("Stuck"); detonated = tag.getBoolean("Detonated");
         lockTargetUuid = tag.hasUUID("LockTarget") ? tag.getUUID("LockTarget") : null;

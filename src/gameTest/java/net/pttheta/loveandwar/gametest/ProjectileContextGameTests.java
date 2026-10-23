@@ -5,6 +5,9 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.JsonOps;
 import java.util.List;
 import java.util.UUID;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -269,6 +272,40 @@ public final class ProjectileContextGameTests {
             bullet.detonate(BlockHitResult.miss(bullet.position(), Direction.DOWN, bullet.blockPosition()));
             helper.assertTrue(pig.getHealth() < health, "Projectile-world effects must not move to the owner's new dimension");
         } finally { bullet.discard(); pig.discard(); }
+        helper.succeed();
+    }
+
+    @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
+    public static void compactTrackingRetainsVisualPhysicsAndFullServerSave(GameTestHelper helper) {
+        var owner = shooter(helper);
+        var authored = GunContent.bullet("gyrojet_heatseeker_top").orElseThrow().projectiles().getFirst();
+        var gun = GunContent.gun("g11k2").orElseThrow();
+        var group = gun.actionGroups().getFirst();
+        var sources = net.pttheta.loveandwar.gun.runtime.StatSources.forFiring(gun, group, net.pttheta.loveandwar.gun.runtime.GunAttachments.EMPTY);
+        var bullet = projectile(helper, owner, authored, sources, null, 0);
+        var receiver = new GunProjectile(ModEntities.BULLET.get(), helper.getLevel());
+        var buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
+        try {
+            var packet = new ClientboundSetEntityDataPacket(bullet.getId(), bullet.getEntityData().getNonDefaultValues());
+            ClientboundSetEntityDataPacket.STREAM_CODEC.encode(buffer, packet);
+            var decoded = ClientboundSetEntityDataPacket.STREAM_CODEC.decode(buffer);
+            receiver.getEntityData().assignValues(decoded.packedItems());
+            helper.assertTrue(receiver.definition().motion().equals(bullet.definition().motion())
+                    && receiver.definition().behavior().equals(bullet.definition().behavior())
+                    && receiver.definition().particles().equals(bullet.definition().particles())
+                    && receiver.bulletId().equals(bullet.bulletId()), "Tracking must preserve every client physics, response and visual input");
+            helper.assertTrue(receiver.definition().core().impacts().isEmpty(), "Server impact definitions are unnecessary in tracking metadata");
+            for (var value : decoded.packedItems()) if (value.value() instanceof CompoundTag payload && payload.contains("Bullet")) {
+                helper.assertTrue(!payload.contains("Modifiers") && !payload.contains("AttachmentCount"), "Server calculation inputs must not be sent to observers");
+            }
+            var saved = new CompoundTag(); bullet.saveWithoutId(saved);
+            helper.assertTrue(!saved.getCompound("GunContext").getCompound("Definition").getList("impacts", 10).isEmpty()
+                    && saved.getCompound("GunContext").contains("Modifiers"), "Disk context retains full authoritative impacts and modifiers");
+            saved.getCompound("GunContext").getCompound("Definition").remove("impacts");
+            var secondSave = new CompoundTag(); bullet.saveWithoutId(secondSave);
+            helper.assertTrue(!secondSave.getCompound("GunContext").getCompound("Definition").getList("impacts", 10).isEmpty(),
+                    "Mutating an emitted save must not corrupt the cached authoritative context");
+        } finally { buffer.release(); bullet.discard(); receiver.discard(); }
         helper.succeed();
     }
 }
