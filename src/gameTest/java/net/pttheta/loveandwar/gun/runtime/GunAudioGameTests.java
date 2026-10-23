@@ -32,7 +32,7 @@ import net.pttheta.loveandwar.item.ModDataComponents;
 @GameTestHolder("createloveandwar")
 @PrefixGameTestTemplate(false)
 public final class GunAudioGameTests {
-    private static final class Listener implements AutoCloseable {
+    static final class Listener implements AutoCloseable {
         final FakePlayer player;
         final List<Packet<?>> packets = new ArrayList<>();
         final List<ServerPlayer> players;
@@ -51,6 +51,8 @@ public final class GunAudioGameTests {
             this.player.connection = new ServerGamePacketListenerImpl(level.getServer(), new Connection(PacketFlow.SERVERBOUND), this.player,
                     CommonListenerCookie.createInitial(this.player.getGameProfile(), false)) {
                 @Override public void send(Packet<?> packet) { packets.add(packet); }
+                // This in-process packet observer has no negotiated Netty channel (including time-sync probes).
+                @Override public boolean hasChannel(ResourceLocation id) { return false; }
             };
             // A scoped observer in the already-loaded server, not a replacement registry/bootstrap.
             // PlayerList exposes an unmodifiable view, so the fixture temporarily accesses its backing list.
@@ -89,7 +91,7 @@ public final class GunAudioGameTests {
         try (var listener = new Listener(helper)) {
             var gun = GunContent.gun("g11k2").orElseThrow();
             var group = gun.actionGroups().stream().filter(g -> g.key().equals("primary_fire")).findFirst().orElseThrow();
-            GunEngine.runImmediateSounds(listener.player, new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:g11k2"))), gun, group);
+            GunEngine.triggerSounds(listener.player, new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:g11k2"))), gun, group);
             helper.assertTrue(listener.packets.size() == 1,
                     "A bundled sound must transmit one playback request; got " + listener.packets.size() + " packets");
             helper.assertTrue(listener.packets.getFirst() instanceof ClientboundCustomPayloadPacket packet && packet.payload() instanceof SGunSound,
@@ -111,7 +113,7 @@ public final class GunAudioGameTests {
             var stack = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:g11k2")));
             var silencer = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:attachment_silencer")));
             stack.set(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY.with("barrel", List.of(silencer)));
-            GunEngine.runImmediateSounds(listener.player, stack, gun, group);
+            GunEngine.triggerSounds(listener.player, stack, gun, group);
             helper.assertTrue(listener.packets.size() == 1, "Silenced gun transmits exactly one sound request");
             var request = (SGunSound)((ClientboundCustomPayloadPacket)listener.packets.getFirst()).payload();
             helper.assertTrue(request.volumeMultiplier() == 0.25F, "Original silencer scales loudness to 25 percent");
@@ -139,7 +141,7 @@ public final class GunAudioGameTests {
         try (var shooter = new Listener(helper); var near = new Listener(helper, 199); var far = new Listener(helper, 201)) {
             var gun = GunContent.gun("g11k2").orElseThrow();
             var group = gun.actionGroups().stream().filter(g -> g.key().equals("primary_fire")).findFirst().orElseThrow();
-            GunEngine.runImmediateSounds(shooter.player,
+            GunEngine.triggerSounds(shooter.player,
                     new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("createloveandwar:g11k2"))), gun, group);
             helper.assertTrue(shooter.packets.size() == 1 && near.packets.size() == 1 && far.packets.isEmpty(),
                     "PlaySound actions propagate within 200 blocks; this does not establish audible attenuation distance");

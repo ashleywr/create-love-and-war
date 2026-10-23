@@ -7,7 +7,7 @@ import net.pttheta.loveandwar.gun.content.stat.Modifier;
 
 public record ActionDef(
    String actionType,
-   int delay,
+   float delay,
    float duration,
    List<SoundDef> sounds,
    String itemStack,
@@ -22,7 +22,7 @@ public record ActionDef(
    public static final Codec<ActionDef> CODEC = RecordCodecBuilder.create(
       instance -> instance.group(
             Codec.STRING.fieldOf("actionType").forGetter(ActionDef::actionType),
-            Codec.INT.optionalFieldOf("delay", 0).forGetter(ActionDef::delay),
+            Codec.FLOAT.optionalFieldOf("delay", 0.0F).forGetter(ActionDef::delay),
             Codec.FLOAT.optionalFieldOf("duration", 0.0F).forGetter(ActionDef::duration),
             SoundDef.CODEC.listOf().optionalFieldOf("sounds", List.of()).forGetter(ActionDef::sounds),
             Codec.STRING.optionalFieldOf("itemStack", "").forGetter(ActionDef::itemStack),

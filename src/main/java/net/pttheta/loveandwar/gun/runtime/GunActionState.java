@@ -81,6 +81,20 @@ public record GunActionState(
       return new GunActionState(group, elapsed, total, List.of(), this.modeValues, this.activeToggles, cooldown, remaining, waiting);
    }
 
+   public GunActionState withReloadGroup(String group, int duration, List<String> pending) {
+      if (!activeGroup.equals(group)) return withGroup(group, duration + 1, pending);
+      return new GunActionState(group, groupTicksElapsed, groupTotalTicks + duration, pending, modeValues, activeToggles,
+         cooldownUntilGameTime, burstRemaining, waitingForRelease);
+   }
+
+   /** Reused LoadOne instances trigger at P=D+1,2D+1,... rather than resetting the lifetime clock. */
+   public int reloadAnimationElapsed(int duration) {
+      if (duration <= 0) return groupTicksElapsed;
+      int triggers = Math.max(1, (groupTotalTicks - 1) / duration);
+      int lastTrigger = triggers == 1 ? 0 : (triggers - 1) * duration + 1;
+      return Math.max(0, groupTicksElapsed - lastTrigger);
+   }
+
    public GunActionState tickedGroup() {
       return new GunActionState(
          this.activeGroup,

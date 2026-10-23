@@ -60,7 +60,11 @@ final class GunPoseResolver {
          rawT = state.groupTicksElapsed() + partialTick;
       }
 
-      Optional<ActionDef> animAction = def.actionGroups().stream().filter(g -> g.key().equals(groupKey)).findFirst().flatMap(GunPoseResolver::animationOf);
+      var currentGroup = def.actionGroups().stream().filter(g -> g.key().equals(groupKey)).findFirst();
+      if (!localPlayer && def.reloads().stream().anyMatch(reload -> reload.loadOneActionKey().equals(groupKey)) && currentGroup.isPresent()) {
+         rawT = state.reloadAnimationElapsed(currentGroup.get().durationTicks()) + partialTick;
+      }
+      Optional<ActionDef> animAction = currentGroup.flatMap(GunPoseResolver::animationOf);
       Optional<String> seqName = animAction.map(ActionDef::anim);
       Optional<Flanimation.Sequence> seqOpt = seqName.flatMap(anim::sequence);
       float rawSpeed = 1.0F;

@@ -66,7 +66,10 @@ public final class GunFireScheduler {
         var cycle = cycles == null ? null : cycles.get(stack);
         if (cycle == null) return;
         cycle.held = false;
-        if (cycle.group != null && GunFireMode.of(cycle.group.repeatMode()) == GunFireMode.FULL_AUTO) finish(stack, cycle);
+        if (cycle.group != null && GunFireMode.of(cycle.group.repeatMode()) == GunFireMode.FULL_AUTO) {
+            GunActionTimeline.finishAfterTick(player, stack, cycle.group.key());
+            finish(stack, cycle);
+        }
     }
 
     static void releaseAll(ServerPlayer player) {
@@ -100,6 +103,7 @@ public final class GunFireScheduler {
         var cycles = CYCLES.get(player);
         var cycle = cycles == null ? null : cycles.get(stack);
         if (cycle != null) {
+            if (cycle.group != null) GunActionTimeline.cancel(player, stack, cycle.group.key());
             cycle.group = null;
             cycle.retriggers = 0;
         }
@@ -164,10 +168,16 @@ public final class GunFireScheduler {
         return state.activeGroup().equals(group) ? state.groupTicksElapsed() : 0;
     }
 
+    static boolean owns(ServerPlayer player, ItemStack stack, String group) {
+        var cycles = CYCLES.get(player);
+        var cycle = cycles == null ? null : cycles.get(stack);
+        return cycle != null && cycle.group != null && cycle.group.key().equals(group);
+    }
+
     private static void emit(ServerPlayer player, ItemStack stack, Cycle cycle, int count) {
         for (int i = 0; i < count; i++) {
             cycle.triggers++;
-            GunEngine.runImmediateActions(player, stack, cycle.gun, cycle.group, cycle.attachments);
+            GunEngine.triggerActions(player, stack, cycle.gun, cycle.group, cycle.attachments);
         }
     }
 
@@ -187,9 +197,7 @@ public final class GunFireScheduler {
     }
 
     private static int durationPerTrigger(ActionGroup group) {
-        float seconds = group.repeatDelay();
-        for (var action : group.actions()) seconds = Math.max(seconds, action.duration());
-        return Math.max(0, (int)Math.floor(seconds * 20));
+        return GunEngine.groupDurationTicks(group);
     }
 
     @SubscribeEvent

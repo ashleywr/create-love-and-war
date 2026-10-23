@@ -2,7 +2,6 @@ package net.pttheta.loveandwar.gun.runtime;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.pttheta.loveandwar.gun.content.ActionGroup;
@@ -19,83 +18,60 @@ final class GunReload {
    private GunReload() {
    }
 
-   static void start(ServerPlayer player, ItemStack gunStack, GunDef def, GunDef.ReloadDef reloadDef, GunActionState state) {
-      Optional<MagazineDef> magOpt = GunEngine.findMagazineDef(player, def);
-      if (magOpt.isEmpty()) {
-         LOGGER.warn(
-            "Gun '{}' reload '{}' could not resolve a MagazineDef for its magazines[0] slot (matchByNames={}, matchByTags={}) - no matching magazines/*.json tags/name found",
-            new Object[]{
-               GunLookup.contentKey(gunStack),
-               reloadDef.startActionKey(),
-               def.magazines().isEmpty() ? List.of() : def.magazines().get(0).matchByNames(),
-               def.magazines().isEmpty() ? List.of() : def.magazines().get(0).matchByTags()
-            }
-         );
-      } else {
-         MagazineDef mag = magOpt.get();
-         GunEngine.diag("reload start: gun={} magazine resolved, numRounds={} loadMode={}", GunLookup.contentKey(gunStack), mag.numRounds(), mag.ammoLoadMode());
-         AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
-         int needed = mag.numRounds() - rounds.items().size();
-         if (needed <= 0) {
-            GunEngine.diag("reload skipped: gun={} already full ({}/{})", GunLookup.contentKey(gunStack), rounds.items().size(), mag.numRounds());
-         } else {
-            List<String> queue = new ArrayList<>();
-            if (!reloadDef.ejectActionKey().isEmpty()) {
-               queue.add(reloadDef.ejectActionKey());
-            }
-
-            if (needed > 0 && "OneBulletAtATime".equals(mag.ammoLoadMode()) && !reloadDef.loadOneActionKey().isEmpty()) {
-               int available = countMatchingBullets(player, mag);
-               int toLoad = Math.min(needed, available);
-
-               for (int i = 0; i < toLoad; i++) {
-                  queue.add(reloadDef.loadOneActionKey());
-               }
-            }
-
-            if ("FullMag".equals(mag.ammoLoadMode()) && !reloadDef.loadOneActionKey().isEmpty() && countMatchingBullets(player, mag) > 0) {
-               queue.add(reloadDef.loadOneActionKey());
-            }
-
-            if (!reloadDef.endActionKey().isEmpty()) {
-               queue.add(reloadDef.endActionKey());
-            }
-
-            Optional<ActionGroup> startGroup = def.actionGroups().stream().filter(g -> g.key().equals(reloadDef.startActionKey())).findFirst();
-            int totalTicks = startGroup.map(GunEngine::groupDurationTicks).orElse(0);
-            gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withGroup(reloadDef.startActionKey(), totalTicks, queue));
-            startGroup.ifPresent(g -> GunEngine.runImmediateSounds(player, gunStack, def, g));
-         }
+   static void start(ServerPlayer player, ItemStack gunStack, GunDef def, GunDef.ReloadDef reload, GunActionState state) {
+      var mag = GunEngine.findMagazineDef(player, def);
+      if (mag.isEmpty()) {
+         LOGGER.warn("Gun '{}' reload '{}' cannot resolve a magazine", GunLookup.contentKey(gunStack), reload.startActionKey());
+         return;
       }
+      if (!canLoad(player, gunStack, mag.get())) return;
+      enter(player, gunStack, def, reload, reload.startActionKey(), state, mag.get());
    }
 
    static void advance(ServerPlayer player, ItemStack gunStack, GunDef def, GunActionState state) {
-      List<String> pending = state.pendingReloadGroups();
-      if (pending.isEmpty()) {
+      var reload = def.reloads().stream().filter(value -> state.activeGroup().equals(value.startActionKey())
+         || state.activeGroup().equals(value.ejectActionKey()) || state.activeGroup().equals(value.loadOneActionKey())
+         || state.activeGroup().equals(value.endActionKey())).findFirst();
+      var mag = GunEngine.findMagazineDef(player, def);
+      if (reload.isEmpty() || mag.isEmpty()) {
          gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.idled());
-      } else {
-         String nextKey = pending.get(0);
-         List<String> rest = new ArrayList<>(pending.subList(1, pending.size()));
-         Optional<GunDef.ReloadDef> reloadDef = def.reloads().stream().findFirst();
-         Optional<MagazineDef> magOpt = GunEngine.findMagazineDef(player, def);
-         boolean isLoadOne = reloadDef.<Boolean>map(rd -> rd.loadOneActionKey().equals(nextKey)).orElse(false);
-         boolean isEnd = reloadDef.<Boolean>map(rd -> rd.endActionKey().equals(nextKey)).orElse(false);
-         if (isLoadOne) {
-            magOpt.ifPresent(mag -> consumeOneBullet(player, gunStack, mag));
-         } else if (isEnd && magOpt.isPresent() && "FullMag".equals(magOpt.get().ammoLoadMode())) {
-            consumeFullMag(player, gunStack, magOpt.get());
-         }
+         return;
+      }
+      var rd = reload.get();
+      String next = "";
+      if (state.activeGroup().equals(rd.startActionKey())) {
+         next = !rd.ejectActionKey().isEmpty() ? rd.ejectActionKey()
+            : !rd.loadOneActionKey().isEmpty() ? rd.loadOneActionKey() : rd.endActionKey();
+      } else if (!state.activeGroup().equals(rd.endActionKey())) {
+         next = canLoad(player, gunStack, mag.get()) && !rd.loadOneActionKey().isEmpty() ? rd.loadOneActionKey() : rd.endActionKey();
+      }
+      if (next.isEmpty()) gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.idled());
+      else enter(player, gunStack, def, rd, next, state, mag.get());
+   }
 
-         Optional<ActionGroup> group = def.actionGroups().stream().filter(g -> g.key().equals(nextKey)).findFirst();
-         int totalTicks = group.map(GunEngine::groupDurationTicks).orElse(0);
-         gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withGroup(nextKey, totalTicks, rest));
-         group.ifPresent(g -> GunEngine.runImmediateSounds(player, gunStack, def, g));
+   private static void enter(ServerPlayer player, ItemStack stack, GunDef def, GunDef.ReloadDef reload, String key, GunActionState state, MagazineDef mag) {
+      var group = def.actionGroups().stream().filter(value -> value.key().equals(key)).findFirst();
+      int duration = group.map(GunEngine::groupDurationTicks).orElse(0);
+      // The original retriggers an active LoadOne instance, retaining progress and increasing duration*triggerCount.
+      stack.set(ModDataComponents.GUN_ACTION_STATE, state.withReloadGroup(key, duration, List.of()));
+      group.ifPresent(value -> GunEngine.triggerActions(player, stack, def, value,
+         stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY)));
+      // EnterReloadState invokes LoadOne after the initial actions. FullMag transfers here too, never at End.
+      if (key.equals(reload.loadOneActionKey())) {
+         if ("FullMag".equals(mag.ammoLoadMode())) consumeFullMag(player, stack, mag);
+         else consumeOneBullet(player, stack, mag);
       }
    }
 
-   private static int countMatchingBullets(ServerPlayer player, MagazineDef mag) {
+   private static boolean canLoad(ServerPlayer player, ItemStack stack, MagazineDef mag) {
+      return stack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY).items().size() < mag.numRounds()
+         && countMatchingBullets(player, stack, mag) > 0;
+   }
+
+   private static int countMatchingBullets(ServerPlayer player, ItemStack gunStack, MagazineDef mag) {
       int count = 0;
-      String requiredType = null;
+      var loaded = gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
+      String requiredType = mag.allRoundsMustBeIdentical() && !loaded.isEmpty() ? GunLookup.contentKey(loaded.items().getFirst()) : null;
 
       for (ItemStack s : player.getInventory().items) {
          if (!s.isEmpty() && GunLookup.matchesBullet(mag.matchingBullets(), s)) {

@@ -20,6 +20,13 @@ public record ActionGroup(
    List<ActionDef> actions,
    List<Modifier> modifiers
 ) {
+   /** Original ActionGroupInstance duration excludes action delays and floors authored seconds to ticks. */
+   public int durationTicks() {
+      float seconds = repeatDelay;
+      for (var action : actions) seconds = Math.max(seconds, action.duration());
+      return Math.max(0, (int)Math.floor(seconds * 20));
+   }
+
    public static final Codec<ActionGroup> CODEC = RecordCodecBuilder.create(
       instance -> instance.group(
             Codec.STRING.fieldOf("key").forGetter(ActionGroup::key),

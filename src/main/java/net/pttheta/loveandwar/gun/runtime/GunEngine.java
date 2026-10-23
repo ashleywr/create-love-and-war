@@ -142,23 +142,38 @@ public final class GunEngine {
    }
 
    public static void tick(ServerPlayer player, ItemStack gunStack) {
-      if (GunFireScheduler.tick(player, gunStack)) return;
-      GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
-      if (!state.activeGroup().isEmpty()) {
-         Optional<GunDef> defOpt = GunLookup.gunDef(gunStack);
-         if (!defOpt.isEmpty()) {
-            GunActionState ticked = state.tickedGroup();
-            if (ticked.groupTicksElapsed() < ticked.groupTotalTicks()) {
-               gunStack.set(ModDataComponents.GUN_ACTION_STATE, ticked);
-            } else {
-               if (!ticked.pendingReloadGroups().isEmpty()) {
-                  GunReload.advance(player, gunStack, defOpt.get(), ticked);
+      if (!player.isAlive() || player.isSpectator()) {
+         GunFireScheduler.releaseAll(player);
+         GunFireScheduler.cancel(player, gunStack);
+         GunActionTimeline.cancelAll(player, gunStack);
+         var state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+         gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.idled().withBurstRemaining(0).withWaitingForRelease(false));
+         return;
+      }
+      GunActionTimeline.tick(player, gunStack);
+      try {
+         var previous = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+         if (!previous.activeGroup().isEmpty() && !GunActionTimeline.owns(player, gunStack, previous.activeGroup())
+               && !GunFireScheduler.owns(player, gunStack, previous.activeGroup())) {
+            // Original ActionStack is runtime-only: saved/copied/transferred or dropped groups cannot resume.
+            gunStack.set(ModDataComponents.GUN_ACTION_STATE, previous.idled().withBurstRemaining(0).withWaitingForRelease(false));
+         }
+         if (GunFireScheduler.tick(player, gunStack)) return;
+         var state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+         if (!state.activeGroup().isEmpty() && GunActionTimeline.advanceState(player, gunStack, state.activeGroup())) {
+            var def = GunLookup.gunDef(gunStack);
+            if (def.isPresent()) {
+               var ticked = state.tickedGroup();
+               if (ticked.groupTicksElapsed() < ticked.groupTotalTicks()) {
+                  gunStack.set(ModDataComponents.GUN_ACTION_STATE, ticked);
+               } else if (isReloadGroup(def.get(), ticked.activeGroup())) {
+                  GunReload.advance(player, gunStack, def.get(), ticked);
                } else {
                   gunStack.set(ModDataComponents.GUN_ACTION_STATE, ticked.idled());
                }
             }
          }
-      }
+      } finally { GunActionTimeline.finishTick(player, gunStack); }
    }
 
    static void tryHeldFire(ServerPlayer player, ItemStack gunStack) {
@@ -317,7 +332,8 @@ public final class GunEngine {
       if (mode == GunFireMode.TOGGLE) {
          boolean turningOn = !state.activeToggles().contains(group.key());
          gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(group.key(), turningOn));
-         if (turningOn) runImmediateActions(player, gunStack, def, group, attachments);
+         if (turningOn) triggerActions(player, gunStack, def, group, attachments);
+         else GunActionTimeline.finishAfterTick(player, gunStack, group.key());
          return;
       }
       boolean firesRound = group.actions().stream().anyMatch(a -> "Shoot".equals(a.actionType()));
@@ -333,57 +349,44 @@ public final class GunEngine {
          GunReload.start(player, gunStack, def, reloadDef.get(), state.withBurstRemaining(0));
          return;
       }
-      GunActionState next = state.withGroup(group.key(), groupDurationTicks(group), List.of());
+      GunActionState next = state.withGroup(group.key(), groupDurationTicks(group) + 1, List.of());
       if (firesRound) next = next.withCooldown(now + Math.round(group.repeatDelay() * 20.0F));
       gunStack.set(ModDataComponents.GUN_ACTION_STATE, next);
-      runImmediateActions(player, gunStack, def, group, attachments);
+      triggerActions(player, gunStack, def, group, attachments);
    }
 
    static int groupDurationTicks(ActionGroup group) {
-      int max = 0;
-
-      for (ActionDef action : group.actions()) {
-         max = Math.max(max, action.delay() + Math.round(action.duration() * 20.0F));
-      }
-
-      return max;
+      return group.durationTicks();
    }
 
-   static void runImmediateActions(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, GunAttachments attachments) {
-      List<ModifierSource> sources = RealisticDamage.apply(GunLookup.contentKey(gunStack), group, StatSources.forFiring(def, group, attachments));
-
-      for (ActionDef action : group.actions()) {
-         switch (action.actionType()) {
-            case "Shoot":
-               doShoot(player, gunStack, sources, group.key());
-               break;
-            case "EjectCasing":
-               doEjectCasing(player, def);
-               break;
-            case "PlaySound":
-               GunSounds.send(player, group, action, sources);
-               break;
-            case "SwitchMode":
-               doSwitchMode(gunStack, def, group);
-               break;
-            case "SpawnParticle":
-               doSpawnParticle(player);
-         }
-      }
+   static void triggerActions(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, GunAttachments attachments) {
+      GunActionTimeline.trigger(player, gunStack, def, group, attachments, false);
    }
 
-   static void runImmediateSounds(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group) {
-      var sources = StatSources.forFiring(def, group, gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY));
-      for (ActionDef action : group.actions()) {
-         if ("PlaySound".equals(action.actionType())) {
-            GunSounds.send(player, group, action, sources);
-         } else if ("EjectCasing".equals(action.actionType())) {
+   static void executeAction(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, ActionDef action, List<ModifierSource> sources, int progress) {
+      switch (action.actionType()) {
+         case "Shoot":
+            doShoot(player, gunStack, sources, group.key(), progress);
+            break;
+         case "EjectCasing":
             doEjectCasing(player, def);
-         }
+            break;
+         case "PlaySound":
+            GunSounds.send(player, group, action, sources);
+            break;
+         case "SwitchMode":
+            doSwitchMode(gunStack, def, group);
+            break;
+         case "SpawnParticle":
+            doSpawnParticle(player);
       }
    }
 
-   private static void doShoot(ServerPlayer player, ItemStack gunStack, List<ModifierSource> sources, String group) {
+   static void triggerSounds(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group) {
+      GunActionTimeline.trigger(player, gunStack, def, group, gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY), true);
+   }
+
+   private static void doShoot(ServerPlayer player, ItemStack gunStack, List<ModifierSource> sources, String group, int progress) {
       AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
       if (!rounds.isEmpty()) {
          ItemStack round = rounds.items().get(0);
@@ -392,7 +395,7 @@ public final class GunEngine {
          diag("SHOT fired, {} rounds left", remaining.size());
          GunLookup.bulletDef(round).ifPresent(bullet -> GunBallistics.fire(player,
                  BuiltInRegistries.ITEM.getKey(round.getItem()), bullet, sources, group, GunTargeting.target(player, gunStack),
-                 GunFireScheduler.progress(player, gunStack, group)));
+                 progress));
       }
    }
 
