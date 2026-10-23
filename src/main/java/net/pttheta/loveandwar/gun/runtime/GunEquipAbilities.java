@@ -13,6 +13,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.pttheta.loveandwar.gun.content.stat.ModifierSource;
 import net.pttheta.loveandwar.gun.content.stat.StatResolver;
+import net.pttheta.loveandwar.item.ModDataComponents;
 
 /** Original ActionStack.UpdateEquipped and its active ApplyAttribute path. */
 @EventBusSubscriber(modid = "createloveandwar")
@@ -45,6 +46,8 @@ public final class GunEquipAbilities {
 
     private static void dispatch(ServerPlayer player, ItemStack gun, String trigger) {
         if (!(gun.getItem() instanceof GunItem)) return;
+        var attachments = gun.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
+        var inputs = ModifierSource.gunInputs((int)attachments.all().stream().filter(stack -> !stack.isEmpty()).count());
         for (var ability : GunTraits.abilities(gun)) {
             var def = ability.definition();
             if (def.effects().isEmpty() || def.targets().isEmpty()
@@ -53,7 +56,7 @@ public final class GunEquipAbilities {
             for (int i = 0; i < def.effects().size(); i++) {
                 var effect = def.effects().get(i);
                 if (!"ApplyAttribute".equals(effect.effectType())) continue;
-                var sources = List.of(ModifierSource.of(ability.id().toString(), effect.modifiers()));
+                var sources = List.of(ModifierSource.of(ability.id().toString(), effect.modifiers()), inputs);
                 var attributeId = ResourceLocation.tryParse(StatResolver.resolveOverride("attribute_id", "", sources));
                 if (attributeId == null) continue;
                 var attribute = BuiltInRegistries.ATTRIBUTE.getHolder(attributeId);
