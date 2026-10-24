@@ -34,7 +34,9 @@ import net.neoforged.neoforge.client.model.geometry.UnbakedGeometryHelper;
 import net.pttheta.loveandwar.Config;
 import net.pttheta.loveandwar.gun.client.AdsBlendState;
 import net.pttheta.loveandwar.gun.client.MuzzleFlash;
-import net.pttheta.loveandwar.gun.runtime.GunActionState;
+import net.pttheta.loveandwar.gun.client.anim.AnimatedTurboRigModel;
+import net.pttheta.loveandwar.gun.runtime.GunAttachments;
+import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
 import net.pttheta.loveandwar.item.ModDataComponents;
 import org.joml.Matrix4f;
@@ -55,8 +57,6 @@ public final class TurboRigBakedModel implements BakedModel {
    private static Vector3f muzzleViewSpace;
    private static long muzzleFrame = Long.MIN_VALUE;
    private static double muzzleForward;
-   private static Matrix4f lastEyeLine;
-   private static Item lastEyeLineItem;
    public static final ThreadLocal<ItemDisplayContext> CONTEXT_FOR_FRAME = new ThreadLocal<>();
    private UnaryOperator<Vector3f> rootTransform = p -> p;
    private final boolean ambientOcclusion;
@@ -334,7 +334,8 @@ public final class TurboRigBakedModel implements BakedModel {
          return this.heldIconModel;
       }
 
-      ADS_EYE_LINE_FOR_FRAME.set(adsEyeLine(this, transformType));
+      // Stack-bound item overrides supply ADS; a raw model has no rendered-stack context.
+      ADS_EYE_LINE_FOR_FRAME.remove();
       CONTEXT_FOR_FRAME.set(transformType);
 
       try {
@@ -386,9 +387,10 @@ public final class TurboRigBakedModel implements BakedModel {
 
       ItemTransform t = transforms.getTransform(ctx);
       Matrix4f adsEye = ADS_EYE_LINE_FOR_FRAME.get();
-      float blend = AdsBlendState.blend();
-      if (adsEye != null && blend > 0.001F && t != ItemTransform.NO_TRANSFORM) {
-         applyAdsPoseBlended(t, adsEye, blend, poseStack);
+      float blend = AdsBlendState.poseBlend(ctx);
+      if (adsEye != null && blend > 0) {
+         float roll = AdsBlendState.hasOtherHand(ctx) ? (ctx == ItemDisplayContext.FIRST_PERSON_LEFT_HAND ? -30 : 30) : 0;
+         applyAdsPoseBlended(t, adsEye, blend, roll, poseStack);
       } else if (t != ItemTransform.NO_TRANSFORM) {
          poseStack.translate(t.translation.x(), t.translation.y(), t.translation.z());
          poseStack.mulPose(flansEuler(t.rotation));
@@ -470,7 +472,7 @@ public final class TurboRigBakedModel implements BakedModel {
    public static void applyAdsEyeLine(TurboRigBakedModel rig, ItemDisplayContext ctx, PoseStack poseStack) {
    }
 
-   public static Matrix4f adsEyeLine(TurboRigBakedModel rig, ItemDisplayContext ctx) {
+   public static Matrix4f adsEyeLine(TurboRigBakedModel rig, ItemDisplayContext ctx, ItemStack stack) {
       if (ctx != ItemDisplayContext.FIRST_PERSON_RIGHT_HAND && ctx != ItemDisplayContext.FIRST_PERSON_LEFT_HAND) {
          return null;
       }
@@ -480,52 +482,35 @@ public final class TurboRigBakedModel implements BakedModel {
          return null;
       }
 
-      GunActionState st = (GunActionState)mc.player.getMainHandItem().getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
-      String adsKey = null;
-
-      for (String t : st.activeToggles()) {
-         if (t.startsWith("ads")) {
-            adsKey = t;
-            break;
+      if (!(stack.getItem() instanceof GunItem)) return null;
+      var attachments = stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
+      return AdsBlendState.eyeLine(ctx, selection -> {
+         TurboRigModelData child = null;
+         if (selection.attachmentIndex() >= 0) {
+            var slots = attachments.forCategory(GunAttachments.category(selection.attachmentType()));
+            if (selection.attachmentIndex() < slots.size()) {
+               var attached = slots.get(selection.attachmentIndex());
+               // ModelShaper avoids the posed item override and its active animation state.
+               if (GunLookup.attachmentDef(attached).isPresent()) {
+                  var model = mc.getItemRenderer().getItemModelShaper().getItemModel(attached);
+                  if (model instanceof AnimatedTurboRigModel animated) model = animated.baseRig();
+                  if (model instanceof TurboRigBakedModel attachmentRig) child = attachmentRig.rawData();
+               }
+            }
          }
-      }
-
-      if (adsKey == null) {
-         if (lastEyeLine != null && mc.player.getMainHandItem().getItem() == lastEyeLineItem && AdsBlendState.blend() > 0.001F) {
-            return lastEyeLine;
-         }
-
-         lastEyeLine = null;
-         lastEyeLineItem = null;
-         return null;
-      } else {
-         String eyeName = adsKey.replaceFirst("^ads", "eye_line");
-         Matrix4f resolved = rig.attachPointMatrix(eyeName);
-         if (resolved != null) {
-            lastEyeLine = resolved;
-            lastEyeLineItem = mc.player.getMainHandItem().getItem();
-         }
-
-         if (resolved == null && Config.GUN_DIAGNOSTICS != null && (Boolean)Config.GUN_DIAGNOSTICS.get()) {
-            LoggerFactory.getLogger("createloveandwar/ads")
-               .info(
-                  "ADS toggle={} wants '{}' but rig has {}",
-                  new Object[]{adsKey, eyeName, rig.attachPoints().stream().map(TurboRigModelData.AttachPoint::name).toList()}
-               );
-         }
-
-         return resolved;
-      }
+         return AdsEyeLine.resolve(rig.rawData(), selection, child);
+      });
    }
 
-   private static void applyAdsPoseBlended(ItemTransform display, Matrix4f eyeLine, float blend, PoseStack poseStack) {
+   private static void applyAdsPoseBlended(ItemTransform display, Matrix4f eyeLine, float blend, float roll, PoseStack poseStack) {
       Matrix4f hip = hipMatrix(display);
-      Matrix4f aim = adsMatrix(display, eyeLine);
+      Matrix4f aim = new Matrix4f().rotateZ((float)Math.toRadians(roll)).mul(adsMatrix(display, eyeLine));
       Vector3f pos = hip.getTranslation(new Vector3f()).lerp(aim.getTranslation(new Vector3f()), blend);
       Quaternionf rot = hip.getNormalizedRotation(new Quaternionf()).slerp(aim.getNormalizedRotation(new Quaternionf()), blend);
       poseStack.translate(pos.x, pos.y, pos.z);
       poseStack.mulPose(rot);
-      poseStack.scale(display.scale.x(), display.scale.x(), display.scale.x());
+      float scale = display.scale.x() + blend * (1 - display.scale.x());
+      poseStack.scale(scale, scale, scale);
    }
 
    private static Matrix4f hipMatrix(ItemTransform display) {

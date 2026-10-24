@@ -95,7 +95,7 @@ public final class ActionTimingClientSetup {
     @SubscribeEvent public static void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean("law.enableClientScenario")) return;
         var command = Commands.literal("law_test_timing_setup").requires(source -> source.hasPermission(2));
-        for (String name : new String[]{"1887", "g11k2", "wz38", "krag", "lebel_scope", "mat49", "aai_acr", "mars"}) {
+        for (String name : new String[]{"1887", "g11k2", "wz38", "krag", "lebel_scope", "mat49", "aai_acr", "mars", "gyrojet"}) {
             command.then(Commands.literal(name).executes(context -> {
                 var player = context.getSource().getPlayerOrException(); cleanup(player);
                 SESSIONS.put(player.getUUID(), new Session(player, name));

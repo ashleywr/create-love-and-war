@@ -156,7 +156,7 @@ public final class AnimatedTurboRigModel implements BakedModel {
          LoggerFactory.getLogger("createloveandwar/ctx").info("CTX outer={} left={}", transformType, applyLeftHandTransform);
       }
 
-      TurboRigBakedModel.ADS_EYE_LINE_FOR_FRAME.set(TurboRigBakedModel.adsEyeLine(this.base, transformType));
+      TurboRigBakedModel.ADS_EYE_LINE_FOR_FRAME.remove();
       TurboRigBakedModel.CONTEXT_FOR_FRAME.set(transformType);
 
       try {
@@ -177,23 +177,25 @@ public final class AnimatedTurboRigModel implements BakedModel {
       public BakedModel resolve(BakedModel model, ItemStack stack, ClientLevel level, LivingEntity entity, int seed) {
          LocalPlayer me = Minecraft.getInstance().player;
          boolean localPlayer = me != null && entity == me && ItemStack.isSameItem(stack, me.getMainHandItem());
-         List<BakedQuad> quads = AnimatedTurboRigModel.this.animatedQuads(localPlayer ? me.getMainHandItem() : stack, localPlayer);
-         return (BakedModel)(quads == null
-            ? AnimatedTurboRigModel.this
-            : AnimatedTurboRigModel.this.new PosedModel(quads, AnimatedTurboRigModel.this.lastPosedMuzzle));
+         List<BakedQuad> quads = AnimatedTurboRigModel.this.animatedQuads(stack, localPlayer);
+         // Vanilla can still render the old stack during re-equip after the selected hand has changed.
+         return AnimatedTurboRigModel.this.new PosedModel(quads, quads == null ? null : AnimatedTurboRigModel.this.lastPosedMuzzle, stack);
       }
    }
 
    private final class PosedModel implements BakedModel {
       private final List<BakedQuad> quads;
       private final Matrix4f posedMuzzle;
+      private final ItemStack renderStack;
 
-      PosedModel(List<BakedQuad> quads, Matrix4f posedMuzzle) {
+      PosedModel(List<BakedQuad> quads, Matrix4f posedMuzzle, ItemStack renderStack) {
          this.quads = quads;
          this.posedMuzzle = posedMuzzle;
+         this.renderStack = renderStack;
       }
 
       public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random) {
+         if (this.quads == null) return AnimatedTurboRigModel.this.base.getQuads(state, face, random);
          if (face != null) {
             return List.of();
          }
@@ -240,6 +242,9 @@ public final class AnimatedTurboRigModel implements BakedModel {
       }
 
       public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+         if (AnimatedTurboRigModel.this.base.drawsAsIcon()) {
+            return AnimatedTurboRigModel.this.base.applyTransform(transformType, poseStack, applyLeftHandTransform);
+         }
          BakedModel icon = AnimatedTurboRigModel.this.base.flatIconModel();
          if (transformType == ItemDisplayContext.GUI && icon != null) {
             return icon;
@@ -252,7 +257,7 @@ public final class AnimatedTurboRigModel implements BakedModel {
                );
          }
 
-         TurboRigBakedModel.ADS_EYE_LINE_FOR_FRAME.set(TurboRigBakedModel.adsEyeLine(AnimatedTurboRigModel.this.base, transformType));
+         TurboRigBakedModel.ADS_EYE_LINE_FOR_FRAME.set(TurboRigBakedModel.adsEyeLine(AnimatedTurboRigModel.this.base, transformType, this.renderStack));
          TurboRigBakedModel.CONTEXT_FOR_FRAME.set(transformType);
 
          try {
