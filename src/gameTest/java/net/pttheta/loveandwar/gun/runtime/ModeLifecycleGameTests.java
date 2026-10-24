@@ -82,7 +82,7 @@ public final class ModeLifecycleGameTests {
     @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
     public static void bareModalCheckRequiresOnAndDoesNotImplementNegation(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
-        var def = definition("[{\"key\":\"m\",\"values\":[\"on\",\"off\"]}]", "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\"}]",
+        var def = definition("[{\"key\":\"m\",\"values\":[\"on\",\"off\"]}]", "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"m\"}]}]");
         try {
             withDefinition(def, () -> {
@@ -106,7 +106,7 @@ public final class ModeLifecycleGameTests {
     public static void explicitDefaultValueIsIndependentOfCycleValues(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
         var def = definition("[{\"key\":\"m\",\"values\":[\"cold\",\"warm\"],\"defaultValue\":\"ready\"}]",
-                "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\"}]",
+                "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"m:ready\"}]}]");
         try {
             withDefinition(def, () -> {
@@ -121,7 +121,7 @@ public final class ModeLifecycleGameTests {
     public static void existingModesCompoundMissingKeyDoesNotUseDefault(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
         var def = definition("[{\"key\":\"m\",\"values\":[\"armed\"],\"defaultValue\":\"armed\"}]",
-                "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\"}]",
+                "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"m:armed\"}]}]");
         gun.set(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE.withMode("other", "on"));
         try {
@@ -186,7 +186,7 @@ public final class ModeLifecycleGameTests {
     @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
     public static void modalColonUsesFirstValueFieldAndUnknownKeysStayEmpty(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
-        var def = definition("[{\"key\":\"m\",\"values\":[\"on\"]}]", "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\"}]",
+        var def = definition("[{\"key\":\"m\",\"values\":[\"on\"]}]", "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"m:on:ignored\"}]}]");
         gun.set(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE.withMode("m", "on"));
         try {
@@ -200,7 +200,7 @@ public final class ModeLifecycleGameTests {
 
     @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
     public static void modeCompoundPresenceAndMissingKeysSurviveSaveAndPacket(GameTestHelper helper) {
-        var def = definition("[{\"key\":\"m\",\"values\":[\"ready\"],\"defaultValue\":\"ready\"}]", "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\"}]",
+        var def = definition("[{\"key\":\"m\",\"values\":[\"ready\"],\"defaultValue\":\"ready\"}]", "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"m:ready\"}]}]");
         var emptyPresent = GunActionState.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{\"modesInitialized\":true}")).getOrThrow();
         var legacyNonempty = GunActionState.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("{\"modeValues\":{\"other\":\"on\"}}")).getOrThrow();
@@ -227,7 +227,7 @@ public final class ModeLifecycleGameTests {
     public static void directModeWriteDoesNotEnforceUnusedAutoCancelField(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
         var def = definition("[{\"key\":\"m\",\"values\":[\"on\",\"off\"]}]",
-                "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"autoCancelIfNotInMode\":\"m:on\"}]",
+                "[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"autoCancelIfNotInMode\":\"m:on\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"m:on\"}]}]");
         gun.set(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE.withMode("m", "on"));
         withDefinition(def, () -> input(player, gun, "SpecialKey1"));
@@ -243,7 +243,7 @@ public final class ModeLifecycleGameTests {
     public static void switchCancellationKeepsOriginalModeKeyPrefixMatch(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
         var def = definition("[{\"key\":\"mode\",\"values\":[\"on\",\"off\"]},{\"key\":\"mode_extra\",\"values\":[\"on\"]}]", """
-                [{"key":"utility","repeatMode":"Toggle"},{"key":"switch","actions":[{"actionType":"SwitchMode"}],
+                [{"key":"utility","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]},{"key":"switch","actions":[{"actionType":"SwitchMode"}],
                   "modifiers":[{"stat":"set_value","setValue":"off"}]}]
                 """, "[{\"inputType\":\"SpecialKey1\",\"nodes\":[{\"actionGroupToTrigger\":\"utility\",\"modalCheck\":\"mode_extra:on\"}]}]");
         gun.set(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE.withMode("mode_extra", "on"));
@@ -280,7 +280,7 @@ public final class ModeLifecycleGameTests {
     public static void attachedCancellationUsesLastChildAndAliasesBaseKey(GameTestHelper helper) {
         var gun = item("mars"); var player = player(helper, gun);
         var def = definition("[{\"key\":\"m\",\"values\":[\"0\",\"1\"]}]", """
-                [{"key":"first","repeatMode":"Toggle"},{"key":"shared","repeatMode":"Toggle"},
+                [{"key":"first","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]},{"key":"shared","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]},
                  {"key":"switch","actions":[{"actionType":"SwitchMode"}],"modifiers":[{"stat":"mode","setValue":"m"}]}]
                 """, """
                 [{"inputType":"Fire2","nodes":[{"deferToAttachment":true,"attachmentType":"Sights","modalCheck":"m:0"}]},
@@ -289,7 +289,7 @@ public final class ModeLifecycleGameTests {
                 """);
         var attachment = AttachmentDef.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("""
                 {"handlerOverrides":[{"inputType":"Fire2","nodes":[{"actionGroupToTrigger":"first"},{"actionGroupToTrigger":"shared"}]}],
-                 "actionOverrides":[{"key":"first","repeatMode":"Toggle"},{"key":"shared","repeatMode":"Toggle"}]}
+                 "actionOverrides":[{"key":"first","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]},{"key":"shared","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]}]}
                 """)).getOrThrow();
         var original = GunContent.attachments().put("optical_scope", attachment);
         gun.set(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY.with("scope", List.of(item("optical_scope"))));
@@ -308,7 +308,7 @@ public final class ModeLifecycleGameTests {
     @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar", timeoutTicks = 15)
     public static void absentOrEmptyAttachmentHandlerRetainsRootCancellationPath(GameTestHelper helper) {
         var def = definition("[{\"key\":\"m\",\"values\":[\"0\",\"1\"]}]", """
-                [{"key":"shared","repeatMode":"Toggle"},{"key":"switch","actions":[{"actionType":"SwitchMode"}],
+                [{"key":"shared","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]},{"key":"switch","actions":[{"actionType":"SwitchMode"}],
                   "modifiers":[{"stat":"mode","setValue":"m"}]}]
                 """, """
                 [{"inputType":"Fire2","nodes":[{"deferToAttachment":true,"attachmentType":"Sights","actionGroupToTrigger":"shared","modalCheck":"m:0"}]},

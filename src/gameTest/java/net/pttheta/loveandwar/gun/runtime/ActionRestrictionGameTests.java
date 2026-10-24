@@ -173,7 +173,7 @@ public final class ActionRestrictionGameTests {
         var gun = stack("mars");
         var player = player(helper, gun, InteractionHand.MAIN_HAND);
         player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.STICK));
-        var json = fixture("[{\"key\":\"blocked\",\"twoHanded\":true,\"repeatMode\":\"Toggle\"},{\"key\":\"fallback\",\"repeatMode\":\"Toggle\"}]",
+        var json = fixture("[{\"key\":\"blocked\",\"twoHanded\":true,\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]},{\"key\":\"fallback\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"actionGroupToTrigger\":\"blocked\"},{\"actionGroupToTrigger\":\"fallback\"}]");
         try {
             withDefinition(json, () -> {
@@ -190,7 +190,7 @@ public final class ActionRestrictionGameTests {
         for (boolean allowed : List.of(false, true)) {
             var gun = stack("mars");
             var player = player(helper, gun, InteractionHand.MAIN_HAND);
-            var json = fixture("[{\"key\":\"utility\",\"repeatMode\":\"Toggle\"}]",
+            var json = fixture("[{\"key\":\"utility\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                     "[{\"actionGroupToTrigger\":\"utility\",\"canTriggerWhileReloading\":" + allowed + "}]");
             var stage = GunContent.gun("mars").orElseThrow().reloads().getFirst().loadOneActionKey();
             gun.set(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE.withReloadGroup(stage, 20, List.of()));
@@ -211,11 +211,11 @@ public final class ActionRestrictionGameTests {
         var player = player(helper, gun, InteractionHand.MAIN_HAND);
         player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.STICK));
         gun.set(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY.with("scope", List.of(stack("optical_scope"))));
-        var json = fixture("[{\"key\":\"fallback\",\"repeatMode\":\"Toggle\"}]",
+        var json = fixture("[{\"key\":\"fallback\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"deferToAttachment\":true,\"attachmentType\":\"Sights\"},{\"actionGroupToTrigger\":\"fallback\"}]");
         var attachment = AttachmentDef.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("""
                 {"handlerOverrides":[{"inputType":"SpecialKey1","nodes":[{"actionGroupToTrigger":"blocked"},{"actionGroupToTrigger":"wrong_child"}]}],
-                 "actionOverrides":[{"key":"blocked","twoHanded":true,"repeatMode":"Toggle"},{"key":"wrong_child","repeatMode":"Toggle"}]}
+                 "actionOverrides":[{"key":"blocked","twoHanded":true,"repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]},{"key":"wrong_child","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]}]}
                 """)).getOrThrow();
         var original = GunContent.attachments().put("optical_scope", attachment);
         try {
@@ -235,7 +235,7 @@ public final class ActionRestrictionGameTests {
     public static void reloadFlagAppliesBeforeAttachmentExpansionOnly(GameTestHelper helper) {
         var attachment = AttachmentDef.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString("""
                 {"handlerOverrides":[{"inputType":"SpecialKey1","nodes":[{"actionGroupToTrigger":"utility","canTriggerWhileReloading":false}]}],
-                 "actionOverrides":[{"key":"utility","repeatMode":"Toggle"}]}
+                 "actionOverrides":[{"key":"utility","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}]}]}
                 """)).getOrThrow();
         var original = GunContent.attachments().put("optical_scope", attachment);
         try {
@@ -328,7 +328,7 @@ public final class ActionRestrictionGameTests {
     public static void unloadableReloadCandidateFallsThroughToLaterRootNode(GameTestHelper helper) {
         var gun = stack("mars");
         var player = player(helper, gun, InteractionHand.MAIN_HAND);
-        var json = fixture("[{\"key\":\"reload_primary_start\"},{\"key\":\"fallback\",\"repeatMode\":\"Toggle\"}]",
+        var json = fixture("[{\"key\":\"reload_primary_start\",\"actions\":[{\"actionType\":\"AimDownSights\"}]},{\"key\":\"fallback\",\"repeatMode\":\"Toggle\",\"actions\":[{\"actionType\":\"AimDownSights\"}]}]",
                 "[{\"actionGroupToTrigger\":\"reload_primary_start\"},{\"actionGroupToTrigger\":\"fallback\"}]");
         try {
             withDefinition(json, () -> {

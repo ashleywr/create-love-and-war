@@ -1,5 +1,7 @@
 package net.pttheta.loveandwar.gun.runtime;
 
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -25,6 +27,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.pttheta.loveandwar.gun.content.GunContent;
+import net.pttheta.loveandwar.gun.content.GunDef;
 import net.pttheta.loveandwar.item.ModDataComponents;
 import net.pttheta.loveandwar.item.custom.AmmoPouchContents;
 import org.slf4j.LoggerFactory;
@@ -49,6 +53,7 @@ public final class ActionTimingClientSetup {
         final Set<UUID> initialItems = new HashSet<>(), spawned = new HashSet<>();
         long started = -1;
         String previous = "";
+        GunDef definitionBefore;
         Session(ServerPlayer player, String gun) {
             items = player.getInventory().items.stream().map(ItemStack::copy).toList();
             armor = player.getInventory().armor.stream().map(ItemStack::copy).toList();
@@ -70,6 +75,7 @@ public final class ActionTimingClientSetup {
         GunFireScheduler.releaseAll(player);
         var stack = player.getMainHandItem();
         GunFireScheduler.cancel(player, stack); GunActionTimeline.cancelAll(player, stack);
+        if (session.definitionBefore != null) GunContent.guns().put(session.gun, session.definitionBefore);
         restoreCells(player, session);
         for (var id : session.spawned) {
             var entity = player.serverLevel().getEntity(id);
@@ -117,6 +123,32 @@ public final class ActionTimingClientSetup {
             }));
         }
         event.getDispatcher().register(command);
+        event.getDispatcher().register(Commands.literal("law_test_continuation_setup").requires(source -> source.hasPermission(2)).executes(context -> {
+            event.getDispatcher().execute("law_test_timing_setup mars", context.getSource());
+            var player = context.getSource().getPlayerOrException();
+            var session = SESSIONS.get(player.getUUID());
+            session.definitionBefore = GunContent.gun("mars").orElseThrow();
+            var json = GunDef.CODEC.encodeStart(JsonOps.INSTANCE, session.definitionBefore).getOrThrow().getAsJsonObject();
+            json.add("inputHandlers", JsonParser.parseString("""
+                    [{"inputType":"Fire2","nodes":[
+                      {"actionGroupToTrigger":"first","andContinueEvaluating":true},
+                      {"actionGroupToTrigger":"second"}]}]
+                    """));
+            json.add("actionGroups", JsonParser.parseString("""
+                    [{"key":"first","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}],
+                      "modifiers":[{"stat":"fov_factor","accumulators":[{"operation":"BaseAdd","value":2}]}]},
+                     {"key":"second","repeatMode":"Toggle","actions":[{"actionType":"AimDownSights"}],
+                      "modifiers":[{"stat":"fov_factor","accumulators":[{"operation":"BaseAdd","value":4}]}]}]
+                    """));
+            GunContent.guns().put("mars", GunDef.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+            return 1;
+        }));
+        event.getDispatcher().register(Commands.literal("law_test_continuation_server").requires(source -> source.hasPermission(2)).executes(context -> {
+            var gun = context.getSource().getPlayerOrException().getMainHandItem();
+            LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_CONTINUATION_SERVER groups={}",
+                    GunActiveGroups.of(gun).entries().stream().map(GunActiveGroups.Entry::key).toList());
+            return 1;
+        }));
         event.getDispatcher().register(Commands.literal("law_test_input_prepare").requires(source -> source.hasPermission(2)).executes(context -> {
             var player=context.getSource().getPlayerOrException();var session=SESSIONS.get(player.getUUID());
             if(session==null||!session.gun.equals("mars"))return 0;
@@ -230,5 +262,9 @@ public final class ActionTimingClientSetup {
             }
         }
     }
-    @SubscribeEvent public static void stop(ServerStoppedEvent event) { SESSIONS.clear(); }
+    @SubscribeEvent public static void stop(ServerStoppedEvent event) {
+        for (var session : SESSIONS.values())
+            if (session.definitionBefore != null) GunContent.guns().put(session.gun, session.definitionBefore);
+        SESSIONS.clear();
+    }
 }
