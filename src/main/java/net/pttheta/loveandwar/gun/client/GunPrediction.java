@@ -9,6 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.pttheta.loveandwar.gun.client.anim.LocalGunAnim;
+import net.pttheta.loveandwar.gun.network.CGunAuthored;
 import net.pttheta.loveandwar.gun.network.CGunInput;
 import net.pttheta.loveandwar.gun.network.GunShotReceipt;
 import net.pttheta.loveandwar.gun.network.SGunPresentationEnd;
@@ -19,6 +20,7 @@ import net.pttheta.loveandwar.gun.runtime.GunItem;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.gun.runtime.LocalGunActions;
 import net.pttheta.loveandwar.item.ModDataComponents;
+import net.pttheta.loveandwar.network.ModMessages;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public final class GunPrediction {
     private static Player owner;
     private static final Map<UUID, LocalGunActions> GUNS = new HashMap<>();
+    private static final java.util.ArrayDeque<CGunAuthored> OUTGOING = new java.util.ArrayDeque<>();
 
     private record Callback(UUID activation, long sequence) {}
 
@@ -40,6 +43,7 @@ public final class GunPrediction {
         var current = Minecraft.getInstance().player;
         if (owner != current) {
             GUNS.clear();
+            OUTGOING.clear();
             FALLBACK.clear();
             owner = current;
         }
@@ -61,6 +65,7 @@ public final class GunPrediction {
         var previous = GUNS.get(input.gunId());
         if (previous != null && !previous.matches(actual)) {
             previous.cancel();
+            OUTGOING.addAll(previous.drainAuthored());
             GUNS.remove(input.gunId());
         }
         var runtime =
@@ -77,6 +82,23 @@ public final class GunPrediction {
         var result = runtime.input(input, actual);
         if (input.pressed()) model(input.inputType(), !result.prediction().present());
         return result;
+    }
+
+    /** Preserve START callback order before END input edges and flush final callbacks at END. */
+    public static CGunInput send(CGunInput input) {
+        flushAuthored();
+        var prepared = beforeSend(input);
+        if (owner != null && Minecraft.getInstance().getConnection() != null)
+            ModMessages.sendToServer(prepared);
+        flushAuthored();
+        return prepared;
+    }
+
+    public static void flushAuthored() {
+        owner();
+        for (var runtime : GUNS.values()) OUTGOING.addAll(runtime.drainAuthored());
+        if (owner == null || Minecraft.getInstance().getConnection() == null) return;
+        while (!OUTGOING.isEmpty()) ModMessages.sendToServer(OUTGOING.removeFirst());
     }
 
     public static void end(SGunPresentationEnd packet) {
@@ -115,6 +137,7 @@ public final class GunPrediction {
                     || !owner.isAlive()
                     || owner.isSpectator()) {
                 entry.getValue().cancel();
+                OUTGOING.addAll(entry.getValue().drainAuthored());
                 iterator.remove();
             } else {
                 entry.getValue().tick(actual);

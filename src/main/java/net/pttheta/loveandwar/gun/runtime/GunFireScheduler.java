@@ -1,8 +1,5 @@
 package net.pttheta.loveandwar.gun.runtime;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -12,10 +9,15 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.pttheta.loveandwar.gun.content.ActionGroup;
 import net.pttheta.loveandwar.gun.content.GunDef;
+import net.pttheta.loveandwar.gun.network.CGunAuthored;
 import net.pttheta.loveandwar.item.ModDataComponents;
 import net.pttheta.loveandwar.item.custom.AmmoPouchContents;
 
-/** Server owns retriggers; clients send input edges rather than supplying individual shots. */
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
+
+/** Validate owner-authored callback phases; retain world-clock firing for server-origin groups. */
 @EventBusSubscriber(modid = "createloveandwar")
 public final class GunFireScheduler {
     private static final Map<ServerPlayer, IdentityHashMap<ItemStack, Cycle>> CYCLES = new WeakHashMap<>();
@@ -34,6 +36,7 @@ public final class GunFireScheduler {
         int triggers;
         int duration;
         boolean finishing;
+        GunAuthoredFire.Remote remote;
 
         Cycle(long now) { this.lastTick = now; this.seenTick = now; }
 
@@ -68,7 +71,15 @@ public final class GunFireScheduler {
         var cycle = cycles == null ? null : cycles.get(stack);
         if (cycle == null) return;
         cycle.held = false;
-        if (cycle.group != null && GunFireMode.of(cycle.group.repeatMode()) == GunFireMode.FULL_AUTO) {
+        if (cycle.remote != null) {
+            if (!cycle.remote.release(
+                    GunPresentation.authored().present()
+                            ? GunPresentation.authored().tick()
+                            : cycle.remote.gate.tick)) cancel(player, stack);
+            return;
+        }
+        if (cycle.group != null
+                && GunFireMode.of(cycle.group.repeatMode()) == GunFireMode.FULL_AUTO) {
             GunActionTimeline.finishAfterTick(player, stack, cycle.group.key());
             finish(stack, cycle);
         }
@@ -94,11 +105,43 @@ public final class GunFireScheduler {
             gun = retained.get().gun(); group = retained.get().group(); origin = retained.get().origin();
         }
         var cycle = cycle(player, stack);
+        var authored = GunPresentation.authored();
+        if (authored.present() && GunPresentation.claim().present()) {
+            if (cycle.remote != null
+                    && !cycle.remote.activation.equals(GunPresentation.claim().activation()))
+                return;
+            var remote =
+                    cycle.remote == null
+                            ? new GunAuthoredFire.Remote(GunPresentation.claim(), group)
+                            : cycle.remote;
+            if (!remote.start(player, stack, authored)) {
+                if (cycle.remote != null) cancel(player, stack);
+                return;
+            }
+            cycle.gun = gun;
+            cycle.group = group;
+            cycle.attachments = attachments;
+            cycle.origin = origin;
+            cycle.duration = durationPerTrigger(group);
+            cycle.remote = remote;
+            cycle.progress = authored.tick();
+            cycle.lastTick = player.level().getGameTime();
+            cycle.seenTick = cycle.lastTick;
+            GunActionTimeline.beginAuthored(player, stack, gun, group, origin);
+            GunActionTimeline.advanceAuthored(player, stack, group.key(), authored.tick());
+            for (int i = 0; i < authored.count(); i++)
+                GunEngine.triggerActions(player, stack, gun, group, attachments, origin);
+            cycle.triggers = (int) Math.min(Integer.MAX_VALUE, remote.gate.triggers);
+            synchronize(stack, cycle, player.level().getGameTime());
+            return;
+        }
+        if (cycle.remote != null) return;
         cycle.advance(player.level().getGameTime());
         if (cycle.group == null || !cycle.group.key().equals(group.key())) {
             cycle.progress = 0;
             cycle.triggers = 0;
             cycle.finishing = false;
+            cycle.remote = null;
         }
         cycle.gun = gun;
         cycle.group = group;
@@ -119,6 +162,7 @@ public final class GunFireScheduler {
             cycle.group = null;
             cycle.retriggers = 0;
             cycle.finishing = false;
+            cycle.remote = null;
         }
     }
 
@@ -139,7 +183,9 @@ public final class GunFireScheduler {
                     .anyMatch(group -> group.key().equals(state.activeGroup()) && group.actions().stream().anyMatch(action -> "Shoot".equals(action.actionType())))) {
                 stack.set(ModDataComponents.GUN_ACTION_STATE, state.idled().withBurstRemaining(0).withWaitingForRelease(false).withCooldown(0));
             } else if (state.activeGroup().isEmpty() && (state.waitingForRelease() || state.burstRemaining() != 0 || state.cooldownUntilGameTime() != 0)) {
-                stack.set(ModDataComponents.GUN_ACTION_STATE, state.withFiringFrame("", 0, 0, 0, 0, false));
+                stack.set(
+                        ModDataComponents.GUN_ACTION_STATE,
+                        state.withFiringFrame("", 0, 0, 0, 0, false));
             }
             return false;
         }
@@ -149,6 +195,12 @@ public final class GunFireScheduler {
             if (cycle.group != null) finish(stack, cycle);
             cycle.held = false;
             return false;
+        }
+        if (cycle.remote != null) {
+            cycle.lastTick = now;
+            if (cycle.group != null && !GunActionTimeline.owns(player, stack, cycle.group.key()))
+                finish(stack, cycle);
+            return cycle.group != null;
         }
         if (now <= cycle.lastTick) return cycle.group != null;
         // A dropped/unloaded stack must not resume a stale burst when picked up later.
@@ -196,6 +248,7 @@ public final class GunFireScheduler {
 
     private static void emit(ServerPlayer player, ItemStack stack, Cycle cycle, int count) {
         for (int i = 0; i < count; i++) {
+            if (!GunAuthoredFire.spend(player, stack, cycle.group.repeatDelay(), 1)) break;
             cycle.triggers++;
             GunEngine.triggerActions(player, stack, cycle.gun, cycle.group, cycle.attachments, cycle.origin);
         }
@@ -213,8 +266,66 @@ public final class GunFireScheduler {
         cycle.group = null;
         cycle.retriggers = 0;
         cycle.finishing = false;
+        cycle.remote = null;
         var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
         stack.set(ModDataComponents.GUN_ACTION_STATE, state.idled().withBurstRemaining(0));
+    }
+
+    public static void authored(ServerPlayer player, ItemStack stack, CGunAuthored packet) {
+        var cycles = CYCLES.get(player);
+        var cycle = cycles == null ? null : cycles.get(stack);
+        if (cycle == null
+                || cycle.remote == null
+                || cycle.group == null
+                || !cycle.remote.activation.equals(packet.activation())) return;
+        if (!player.isAlive() || player.isSpectator()) {
+            cancel(player, stack);
+            return;
+        }
+        var remote = cycle.remote;
+        var gate = remote.gate;
+        if (packet.tick() <= gate.tick
+                && (packet.kind() == CGunAuthored.Kind.TRIGGER && packet.ordinal() < gate.triggers
+                        || packet.kind() == CGunAuthored.Kind.STEP
+                                && packet.ordinal() <= gate.triggers))
+            return; // Idempotent old delivery; never replay gameplay.
+        boolean valid = remote.time(packet.tick());
+        if (valid)
+            switch (packet.kind()) {
+                case TRIGGER ->
+                        valid =
+                                gate.trigger(packet.tick(), packet.ordinal())
+                                        && GunAuthoredFire.spend(
+                                                player,
+                                                stack,
+                                                gate.delay <= 0 ? .05F : gate.delay,
+                                                1);
+                case STEP -> valid = gate.step(packet.tick(), packet.ordinal());
+                case FINISH -> valid = gate.finish(packet.tick(), packet.ordinal());
+                case CANCEL -> valid = gate.step(packet.tick(), packet.ordinal());
+            }
+        if (!valid) {
+            cancel(player, stack);
+            return;
+        }
+        GunActionTimeline.advanceAuthored(player, stack, cycle.group.key(), packet.tick());
+        if (cycle.group == null) return;
+        if (packet.kind() == CGunAuthored.Kind.TRIGGER)
+            GunEngine.triggerActions(
+                    player,
+                    stack,
+                    cycle.gun,
+                    cycle.group,
+                    stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY),
+                    cycle.origin);
+        if (cycle.group == null) return;
+        cycle.progress = packet.tick();
+        cycle.triggers = (int) Math.min(Integer.MAX_VALUE, gate.triggers);
+        if (packet.kind() == CGunAuthored.Kind.FINISH
+                || packet.kind() == CGunAuthored.Kind.CANCEL) {
+            cancel(player, stack);
+            finish(stack, cycle);
+        } else synchronize(stack, cycle, player.level().getGameTime());
     }
 
     private static int durationPerTrigger(ActionGroup group) {

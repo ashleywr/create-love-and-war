@@ -72,4 +72,9 @@ public final class ActionCallbackClock {
     }
 
     public boolean pastDuration(int duration) { return progress > (long)duration * triggers; }
+    /** Callback-only clocks can skip empty intervals; pending callbacks still visit every due phase. */
+    public void advance(int ticks,Callback callback){
+        while(ticks>0&&hasPending()){tick(callback);ticks--;}
+        progress+=ticks;
+    }
 }

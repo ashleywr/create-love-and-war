@@ -6,6 +6,7 @@ import net.pttheta.loveandwar.gun.content.ActionGroup;
 import net.pttheta.loveandwar.gun.content.GunDef;
 import net.pttheta.loveandwar.gun.content.stat.ModifierContext;
 import net.pttheta.loveandwar.gun.content.stat.StatResolver;
+import net.pttheta.loveandwar.gun.network.CGunAuthored;
 import net.pttheta.loveandwar.gun.network.CGunInput;
 import net.pttheta.loveandwar.gun.network.GunPredictionClaim;
 import net.pttheta.loveandwar.gun.network.GunShotReceipt;
@@ -37,6 +38,7 @@ public final class LocalGunActions {
     private boolean reloading;
     private GunActiveGroups remote = GunActiveGroups.EMPTY;
     private GunActiveGroups remoteSource;
+    private final java.util.ArrayDeque<CGunAuthored> outgoing = new java.util.ArrayDeque<>();
 
     private final class Frame {
         final UUID id = UUID.randomUUID();
@@ -48,6 +50,8 @@ public final class LocalGunActions {
         final GunActiveGroups.Entry view;
         int bursts;
         boolean finishing;
+        boolean triggering;
+        int stepped = -1;
 
         Frame(GunEngine.PredictedContext context, String input) {
             gun = context.gun();
@@ -71,11 +75,37 @@ public final class LocalGunActions {
             return new GunPredictionClaim(id, group.key(), origin);
         }
 
-        void trigger(int count) {
-            for (int n = 0; n < count; n++) clock.trigger(i -> true, this::callback);
+        void trigger(int count, boolean send) {
+            triggering = true;
+            try {
+                for (int n = 0; n < count; n++) {
+                    long ordinal = clock.triggers();
+                    clock.trigger(i -> true, this::callback);
+                    if (send)
+                        outgoing.add(
+                                new CGunAuthored(
+                                        GunIdentity.id(shadow),
+                                        id,
+                                        clock.progress(),
+                                        ordinal,
+                                        CGunAuthored.Kind.TRIGGER));
+                }
+            } finally {
+                triggering = false;
+            }
         }
 
         void callback(int action, long index, int progress) {
+            if (!triggering && stepped != progress) {
+                stepped = progress;
+                outgoing.add(
+                        new CGunAuthored(
+                                GunIdentity.id(shadow),
+                                id,
+                                progress,
+                                clock.triggers(),
+                                CGunAuthored.Kind.STEP));
+            }
             if (!group.actions().get(action).actionType().equals("Shoot")) return;
             var round = ammo.consume(id);
             var sources =
@@ -204,13 +234,16 @@ public final class LocalGunActions {
         sync(actual);
         if (!input.pressed()) {
             held.remove(input.inputType());
+            CGunInput released = input;
             for (var frame : frames)
                 if ((input.prediction().present()
-                                ? frame.id.equals(input.prediction().activation())
-                                : frame.input.equals(input.inputType()))
-                        && GunFireMode.of(frame.group.repeatMode()) == GunFireMode.FULL_AUTO)
-                    frame.finishing = true;
-            return input;
+                        ? frame.id.equals(input.prediction().activation())
+                        : frame.input.equals(input.inputType()))) {
+                    released = input.authored(frame.clock.progress(), frame.clock.triggers(), 0);
+                    if (GunFireMode.of(frame.group.repeatMode()) == GunFireMode.FULL_AUTO)
+                        frame.finishing = true;
+                }
+            return released;
         }
         if (!player.isAlive() || player.isSpectator()) return input;
         boolean fresh = held.add(input.inputType());
@@ -242,14 +275,16 @@ public final class LocalGunActions {
             publish();
         }
         frame.finishing = false;
-        frame.trigger(cadence.trigger(frame.group.repeatDelay()));
+        long first = frame.clock.triggers();
+        int count = cadence.trigger(frame.group.repeatDelay());
+        frame.trigger(count, false);
         frame.bursts =
                 frame.group.repeatDelay() > 0
                                 && GunFireMode.of(frame.group.repeatMode())
                                         == GunFireMode.BURST_FIRE
                         ? Math.max(0, frame.group.repeatCount() - 1)
                         : 0;
-        return input.predicted(frame.claim());
+        return input.predicted(frame.claim()).authored(frame.clock.progress(), first, count);
     }
 
     /**
@@ -274,11 +309,19 @@ public final class LocalGunActions {
             if (repeat && !ammo.rounds().isEmpty() && !reloading)
                 frame.trigger(
                         cadence.trigger(
-                                frame.group.repeatDelay() <= 0 ? .05F : frame.group.repeatDelay()));
+                                frame.group.repeatDelay() <= 0 ? .05F : frame.group.repeatDelay()),
+                        true);
             if (frame.finishing
                     || ((mode == GunFireMode.SEMI_AUTO || mode == GunFireMode.BURST_FIRE)
                             && frame.clock.pastDuration(frame.group.durationTicks()))) {
                 frames.remove(i);
+                outgoing.add(
+                        new CGunAuthored(
+                                GunIdentity.id(shadow),
+                                frame.id,
+                                frame.clock.progress(),
+                                frame.clock.triggers(),
+                                CGunAuthored.Kind.FINISH));
                 ammo.localFinished(frame.id);
                 publish();
             }
@@ -304,6 +347,15 @@ public final class LocalGunActions {
     }
 
     public void end(SGunPresentationEnd end) {
+        // Server denial/cancellation ends future requests; already displayed recoil is not rolled
+        // back.
+        if (frames.removeIf(
+                frame -> {
+                    if (!frame.id.equals(end.prediction())) return false;
+                    ammo.localFinished(frame.id);
+                    return true;
+                })) publish();
+        outgoing.removeIf(packet -> packet.activation().equals(end.prediction()));
         ammo.end(end.prediction(), end.consumed(), end.ammoRevision(), end.remainingRounds());
     }
 
@@ -316,13 +368,33 @@ public final class LocalGunActions {
     }
 
     public boolean idle() {
-        return frames.isEmpty() && held.isEmpty() && ammo.idle() && cadence.idle();
+        return outgoing.isEmpty()
+                && frames.isEmpty()
+                && held.isEmpty()
+                && ammo.idle()
+                && cadence.idle();
     }
 
     public void cancel() {
-        for (var frame : frames) ammo.localFinished(frame.id);
+        for (var frame : frames) {
+            ammo.localFinished(frame.id);
+            outgoing.add(
+                    new CGunAuthored(
+                            GunIdentity.id(shadow),
+                            frame.id,
+                            frame.clock.progress(),
+                            frame.clock.triggers(),
+                            CGunAuthored.Kind.CANCEL));
+        }
         frames.clear();
         held.clear();
         publish();
+    }
+
+    public List<CGunAuthored> drainAuthored() {
+        if (outgoing.isEmpty()) return List.of();
+        var result = List.copyOf(outgoing);
+        outgoing.clear();
+        return result;
     }
 }

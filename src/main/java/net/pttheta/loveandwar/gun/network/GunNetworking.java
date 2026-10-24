@@ -23,8 +23,9 @@ public final class GunNetworking {
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
       // Prediction claims and callback/ammo receipts require a matching client/server schema.
-      PayloadRegistrar registrar = event.registrar("7.0");
+      PayloadRegistrar registrar = event.registrar("8.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
+      registrar.playToServer(CGunAuthored.TYPE, CGunAuthored.STREAM_CODEC, GunNetworking::handleAuthored);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
       registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));
       registrar.playToClient(SGunRecoil.TYPE,SGunRecoil.STREAM_CODEC,(payload,context)->context.enqueueWork(()->net.pttheta.loveandwar.gun.client.GunRecoil.accept(payload)));
@@ -49,6 +50,15 @@ public final class GunNetworking {
             }
          }
       );
+   }
+
+   private static void handleAuthored(CGunAuthored payload, IPayloadContext context) {
+      context.enqueueWork(() -> {
+         if (context.player() instanceof ServerPlayer player) {
+            GunIdentity.resolve(player, payload.gun()).ifPresent(gun ->
+               net.pttheta.loveandwar.gun.runtime.GunFireScheduler.authored(player, gun.stack(), payload));
+         }
+      });
    }
 
    private static void handle(CGunInput payload, IPayloadContext context) {

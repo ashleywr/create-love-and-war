@@ -11,7 +11,6 @@ import net.neoforged.neoforge.client.event.ClientTickEvent.Post;
 import net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered;
 import net.pttheta.loveandwar.gun.network.CGunInput;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
-import net.pttheta.loveandwar.network.ModMessages;
 
 @EventBusSubscriber(modid = "createloveandwar", value = Dist.CLIENT)
 public final class GunLeftClickFire {
@@ -80,16 +79,16 @@ public final class GunLeftClickFire {
             firing = null;
          }
       }
+      GunPrediction.flushAuthored();
    }
 
    private static void send(CGunInput input){
-      var sent=GunPrediction.beforeSend(input);if(firing==input)firing=sent;if(aiming==input)aiming=sent;
-      var mc=Minecraft.getInstance();if(mc.player!=null&&mc.getConnection()!=null)ModMessages.sendToServer(sent);
+      var sent=GunPrediction.send(input);if(firing==input)firing=sent;if(aiming==input)aiming=sent;
    }
 
    private static void release(CGunInput input) {
       Minecraft mc = Minecraft.getInstance();
-      if (mc.player != null && mc.getConnection() != null) ModMessages.sendToServer(GunPrediction.beforeSend(input.released()));
+      if (mc.player != null && mc.getConnection() != null) GunPrediction.send(input.released());
    }
 
    private static void resetOwner(Player player) {

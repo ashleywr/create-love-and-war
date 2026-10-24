@@ -12,7 +12,6 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent.Post;
 import net.pttheta.loveandwar.gun.network.CGunInput;
-import net.pttheta.loveandwar.network.ModMessages;
 
 @EventBusSubscriber(modid = "createloveandwar", value = Dist.CLIENT)
 public final class GunClientInput {
@@ -48,13 +47,12 @@ public final class GunClientInput {
       if (isDown != wasDown) {
          if (isDown) {
             CGunInput.capture(mc.player, InteractionHand.MAIN_HAND, inputType).ifPresent(input -> {
-               var sent=GunPrediction.beforeSend(input);
+               var sent=GunPrediction.send(input);
                PRESSED.put(inputType, sent);
-               ModMessages.sendToServer(sent);
             });
          } else {
             var input = PRESSED.remove(inputType);
-            if (input != null && mc.getConnection() != null) ModMessages.sendToServer(GunPrediction.beforeSend(input.released()));
+            if (input != null && mc.getConnection() != null) GunPrediction.send(input.released());
          }
       }
 

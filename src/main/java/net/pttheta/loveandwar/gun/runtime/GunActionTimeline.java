@@ -1,12 +1,5 @@
 package net.pttheta.loveandwar.gun.runtime;
 
-import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.UUID;
-import java.util.ArrayList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,6 +12,14 @@ import net.pttheta.loveandwar.gun.content.ActionGroup;
 import net.pttheta.loveandwar.gun.content.GunDef;
 import net.pttheta.loveandwar.gun.content.stat.ModifierSource;
 import net.pttheta.loveandwar.item.ModDataComponents;
+
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 /** Original per-action pending slot semantics, scoped to server-owned runtime group instances. */
 @EventBusSubscriber(modid = "createloveandwar")
@@ -68,14 +69,52 @@ public final class GunActionTimeline {
     private GunActionTimeline() {}
 
     private static boolean eligible(ActionDef action, boolean soundsOnly) {
-        return !soundsOnly || action.actionType().equals("PlaySound") || action.actionType().equals("EjectCasing");
+        return !soundsOnly
+                || action.actionType().equals("PlaySound")
+                || action.actionType().equals("EjectCasing");
+    }
+    static void beginAuthored(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunActiveGroups.Origin origin) {
+        claim(player, stack);
+        var groups = FRAMES.computeIfAbsent(player, ignored -> new IdentityHashMap<>())
+                .computeIfAbsent(stack, ignored -> new LinkedHashMap<>());
+        if (!groups.containsKey(group.key())) {
+            groups.put(group.key(), new Frame(player, stack, gun, group, origin, player.level().getGameTime()));
+            publish(player, stack, groups);
+        }
     }
 
-    static void trigger(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunAttachments attachments, boolean soundsOnly) {
-        trigger(player, stack, gun, group, attachments, soundsOnly, GunActiveGroups.Origin.base(stack));
+    static void advanceAuthored(ServerPlayer player, ItemStack stack, String key, int tick) {
+        var frame = frame(player, stack, key);
+        if (frame == null || !frame.presentation.authored || tick < frame.clock.progress()) return;
+        frame.clock.advance(
+                tick - frame.clock.progress(), new Dispatch(player, stack, frame, null));
     }
 
-    static void trigger(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunAttachments attachments, boolean soundsOnly, GunActiveGroups.Origin origin) {
+    static void trigger(
+            ServerPlayer player,
+            ItemStack stack,
+            GunDef gun,
+            ActionGroup group,
+            GunAttachments attachments,
+            boolean soundsOnly) {
+        trigger(
+                player,
+                stack,
+                gun,
+                group,
+                attachments,
+                soundsOnly,
+                GunActiveGroups.Origin.base(stack));
+    }
+
+    static void trigger(
+            ServerPlayer player,
+            ItemStack stack,
+            GunDef gun,
+            ActionGroup group,
+            GunAttachments attachments,
+            boolean soundsOnly,
+            GunActiveGroups.Origin origin) {
         claim(player, stack);
         var groups = FRAMES.computeIfAbsent(player, ignored -> new IdentityHashMap<>()).computeIfAbsent(stack, ignored -> new LinkedHashMap<>());
         var frame = groups.get(group.key());
@@ -107,6 +146,10 @@ public final class GunActionTimeline {
         var iterator = groups.values().iterator();
         while (iterator.hasNext()) {
             var frame = iterator.next();
+            if (frame.presentation.authored && !frame.finishing) {
+                frame.lastTick = now;
+                continue;
+            }
             if (now <= frame.lastTick) continue;
             // Runtime pending work must not resume after a dropped/unloaded interval.
             if (now - frame.lastTick > 1) { frame.presentation.retire(player,stack); iterator.remove(); removed = true; continue; }
@@ -125,7 +168,7 @@ public final class GunActionTimeline {
         long now = player.level().getGameTime();
         // Defer removal until reload transitions can retrigger the same instance and extend its lifetime.
         boolean removed = groups.values().removeIf(frame -> {
-            boolean remove = frame.tickedAt == now && (frame.finishing
+            boolean remove = frame.tickedAt == now && (!frame.presentation.authored||frame.finishing) && (frame.finishing
                 || (GunFireMode.of(frame.group.repeatMode()) == GunFireMode.SEMI_AUTO || GunFireMode.of(frame.group.repeatMode()) == GunFireMode.BURST_FIRE)
                 && frame.clock.pastDuration(GunEngine.groupDurationTicks(frame.group)));
             if (remove && frame.finishing) {

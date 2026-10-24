@@ -6,6 +6,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ActionCallbackClockTest {
+    @Test void remoteAdvanceKeepsDueOrderAndSkipsOnlyEmptyIntervals() {
+        var clock = clock(2, 4); var events = new ArrayList<Event>();
+        trigger(clock, events);
+        clock.advance(1_000_000, (i,n,p)->events.add(new Event(i,n,p)));
+        assertEquals(List.of(new Event(0,1,2),new Event(1,1,4)), events);
+        assertEquals(1_000_000, clock.progress());
+        assertFalse(clock.hasPending());
+    }
+
     private record Event(int action, long trigger, int progress) {}
     private static ActionCallbackClock clock(float... delays) { return new ActionCallbackClock(delays.length, i -> delays[i]); }
     private static void trigger(ActionCallbackClock clock, List<Event> events) {

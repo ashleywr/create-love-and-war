@@ -27,6 +27,18 @@ import java.util.UUID;
 @GameTestHolder("createloveandwar")
 @PrefixGameTestTemplate(false)
 public final class LocalGunPredictionGameTests {
+    @GameTest(template = "projectile_arena", templateNamespace = "createloveandwar")
+    public static void authoritativeRetirementStopsFutureLocalBurstWithoutUndoingPlayedRecoil(GameTestHelper h) {
+        var f = fixture(h, "g11k2", 12);
+        var input = f.press();
+        f.runtime.end(new net.pttheta.loveandwar.gun.network.SGunPresentationEnd(input.gunId(), input.prediction().activation(), 1, 1, 11));
+        f.ticks(4);
+        h.assertTrue(f.shots.size() == 1 && f.runtime.rounds() == 11,
+                "Retirement keeps initial recoil but cannot continue authoring denied future callbacks");
+        h.assertTrue(f.runtime.drainAuthored().isEmpty(), "Retired activation cannot emit later gameplay requests");
+        h.succeed();
+    }
+
     private record Shot(float horizontal, float vertical, long index) {}
 
     private record Fixture(

@@ -7,6 +7,7 @@ import net.pttheta.loveandwar.gun.network.GunPredictionClaim;
 import net.pttheta.loveandwar.gun.network.GunShotReceipt;
 import net.pttheta.loveandwar.gun.network.SGunPresentationEnd;
 import net.pttheta.loveandwar.gun.network.SGunRecoil;
+import net.pttheta.loveandwar.gun.network.GunAuthoredInput;
 import net.pttheta.loveandwar.network.ModMessages;
 
 import java.util.UUID;
@@ -31,6 +32,7 @@ public final class GunPresentation {
         int consumed, action;
         long sequence;
         boolean retired;
+        final boolean authored;
 
         Activation(ItemStack stack, UUID server, String group, GunActiveGroups.Origin origin) {
             gun = GunIdentity.id(stack);
@@ -44,6 +46,7 @@ public final class GunPresentation {
                                     && wanted.origin().equals(origin)
                             ? wanted
                             : GunPredictionClaim.NONE;
+            authored=claim.present()&&input.packet.authored().present();
             confirm(this);
         }
 
@@ -76,6 +79,8 @@ public final class GunPresentation {
     }
 
     private GunPresentation() {}
+    static GunAuthoredInput authored(){var input=INPUT.get();return input==null?GunAuthoredInput.NONE:input.packet.authored();}
+    static GunPredictionClaim claim(){var input=INPUT.get();return input==null?GunPredictionClaim.NONE:input.packet.prediction();}
 
     public static void input(
             ServerPlayer player, ItemStack stack, CGunInput packet, Runnable handler) {
@@ -109,6 +114,8 @@ public final class GunPresentation {
 
     static boolean permits(Activation existing) {
         var input = INPUT.get();
+        if(existing.authored&&(input==null||!input.packet.authored().present()))return false;
+        if(input!=null&&input.packet.authored().present()!=existing.authored)return false;
         return input == null || !input.packet.prediction().present() || existing.claim.present();
     }
 
