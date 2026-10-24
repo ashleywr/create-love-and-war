@@ -22,7 +22,7 @@ public final class GunNetworking {
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
       // Runtime active-group provenance adds a network-only component unknown to older clients.
-      PayloadRegistrar registrar = event.registrar("3.0");
+      PayloadRegistrar registrar = event.registrar("4.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
       registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));

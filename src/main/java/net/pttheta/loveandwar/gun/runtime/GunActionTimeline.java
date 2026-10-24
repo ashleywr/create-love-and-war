@@ -29,7 +29,8 @@ public final class GunActionTimeline {
     private static final class Frame {
         final GunDef gun;
         final ActionGroup group;
-        final GunActiveGroups.Entry descriptor;
+        GunActiveGroups.Entry descriptor;
+        final boolean delayedScope;
         final int[] remaining;
         final boolean[] pending;
         long lastTick;
@@ -42,6 +43,7 @@ public final class GunActionTimeline {
         Frame(ServerPlayer player, GunDef gun, ActionGroup group, GunActiveGroups.Origin origin, long now) {
             this.gun = gun; this.group = group; this.lastTick = now;
             descriptor = new GunActiveGroups.Entry(group.key(), origin, UUID.randomUUID(), now, player.getUUID());
+            delayedScope=group.actions().stream().anyMatch(action->"Scope".equals(action.actionType())&&action.delay()!=0);
             boolean delayed = group.actions().stream().anyMatch(action -> action.delay() != 0);
             remaining = delayed ? new int[group.actions().size()] : NO_DELAYS;
             pending = delayed ? new boolean[remaining.length] : NO_PENDING;
@@ -70,6 +72,11 @@ public final class GunActionTimeline {
         gun = frame.gun;
         group = frame.group;
         frame.triggers++;
+        if(frame.delayedScope){
+            var previous=frame.descriptor;
+            frame.descriptor=new GunActiveGroups.Entry(previous.key(),previous.origin(),previous.activation(),previous.startedAt(),previous.owner(),frame.triggers);
+            publish(player,stack,groups);
+        }
         var sources = RealisticDamage.apply(GunLookup.contentKey(stack), group, StatSources.forFiring(gun, group, attachments));
         int progress = frame.progress;
         for (int index = 0; index < group.actions().size(); index++) {

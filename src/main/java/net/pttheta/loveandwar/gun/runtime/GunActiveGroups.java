@@ -25,7 +25,8 @@ public record GunActiveGroups(List<Entry> entries) {
         }
     }
 
-    public record Entry(String key, Origin origin, UUID activation, long startedAt, UUID owner) {
+    public record Entry(String key, Origin origin, UUID activation, long startedAt, UUID owner, long scopeTrigger) {
+        public Entry(String key,Origin origin,UUID activation,long startedAt,UUID owner){this(key,origin,activation,startedAt,owner,0);}
         public Optional<ActionGroup> resolve() { return origin.resolve(key); }
     }
 
@@ -37,7 +38,8 @@ public record GunActiveGroups(List<Entry> entries) {
         buf.writeUUID(entry.activation());
         buf.writeLong(entry.startedAt());
         buf.writeUUID(entry.owner());
-    }, buf -> new Entry(buf.readUtf(), new Origin(buf.readUtf(), buf.readVarInt(), buf.readUtf()), buf.readUUID(), buf.readLong(), buf.readUUID()));
+        buf.writeVarLong(entry.scopeTrigger());
+    }, buf -> new Entry(buf.readUtf(), new Origin(buf.readUtf(), buf.readVarInt(), buf.readUtf()), buf.readUUID(), buf.readLong(), buf.readUUID(), buf.readVarLong()));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, GunActiveGroups> STREAM_CODEC = ENTRY_CODEC
             .apply(ByteBufCodecs.list()).map(GunActiveGroups::new, GunActiveGroups::entries);

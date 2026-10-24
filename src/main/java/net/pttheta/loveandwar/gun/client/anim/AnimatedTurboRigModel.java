@@ -23,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.pttheta.loveandwar.Config;
 import net.pttheta.loveandwar.gun.client.MuzzleFlash;
+import net.pttheta.loveandwar.gun.client.ScopeVisibility;
 import net.pttheta.loveandwar.gun.client.geometry.TurboRigBakedModel;
 import net.pttheta.loveandwar.gun.client.geometry.TurboRigModelData;
 import net.pttheta.loveandwar.gun.client.geometry.TurboRigQuadBaker;
@@ -187,6 +188,7 @@ public final class AnimatedTurboRigModel implements BakedModel {
       private final List<BakedQuad> quads;
       private final Matrix4f posedMuzzle;
       private final ItemStack renderStack;
+      private ScopeVisibility.GunRender visibility=ScopeVisibility.GunRender.VISIBLE;
 
       PosedModel(List<BakedQuad> quads, Matrix4f posedMuzzle, ItemStack renderStack) {
          this.quads = quads;
@@ -195,6 +197,11 @@ public final class AnimatedTurboRigModel implements BakedModel {
       }
 
       public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random) {
+         if(this.visibility!=ScopeVisibility.GunRender.VISIBLE){
+            // Original FlashEffectRenderer is independent of ScopeAction.ShouldRender's gun-mesh gate.
+            return this.visibility==ScopeVisibility.GunRender.SCOPED&&face==null&&MuzzleFlash.active()
+               ?MuzzleFlash.quadsFor(AnimatedTurboRigModel.this.base,this.posedMuzzle):List.of();
+         }
          if (this.quads == null) return AnimatedTurboRigModel.this.base.getQuads(state, face, random);
          if (face != null) {
             return List.of();
@@ -242,6 +249,7 @@ public final class AnimatedTurboRigModel implements BakedModel {
       }
 
       public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+         this.visibility=this.renderStack.getItem() instanceof net.pttheta.loveandwar.gun.runtime.GunItem?ScopeVisibility.renderState(transformType):ScopeVisibility.GunRender.VISIBLE;
          if (AnimatedTurboRigModel.this.base.drawsAsIcon()) {
             return AnimatedTurboRigModel.this.base.applyTransform(transformType, poseStack, applyLeftHandTransform);
          }

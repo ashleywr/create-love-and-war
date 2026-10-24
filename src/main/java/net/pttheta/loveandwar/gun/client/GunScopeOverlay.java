@@ -1,7 +1,6 @@
 package net.pttheta.loveandwar.gun.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +13,6 @@ import net.pttheta.loveandwar.gun.content.stat.StatResolver;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent.Pre;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.pttheta.loveandwar.gun.runtime.GunItem;
@@ -28,40 +26,31 @@ public final class GunScopeOverlay {
    private GunScopeOverlay() {
    }
 
-   @SubscribeEvent
-   static void onRenderHand(RenderHandEvent event) {
-      if (activeScopeOverlay() != null && AdsBlendState.blend() > 0.85F) {
-         event.setCanceled(true);
-      }
-   }
-
    @SubscribeEvent(receiveCanceled = true)
    static void onRenderCrosshair(Pre event) {
       if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
          ResourceLocation overlay = activeScopeOverlay();
          if (overlay != null) {
-            float blend = AdsBlendState.blend();
-            if (!(blend <= 0.01F)) {
-               GuiGraphics graphics = event.getGuiGraphics();
-               int screenWidth = graphics.guiWidth();
-               int screenHeight = graphics.guiHeight();
-               int overlayWidth = 4 * screenHeight;
-               int x = screenWidth / 2 - overlayWidth / 2;
-               RenderSystem.enableBlend();
-               RenderSystem.defaultBlendFunc();
-               graphics.setColor(1.0F, 1.0F, 1.0F, blend);
-               graphics.blit(overlay, x, 0, overlayWidth, screenHeight, 0.0F, 0.0F, 1, 1, 1, 1);
-               graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-               RenderSystem.disableBlend();
-               event.setCanceled(true);
-            }
+            GuiGraphics graphics = event.getGuiGraphics();
+            int screenWidth = graphics.guiWidth();
+            int screenHeight = graphics.guiHeight();
+            int overlayWidth = WIDTH_PER_HEIGHT * screenHeight;
+            int x = screenWidth / 2 - overlayWidth / 2;
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            graphics.blit(overlay, x, 0, overlayWidth, screenHeight, 0.0F, 0.0F, 1, 1, 1, 1);
+            graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.disableBlend();
+            event.setCanceled(true);
          }
+         if (hasActiveSight()) event.setCanceled(true);
       }
    }
 
    private static ResourceLocation activeScopeOverlay() {
       Minecraft mc = Minecraft.getInstance();
-      if (mc.player != null && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
+      if (mc.player != null) {
          for (var hand : InteractionHand.values()) {
             ItemStack stack = mc.player.getItemInHand(hand);
             var def = GunLookup.gunDef(stack);
@@ -74,6 +63,20 @@ public final class GunScopeOverlay {
       } else {
          return null;
       }
+   }
+
+   private static boolean hasActiveSight() {
+      var player=Minecraft.getInstance().player;
+      if(player==null)return false;
+      for(var hand:InteractionHand.values()) {
+         var stack=player.getItemInHand(hand);
+         if(!(stack.getItem() instanceof GunItem))continue;
+         for(var entry:GunActiveGroups.of(stack).entries())if(entry.owner().equals(player.getUUID())) {
+            var group=entry.resolve();
+            if(group.isPresent()&&group.get().actions().stream().anyMatch(action->"AimDownSights".equals(action.actionType())||"Scope".equals(action.actionType())))return true;
+         }
+      }
+      return false;
    }
 
    static ResourceLocation scopeOverlay(ItemStack stack, java.util.UUID owner) {
