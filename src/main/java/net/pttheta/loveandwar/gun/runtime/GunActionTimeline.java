@@ -31,14 +31,16 @@ public final class GunActionTimeline {
         GunActiveGroups.Entry descriptor;
         final boolean delayedScope;
         final ActionCallbackClock clock;
+        final GunPresentation.Activation presentation;
         long lastTick;
         long tickedAt = Long.MIN_VALUE;
         long stateTickedAt = Long.MIN_VALUE;
         boolean finishing;
 
-        Frame(ServerPlayer player, GunDef gun, ActionGroup group, GunActiveGroups.Origin origin, long now) {
+        Frame(ServerPlayer player, ItemStack stack, GunDef gun, ActionGroup group, GunActiveGroups.Origin origin, long now) {
             this.gun = gun; this.group = group; this.lastTick = now;
             descriptor = new GunActiveGroups.Entry(group.key(), origin, UUID.randomUUID(), now, player.getUUID());
+            presentation = new GunPresentation.Activation(stack,descriptor.activation(),group.key(),origin);
             delayedScope=group.actions().stream().anyMatch(action->"Scope".equals(action.actionType())&&action.delay()!=0);
             clock = new ActionCallbackClock(group.actions().size(), index -> group.actions().get(index).delay());
         }
@@ -60,7 +62,7 @@ public final class GunActionTimeline {
                 var attachments = stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
                 sources = RealisticDamage.apply(GunLookup.contentKey(stack), frame.group, StatSources.forFiring(frame.gun, frame.group, attachments));
             }
-            GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, progress, trigger);
+            frame.presentation.run(index,()->GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, progress, trigger));
         }
     }
     private GunActionTimeline() {}
@@ -78,7 +80,7 @@ public final class GunActionTimeline {
         var groups = FRAMES.computeIfAbsent(player, ignored -> new IdentityHashMap<>()).computeIfAbsent(stack, ignored -> new LinkedHashMap<>());
         var frame = groups.get(group.key());
         if (frame == null) {
-            frame = new Frame(player, gun, group, origin, player.level().getGameTime());
+            frame = new Frame(player, stack, gun, group, origin, player.level().getGameTime());
             groups.put(group.key(), frame);
             publish(player, stack, groups);
         }
@@ -107,7 +109,7 @@ public final class GunActionTimeline {
             var frame = iterator.next();
             if (now <= frame.lastTick) continue;
             // Runtime pending work must not resume after a dropped/unloaded interval.
-            if (now - frame.lastTick > 1) { iterator.remove(); removed = true; continue; }
+            if (now - frame.lastTick > 1) { frame.presentation.retire(player,stack); iterator.remove(); removed = true; continue; }
             frame.lastTick = now; frame.tickedAt = now;
             // Stable authored-index order is retained; original HashMap same-time ordering was unspecified.
             // No dispatch/stat allocation on the ordinary no-pending tick path.
@@ -130,6 +132,7 @@ public final class GunActionTimeline {
                 var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                 if (state.activeToggles().contains(frame.group.key())) stack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(frame.group.key(), false));
             }
+            if (remove) frame.presentation.retire(player,stack);
             return remove;
         });
         if (removed) publish(player, stack, groups);
@@ -147,12 +150,14 @@ public final class GunActionTimeline {
     static void cancel(ServerPlayer player, ItemStack stack, String key) {
         var stacks = FRAMES.get(player);
         var groups = stacks == null ? null : stacks.get(stack);
-        if (groups != null && groups.remove(key) != null) publish(player, stack, groups);
+        var removed=groups==null?null:groups.remove(key);
+        if (removed!=null) { removed.presentation.retire(player,stack); publish(player, stack, groups); }
     }
 
     static void cancelAll(ServerPlayer player, ItemStack stack) {
         var stacks = FRAMES.get(player);
-        if (stacks != null) stacks.remove(stack);
+        var removed=stacks==null?null:stacks.remove(stack);
+        if(removed!=null)removed.values().forEach(frame->frame.presentation.retire(player,stack));
         publish(player, stack, null);
     }
 
@@ -166,6 +171,7 @@ public final class GunActionTimeline {
 
     static java.util.Optional<Context> context(ServerPlayer player, ItemStack stack, String key) {
         var frame = frame(player, stack, key);
+        if(frame!=null)GunPresentation.confirm(frame.presentation);
         return frame == null ? java.util.Optional.empty() : java.util.Optional.of(new Context(frame.gun, frame.group, frame.descriptor.origin(), frame.clock.progress(), frame.clock.triggers()));
     }
 
@@ -204,6 +210,9 @@ public final class GunActionTimeline {
     static boolean owns(ServerPlayer player, ItemStack stack, String key) {
         return frame(player, stack, key) != null;
     }
+    static boolean permitsPresentation(ServerPlayer player,ItemStack stack,String key){
+        var frame=frame(player,stack,key);return frame==null||GunPresentation.permits(frame.presentation);
+    }
 
     static boolean isFinishing(ServerPlayer player, ItemStack stack, String key) {
         var frame = frame(player, stack, key);
@@ -224,7 +233,9 @@ public final class GunActionTimeline {
         if (stacks == null) return;
         long now = player.level().getGameTime();
         stacks.entrySet().removeIf(entry -> {
-            if (entry.getValue().values().removeIf(frame -> frame.lastTick < now - 1)) publish(player, entry.getKey(), entry.getValue());
+            if (entry.getValue().values().removeIf(frame -> {
+                if(frame.lastTick>=now-1)return false;frame.presentation.retire(player,entry.getKey());return true;
+            })) publish(player, entry.getKey(), entry.getValue());
             return entry.getKey().isEmpty() || entry.getValue().isEmpty();
         });
         if (stacks.isEmpty()) FRAMES.remove(player);

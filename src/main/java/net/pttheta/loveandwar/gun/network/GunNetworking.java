@@ -13,6 +13,7 @@ import net.pttheta.loveandwar.gun.client.GunSoundPlayer;
 import net.pttheta.loveandwar.gun.runtime.GunEngine;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
 import net.pttheta.loveandwar.gun.runtime.GunIdentity;
+import net.pttheta.loveandwar.gun.runtime.GunPresentation;
 
 @EventBusSubscriber(modid = "createloveandwar")
 public final class GunNetworking {
@@ -21,12 +22,13 @@ public final class GunNetworking {
 
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-      // Persistent gun IDs and target-bound input require a matching client/server schema.
-      PayloadRegistrar registrar = event.registrar("6.0");
+      // Prediction claims and callback/ammo receipts require a matching client/server schema.
+      PayloadRegistrar registrar = event.registrar("7.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
       registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));
       registrar.playToClient(SGunRecoil.TYPE,SGunRecoil.STREAM_CODEC,(payload,context)->context.enqueueWork(()->net.pttheta.loveandwar.gun.client.GunRecoil.accept(payload)));
+      registrar.playToClient(SGunPresentationEnd.TYPE,SGunPresentationEnd.STREAM_CODEC,(payload,context)->context.enqueueWork(()->net.pttheta.loveandwar.gun.client.GunPrediction.end(payload)));
    }
 
    private static void handleShotTrail(SShotTrail payload, IPayloadContext context) {
@@ -52,8 +54,11 @@ public final class GunNetworking {
    private static void handle(CGunInput payload, IPayloadContext context) {
       context.enqueueWork(() -> {
          if (context.player() instanceof ServerPlayer player) {
-            GunIdentity.resolve(player, payload.gunId()).ifPresent(gun ->
-               GunEngine.handleInput(player, gun.stack(), gun.hand(), payload.inputType(), payload.pressed()));
+            GunIdentity.resolve(player, payload.gunId()).ifPresentOrElse(gun ->
+               GunPresentation.input(player,gun.stack(),payload,()->GunEngine.handleInput(player, gun.stack(), gun.hand(), payload.inputType(), payload.pressed())),()->{
+                  if(payload.pressed()&&payload.prediction().present())net.pttheta.loveandwar.network.ModMessages.sendToPlayer(
+                     new SGunPresentationEnd(payload.gunId(),payload.prediction().activation(),0,0,0),player);
+               });
          }
       });
    }

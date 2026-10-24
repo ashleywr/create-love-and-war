@@ -107,7 +107,7 @@ final class GunReload {
             s.shrink(1);
             List<ItemStack> next = new ArrayList<>(rounds.items());
             next.add(loaded);
-            gunStack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(next));
+            GunAmmo.set(gunStack, new AmmoPouchContents(next));
             return;
          }
       }
@@ -144,7 +144,7 @@ final class GunReload {
             }
          }
 
-         gunStack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(next));
+         GunAmmo.set(gunStack, new AmmoPouchContents(next));
       }
    }
 }

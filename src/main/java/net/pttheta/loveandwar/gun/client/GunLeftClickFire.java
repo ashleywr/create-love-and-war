@@ -5,6 +5,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent.Post;
 import net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered;
@@ -17,6 +18,7 @@ public final class GunLeftClickFire {
    private static CGunInput firing;
    private static CGunInput aiming;
    private static Player inputOwner;
+   private static final java.util.ArrayDeque<CGunInput> PENDING = new java.util.ArrayDeque<>();
 
    private GunLeftClickFire() {
    }
@@ -30,7 +32,7 @@ public final class GunLeftClickFire {
             if (aiming == null) {
                CGunInput.capture(user, InteractionHand.MAIN_HAND, "Fire2").ifPresent(input -> {
                   aiming = input;
-                  ModMessages.sendToServer(input);
+                  PENDING.add(input);
                });
             }
 
@@ -42,8 +44,7 @@ public final class GunLeftClickFire {
             if (firing == null) {
                CGunInput.capture(player, InteractionHand.MAIN_HAND, "Fire1").ifPresent(input -> {
                   firing = input;
-                  ModMessages.sendToServer(input);
-                  GunPrediction.onInputSent("Fire1");
+                  PENDING.add(input);
                });
             }
             event.setSwingHand(false);
@@ -52,10 +53,17 @@ public final class GunLeftClickFire {
       }
    }
 
-   @SubscribeEvent
+   @SubscribeEvent(priority=EventPriority.HIGH)
    static void onClientTick(Post event) {
       Minecraft mc = Minecraft.getInstance();
       resetOwner(mc.player);
+      if(mc.screen!=null)PENDING.clear();
+      CGunInput attack=null,use=null;
+      while(!PENDING.isEmpty()){
+         var input=PENDING.removeFirst();if(input.inputType().equals("Fire1"))attack=input;else use=input;
+      }
+      if(attack!=null)send(attack);
+      if(use!=null)send(use);
       if (aiming != null && (!mc.options.keyUse.isDown() || mc.screen != null)) {
          release(aiming);
          aiming = null;
@@ -74,15 +82,21 @@ public final class GunLeftClickFire {
       }
    }
 
+   private static void send(CGunInput input){
+      var sent=GunPrediction.beforeSend(input);if(firing==input)firing=sent;if(aiming==input)aiming=sent;
+      var mc=Minecraft.getInstance();if(mc.player!=null&&mc.getConnection()!=null)ModMessages.sendToServer(sent);
+   }
+
    private static void release(CGunInput input) {
       Minecraft mc = Minecraft.getInstance();
-      if (mc.player != null && mc.getConnection() != null) ModMessages.sendToServer(input.released());
+      if (mc.player != null && mc.getConnection() != null) ModMessages.sendToServer(GunPrediction.beforeSend(input.released()));
    }
 
    private static void resetOwner(Player player) {
       if (inputOwner != player) {
          firing = null;
          aiming = null;
+         PENDING.clear();
          inputOwner = player;
       }
    }

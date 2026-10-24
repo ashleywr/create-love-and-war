@@ -93,7 +93,13 @@ public final class GunEngine {
       }
    }
 
+   public record PredictedContext(GunDef gun,ActionGroup group,GunActiveGroups.Origin origin) {}
+
    public static Optional<ActionGroup> predictStartedGroup(Player shooter, ItemStack gunStack, String inputType, long gameTime) {
+      return predictInputContext(shooter,gunStack,inputType,gameTime).map(PredictedContext::group);
+   }
+
+   public static Optional<PredictedContext> predictInputContext(Player shooter, ItemStack gunStack, String inputType, long gameTime) {
       Optional<GunDef> defOpt = GunLookup.gunDef(gunStack);
       if (defOpt.isEmpty()) {
          return Optional.empty();
@@ -132,7 +138,8 @@ public final class GunEngine {
             return Optional.empty();
          }
 
-         return Optional.of(group);
+         var origin=GunActiveGroups.of(gunStack).find(group.key()).map(GunActiveGroups.Entry::origin).orElse(resolved.get().origin());
+         return Optional.of(new PredictedContext(def,group,origin));
       } else {
          return Optional.empty();
       }
@@ -341,6 +348,8 @@ public final class GunEngine {
       }
       ActionGroup candidate = groupOpt.get();
       var retained = GunActionTimeline.context(player, gunStack, candidate.key());
+      if(!GunPresentation.permits(candidate.key(),retained.map(GunActionTimeline.Context::origin).orElse(resolved.origin())))return;
+      if(!GunActionTimeline.permitsPresentation(player,gunStack,candidate.key()))return;
       // Quirk kept: Toggle is checked on the requested context, while CanStart/actions use the retained instance.
       if (GunFireMode.of(candidate.repeatMode()) == GunFireMode.TOGGLE && retained.isPresent()) {
          var current = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
@@ -352,6 +361,7 @@ public final class GunEngine {
       ActionGroup group = retained.map(GunActionTimeline.Context::group).orElse(candidate);
       GunDef actualGun = retained.map(GunActionTimeline.Context::gun).orElse(def);
       var origin = retained.map(GunActionTimeline.Context::origin).orElse(resolved.origin());
+      if(!GunPresentation.permits(group.key(),origin))return;
       GunFireMode mode = GunFireMode.of(group.repeatMode());
       if (mode == GunFireMode.TOGGLE) {
          gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(group.key(), true));
@@ -425,7 +435,7 @@ public final class GunEngine {
       if (!rounds.isEmpty()) {
          ItemStack round = rounds.items().get(0);
          List<ItemStack> remaining = new ArrayList<>(rounds.items().subList(1, rounds.items().size()));
-         gunStack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(remaining));
+         GunAmmo.set(gunStack, new AmmoPouchContents(remaining));
          diag("SHOT fired, {} rounds left", remaining.size());
          var bullet=GunLookup.bulletDef(round);
          if(bullet.isPresent())producedShot=GunBallistics.fire(player,
@@ -435,7 +445,7 @@ public final class GunEngine {
       float vertical=producedShot?Math.max(0,net.pttheta.loveandwar.gun.content.stat.StatResolver.resolve("vertical_recoil",0,sources,context)):0;
       float horizontal=producedShot?Math.max(0,net.pttheta.loveandwar.gun.content.stat.StatResolver.resolve("horizontal_recoil",0,sources,context)):0;
       // Original local Shoot callback adds once after its shot collection, including a zero impulse for an empty collection.
-      net.pttheta.loveandwar.network.ModMessages.sendToPlayer(new net.pttheta.loveandwar.gun.network.SGunRecoil(horizontal,vertical,triggerIndex),player);
+      GunPresentation.shot(player,gunStack,horizontal,vertical,triggerIndex,!rounds.isEmpty());
    }
 
    private static void doSpawnParticle(ServerPlayer player) {

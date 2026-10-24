@@ -167,7 +167,7 @@ public final class GunRecoilGameTests {
         try{
             for(long index:new long[]{0,128,3000000000L}){
                 buffer.clear();var value=new SGunRecoil(1.25F,200,index);SGunRecoil.STREAM_CODEC.encode(buffer,value);
-                if(index==0)helper.assertTrue(buffer.readableBytes()==9,"Initial owner impulse uses8 float bytes plus1 index byte");
+                if(index==0)helper.assertTrue(buffer.readableBytes()==10,"Unbound impulse uses8 float bytes,1 index byte and1 receipt-presence byte");
                 helper.assertTrue(SGunRecoil.STREAM_CODEC.decode(buffer).equals(value)&&buffer.readableBytes()==0,"All recoil fields round-trip without trailing bytes");
             }
         }finally{buffer.release();}

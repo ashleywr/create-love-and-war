@@ -45,6 +45,7 @@ public final class RecoilClientScenario {
     @SubscribeEvent public static void register(RegisterClientCommandsEvent event){
         if(!Boolean.getBoolean("law.enableClientScenario"))return;
         event.getDispatcher().register(Commands.literal("law_test_recoil_camera").executes(context->cameraCheck()));
+        event.getDispatcher().register(Commands.literal("law_test_prediction_feedback").executes(context->feedbackCheck()));
         event.getDispatcher().register(Commands.literal("law_test_prediction_initial").executes(context->{
             var mc=Minecraft.getInstance();if(mc.player==null)return 0;
             var stack=mc.player.getMainHandItem();
@@ -55,6 +56,7 @@ public final class RecoilClientScenario {
                 var state=state();var snapshot=clear(state);
                 try{
                     event.getDispatcher().execute("law_test_fire_client tap",context.getSource());
+                    GunLeftClickFire.onClientTick(new ClientTickEvent.Post());
                     // Client payload handlers enqueue on this same thread and cannot run until this command returns.
                     float pending=read(state,"pendingPitch");
                     LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_PREDICTION_CHECK name=initial_before_reply pass={} pending={}",pending>0,pending);
@@ -65,6 +67,40 @@ public final class RecoilClientScenario {
         event.getDispatcher().register(Commands.literal("law_test_recoil_burst").executes(context->{
             if(!arm())return 0;return event.getDispatcher().execute("law_test_fire_client tap",context.getSource());
         }));
+    }
+    private static int feedbackCheck(){
+        var mc=Minecraft.getInstance();if(mc.player==null)return 0;
+        Map<Field,Object> snapshot=null;Object recoil=null;Field randomField=null;Object originalRandom=null;
+        var draws=new int[1];
+        try{
+            recoil=state();snapshot=clear(recoil);
+            randomField=net.minecraft.world.entity.Entity.class.getDeclaredField("random");randomField.setAccessible(true);originalRandom=randomField.get(mc.player);
+            var isolated=net.minecraft.util.RandomSource.create(123);
+            var counted=java.lang.reflect.Proxy.newProxyInstance(net.minecraft.util.RandomSource.class.getClassLoader(),new Class[]{net.minecraft.util.RandomSource.class},(p,m,args)->{
+                if(m.getName().equals("nextGaussian"))draws[0]++;return m.invoke(isolated,args);
+            });
+            randomField.set(mc.player,counted);
+            var gun=java.util.UUID.randomUUID();var activation=java.util.UUID.randomUUID();var local=java.util.UUID.randomUUID();
+            var owned=new net.pttheta.loveandwar.gun.network.GunShotReceipt(gun,activation,0,0,local,1,0,1,true);
+            for(int i=0;i<3;i++)GunRecoil.accept(new net.pttheta.loveandwar.gun.network.SGunRecoil(0,8,0,owned));
+            predictionResult("owned_feedback_no_replay",read(recoil,"pendingPitch")==0&&read(recoil,"pendingYaw")==0);
+            predictionResult("owned_feedback_no_rng",draws[0]==0);
+            var fallback=new net.pttheta.loveandwar.gun.network.GunShotReceipt(gun,activation,1,1,net.pttheta.loveandwar.gun.runtime.GunIdentity.INVALID,0,0,1,false);
+            for(int i=0;i<2;i++)GunRecoil.accept(new net.pttheta.loveandwar.gun.network.SGunRecoil(0,8,0,fallback));
+            predictionResult("fallback_duplicate_once",read(recoil,"pendingPitch")==4&&draws[0]==1);
+            var other=new net.pttheta.loveandwar.gun.network.GunShotReceipt(gun,java.util.UUID.randomUUID(),1,1,net.pttheta.loveandwar.gun.runtime.GunIdentity.INVALID,0,0,1,false);
+            GunRecoil.accept(new net.pttheta.loveandwar.gun.network.SGunRecoil(0,8,0,other));
+            predictionResult("unrelated_fallback_distinct",read(recoil,"pendingPitch")==8&&draws[0]==2);
+        }catch(ReflectiveOperationException ex){throw new IllegalStateException(ex);}
+        finally{
+            try{if(randomField!=null&&originalRandom!=null)randomField.set(mc.player,originalRandom);if(snapshot!=null)restore(recoil,snapshot);}
+            catch(ReflectiveOperationException ex){throw new IllegalStateException(ex);}
+        }
+        return 1;
+    }
+    private static void predictionResult(String name,boolean pass){
+        LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_PREDICTION_CHECK name={} pass={}",name,pass);
+        if(!pass)throw new IllegalStateException(name);
     }
     private static int cameraCheck(){
         Object state;try{state=state();}catch(ReflectiveOperationException ex){result("camera_recoil_installed",false,ex.getClass().getSimpleName());return 0;}

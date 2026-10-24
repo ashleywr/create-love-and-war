@@ -18,6 +18,9 @@ import net.pttheta.loveandwar.item.custom.AmmoPouchContents;
 
 public class ModDataComponents {
    public static final DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, "createloveandwar");
+   public static final DeferredHolder<DataComponentType<?>, DataComponentType<Long>> GUN_AMMO_REVISION = COMPONENTS.registerComponentType(
+      "gun_ammo_revision", builder -> builder.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG)
+   );
    public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> GUN_ID = COMPONENTS.registerComponentType(
       "gun_id", builder -> builder.persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC)
    );

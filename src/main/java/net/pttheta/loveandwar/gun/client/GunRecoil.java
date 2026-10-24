@@ -13,8 +13,12 @@ public final class GunRecoil {
     private static final RecoilState STATE=new RecoilState();
     private GunRecoil(){}
     public static void accept(SGunRecoil impulse){
+        if(!GunPrediction.authoritative(impulse.receipt()))return;
+        local(impulse.horizontal(),impulse.vertical(),impulse.triggerIndex());
+    }
+    public static void local(float horizontal,float vertical,long triggerIndex){
         var player=Minecraft.getInstance().player;
-        if(player!=null)STATE.shot(impulse.horizontal(),impulse.vertical(),impulse.triggerIndex(),player.getRandom().nextGaussian());
+        if(player!=null)STATE.shot(horizontal,vertical,triggerIndex,player.getRandom().nextGaussian());
     }
     @SubscribeEvent static void tick(ClientTickEvent.Post event){STATE.tick();}
     @SubscribeEvent static void camera(ViewportEvent.ComputeCameraAngles event){
