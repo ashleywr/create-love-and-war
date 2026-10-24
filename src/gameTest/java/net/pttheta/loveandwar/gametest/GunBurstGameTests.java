@@ -140,7 +140,8 @@ public final class GunBurstGameTests {
             if (tick == 3) {
                 f.player().getInventory().setItem(1, f.gun());
                 f.player().setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                GunEngine.handleInput(f.player(), ItemStack.EMPTY, InteractionHand.MAIN_HAND, "Fire1", false);
+                // Network release now resolves the captured UUID, even with an empty current hand.
+                GunEngine.handleInput(f.player(), f.gun(), InteractionHand.MAIN_HAND, "Fire1", false);
             }
         });
         helper.runAtTickTime(7, () -> {

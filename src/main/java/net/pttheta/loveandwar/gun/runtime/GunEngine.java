@@ -45,8 +45,8 @@ public final class GunEngine {
    public static void handleInput(ServerPlayer player, ItemStack gunStack, InteractionHand hand, String inputType, boolean pressed) {
       if (!pressed) {
          if ("Fire1".equals(inputType)) {
-            // Release belongs to the player's trigger, including a gun moved out of the selected slot.
-            GunFireScheduler.releaseAll(player);
+            // The input router resolves the originally pressed gun, including a move to an unselected slot.
+            GunFireScheduler.release(player, gunStack);
             if (gunStack.getItem() instanceof GunItem) {
                GunActionState state = gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                gunStack.set(ModDataComponents.GUN_ACTION_STATE, state.released());

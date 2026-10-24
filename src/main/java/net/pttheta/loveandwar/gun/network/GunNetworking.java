@@ -1,7 +1,6 @@
 package net.pttheta.loveandwar.gun.network;
 
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -13,6 +12,7 @@ import net.pttheta.loveandwar.gun.client.ShotTrailRenderer;
 import net.pttheta.loveandwar.gun.client.GunSoundPlayer;
 import net.pttheta.loveandwar.gun.runtime.GunEngine;
 import net.pttheta.loveandwar.gun.runtime.GunLookup;
+import net.pttheta.loveandwar.gun.runtime.GunIdentity;
 
 @EventBusSubscriber(modid = "createloveandwar")
 public final class GunNetworking {
@@ -21,8 +21,8 @@ public final class GunNetworking {
 
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-      // Owner-only camera recoil requires the matching client handler in addition to active-group metadata.
-      PayloadRegistrar registrar = event.registrar("5.0");
+      // Persistent gun IDs and target-bound input require a matching client/server schema.
+      PayloadRegistrar registrar = event.registrar("6.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
       registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));
@@ -52,7 +52,8 @@ public final class GunNetworking {
    private static void handle(CGunInput payload, IPayloadContext context) {
       context.enqueueWork(() -> {
          if (context.player() instanceof ServerPlayer player) {
-            GunEngine.handleInput(player, player.getMainHandItem(), InteractionHand.MAIN_HAND, payload.inputType(), payload.pressed());
+            GunIdentity.resolve(player, payload.gunId()).ifPresent(gun ->
+               GunEngine.handleInput(player, gun.stack(), gun.hand(), payload.inputType(), payload.pressed()));
          }
       });
    }

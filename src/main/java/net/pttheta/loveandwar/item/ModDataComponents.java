@@ -1,6 +1,8 @@
 package net.pttheta.loveandwar.item;
 
 import com.mojang.serialization.Codec;
+import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -16,6 +18,9 @@ import net.pttheta.loveandwar.item.custom.AmmoPouchContents;
 
 public class ModDataComponents {
    public static final DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, "createloveandwar");
+   public static final DeferredHolder<DataComponentType<?>, DataComponentType<UUID>> GUN_ID = COMPONENTS.registerComponentType(
+      "gun_id", builder -> builder.persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC)
+   );
    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CraftedParts>> CRAFTED_PARTS = COMPONENTS.registerComponentType(
       "crafted_parts", builder -> builder.persistent(CraftedParts.CODEC).networkSynchronized(CraftedParts.STREAM_CODEC)
    );

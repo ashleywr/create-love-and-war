@@ -117,6 +117,35 @@ public final class ActionTimingClientSetup {
             }));
         }
         event.getDispatcher().register(command);
+        event.getDispatcher().register(Commands.literal("law_test_identity_prepare").requires(source -> source.hasPermission(2)).executes(context -> {
+            var player = context.getSource().getPlayerOrException();
+            var session = SESSIONS.get(player.getUUID());
+            if (session == null || !(session.gun.equals("g11k2") || session.gun.equals("mat49"))) return 0;
+            GunFireScheduler.releaseAll(player);
+            for (int slot = 0; slot < 2; slot++) {
+                var gun = item(session.gun, 1);
+                var round = item(session.gun.equals("g11k2") ? "caseless_bullet" : "pistol_bullet", 1);
+                gun.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(List.of(round, round.copy(), round.copy())));
+                player.getInventory().setItem(slot, gun);
+            }
+            GunIdentity.inventoryTick(player);
+            player.getInventory().selected = 0;
+            player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket(0));
+            player.inventoryMenu.broadcastChanges();
+            LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_IDENTITY_PREPARE gun={} a={} b={}", session.gun,
+                GunIdentity.id(player.getInventory().getItem(0)), GunIdentity.id(player.getInventory().getItem(1)));
+            return 1;
+        }));
+        event.getDispatcher().register(Commands.literal("law_test_identity_check").requires(source -> source.hasPermission(2)).executes(context -> {
+            var player = context.getSource().getPlayerOrException(); var session = SESSIONS.get(player.getUUID());
+            if (session == null) return 0;
+            int a = player.getInventory().getItem(0).getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY).items().size();
+            int b = player.getInventory().getItem(1).getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY).items().size();
+            boolean pass = session.gun.equals("g11k2") ? a == 0 && b == 3 : a == 2 && b == 0;
+            LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_IDENTITY_CHECK name=server_{} pass={} a={} b={} selected={}", session.gun, pass, a, b, player.getInventory().selected);
+            if (!pass) throw new IllegalStateException("Native gun identity routing failed");
+            return 1;
+        }));
         event.getDispatcher().register(Commands.literal("law_test_mode_status").requires(source -> source.hasPermission(2)).executes(context -> {
             var player = context.getSource().getPlayerOrException(); var stack = player.getMainHandItem();
             var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);

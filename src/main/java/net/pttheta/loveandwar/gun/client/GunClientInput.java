@@ -1,7 +1,11 @@
 package net.pttheta.loveandwar.gun.client;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -15,6 +19,8 @@ public final class GunClientInput {
    private static boolean reload1Down;
    private static boolean special1Down;
    private static boolean special2Down;
+   private static final Map<String, CGunInput> PRESSED = new HashMap<>();
+   private static Player inputOwner;
 
    private GunClientInput() {
    }
@@ -22,7 +28,12 @@ public final class GunClientInput {
    @SubscribeEvent
    public static void onClientTick(Post event) {
       Minecraft mc = Minecraft.getInstance();
-      if (mc.player != null && mc.screen == null) {
+      if (inputOwner != mc.player) {
+         PRESSED.clear();
+         fire2Down = reload1Down = special1Down = special2Down = false;
+         inputOwner = mc.player;
+      }
+      if (mc.player != null) {
          fire2Down = poll(GunKeyMappings.FIRE2, "Fire2", fire2Down);
          reload1Down = poll(GunKeyMappings.RELOAD1, "Reload1", reload1Down);
          special1Down = poll(GunKeyMappings.SPECIAL_KEY_1, "SpecialKey1", special1Down);
@@ -31,11 +42,18 @@ public final class GunClientInput {
    }
 
    private static boolean poll(KeyMapping mapping, String inputType, boolean wasDown) {
-      boolean isDown = mapping.isDown();
+      Minecraft mc = Minecraft.getInstance();
+      boolean isDown = mc.screen == null && mapping.isDown();
       if (isDown != wasDown) {
-         ModMessages.sendToServer(new CGunInput(inputType, isDown));
          if (isDown) {
-            GunPrediction.onInputSent(inputType);
+            CGunInput.capture(mc.player, InteractionHand.MAIN_HAND, inputType).ifPresent(input -> {
+               PRESSED.put(inputType, input);
+               ModMessages.sendToServer(input);
+               GunPrediction.onInputSent(inputType);
+            });
+         } else {
+            var input = PRESSED.remove(inputType);
+            if (input != null && mc.getConnection() != null) ModMessages.sendToServer(input.released());
          }
       }
 
