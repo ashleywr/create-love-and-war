@@ -20,6 +20,6 @@ An opt-in integrated-client fixture temporarily substitutes two ADS Toggle group
 
 ## Remaining work
 
-This is an intermediate repair of independent non-Shoot input continuation. Claimed firing and local prediction still select one firing context. The server scheduler still holds one firing cycle per physical gun; unclaimed input stops after its first accepted Shoot group so a sibling cannot silently replace that live cycle. Full multi-Shoot continuation requires aggregate claims, independent group lifecycles, shared source cadence and matching client activation/tick order. It remains required for full parity.
+This is an intermediate repair of independent non-Shoot input continuation. The subsequent [server-cycle repair](GUN_FIRING_GROUPS.md) removes the unclaimed first-Shoot barrier and retains separate server-origin cycles sharing source cadence/order. Claimed firing and local prediction still select one firing context. Full multi-Shoot continuation still requires aggregate claims and shared owner-phase validation. It remains required for full parity.
 
 Non-Shoot owner-local effects, held/release behavior and repeat modes are not completed by this repair. Sound, Animation, AttachEffect, Laser and SpawnParticle need their original local callbacks and rendering paths. Original ballistic/RNG/ability contexts, dedicated/observer/latency tests and the wider migration matrix remain open. No performance improvement is claimed for candidate construction; representative profiling remains required. No publication or deployment occurred.

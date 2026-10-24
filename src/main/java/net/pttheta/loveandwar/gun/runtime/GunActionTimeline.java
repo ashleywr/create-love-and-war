@@ -143,22 +143,36 @@ public final class GunActionTimeline {
         if (!player.isAlive() || player.isSpectator() || stack.isEmpty()) { stacks.remove(stack); publish(player, stack, null); return; }
         long now = player.level().getGameTime();
         boolean removed = false;
-        var iterator = groups.values().iterator();
-        while (iterator.hasNext()) {
-            var frame = iterator.next();
-            if (frame.presentation.authored && !frame.finishing) {
-                frame.lastTick = now;
-                continue;
-            }
-            if (now <= frame.lastTick) continue;
-            // Runtime pending work must not resume after a dropped/unloaded interval.
-            if (now - frame.lastTick > 1) { frame.presentation.retire(player,stack); iterator.remove(); removed = true; continue; }
-            frame.lastTick = now; frame.tickedAt = now;
-            // Stable authored-index order is retained; original HashMap same-time ordering was unspecified.
-            // No dispatch/stat allocation on the ordinary no-pending tick path.
-            frame.clock.tick(frame.clock.hasPending() ? new Dispatch(player, stack, frame, null) : NO_CALLBACK);
+        if (groups.size() == 1) removed = tick(player, stack, groups, groups.values().iterator().next(), now);
+        else {
+            // Original ActionStack completes each group tick in reverse activation order. A repeat
+            // can consume ammunition before the next group's pending callback. Snapshotting also
+            // permits callbacks to cancel other groups without invalidating an iterator.
+            var ordered = new ArrayList<>(groups.values());
+            for (int i = ordered.size() - 1; i >= 0; i--)
+                removed |= tick(player, stack, groups, ordered.get(i), now);
         }
         if (removed) publish(player, stack, groups);
+    }
+
+    private static boolean tick(ServerPlayer player, ItemStack stack, Map<String, Frame> groups, Frame frame, long now) {
+        if (groups.get(frame.group.key()) != frame) return false;
+        if (frame.presentation.authored && !frame.finishing) {
+            frame.lastTick = now;
+            return false;
+        }
+        if (now <= frame.lastTick) return false;
+        // Runtime pending work must not resume after a dropped/unloaded interval.
+        if (now - frame.lastTick > 1) {
+            frame.presentation.retire(player, stack);
+            groups.remove(frame.group.key(), frame);
+            return true;
+        }
+        frame.lastTick = now; frame.tickedAt = now;
+        // Stable authored-index order is retained; original HashMap same-time ordering was unspecified.
+        frame.clock.tick(frame.clock.hasPending() ? new Dispatch(player, stack, frame, null) : NO_CALLBACK);
+        GunFireScheduler.tickGroup(player, stack, frame.group.key(), now);
+        return false;
     }
 
     static void finishTick(ServerPlayer player, ItemStack stack) {

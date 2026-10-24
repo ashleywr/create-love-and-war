@@ -2,7 +2,7 @@
 
 The pinned Flans0.4.316 `ClientInputHooks` samples raw keys at client END. Attack and Use each process pressed, held, then released state. `ActionManager` visits the selected main-hand gun before the offhand gun. Interaction callbacks do not author presses. The port now follows this sampling/order for firing, and applies the same two-hand dispatch to special/reload keys.
 
-The subsequent [independent input-action repair](GUN_INPUT_CONTINUATION.md) restores candidate snapshots and ordered non-Shoot continuation. Its current full suite passes200 GameTests/96 JUnit tests; the186-test results below describe the earlier polling milestone.
+The subsequent [independent input-action repair](GUN_INPUT_CONTINUATION.md) restores candidate snapshots and ordered non-Shoot continuation. The [server firing-group repair](GUN_FIRING_GROUPS.md) adds separate server-origin cycles with shared cadence. The current full suite passes210 GameTests/96 JUnit tests; the186-test results below describe the earlier polling milestone.
 
 An executed baseline on cc2a36c set a loaded Mars's raw Attack key, invoked the actual END handler, and inspected pending recoil before queued replies could run. It produced no impulse. The same command body now produces17.0. A down/up entirely between END polls is intentionally ignored, matching the source sampling rule. This is target runtime evidence plus source control-flow inspection; no original1.20 client execution is claimed.
 

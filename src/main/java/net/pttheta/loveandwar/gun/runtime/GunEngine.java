@@ -77,12 +77,8 @@ public final class GunEngine {
                      var loaded = gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
                      if (!isSatisfied(player, gunStack, def, candidate.resolved(), loaded, current)
                            || heldTriggerFallthrough(player, gunStack, def, candidate.resolved(), inputType, current)) continue;
-                     boolean firing = effectiveActionGroup(player, gunStack, def, candidate.resolved())
-                           .stream().flatMap(group -> group.actions().stream()).anyMatch(action -> "Shoot".equals(action.actionType()));
-                     // Firing still has one claim/scheduler per gun. Do not replace that live
-                     // scheduler with a sibling before aggregate firing ownership is ported.
                      if (tryTrigger(player, gunStack, def, candidate.resolved(), attachments, current)
-                           && (!candidate.keepEvaluating() || firing)) break;
+                           && !candidate.keepEvaluating()) break;
                   }
                   return;
                }
