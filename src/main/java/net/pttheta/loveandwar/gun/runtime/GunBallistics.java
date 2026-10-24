@@ -45,27 +45,30 @@ public final class GunBallistics {
       fire(shooter, ResourceLocation.fromNamespaceAndPath("createloveandwar", id), bullet, sources, "primary_fire", null, 0);
    }
 
-   public static void fire(ServerPlayer shooter, ResourceLocation bulletId, BulletDef bullet, List<ModifierSource> sources,
+   public static boolean fire(ServerPlayer shooter, ResourceLocation bulletId, BulletDef bullet, List<ModifierSource> sources,
                            String group, Entity lockTarget, int progressTicks) {
       ServerLevel level = shooter.serverLevel();
       var context = ModifierContext.ofGroups(List.of(group));
       float spread = StatResolver.resolve("spread", 0.0F, sources, context);
-      float vRecoil = StatResolver.resolve("vertical_recoil", 0.0F, sources, context);
-      float hRecoil = StatResolver.resolve("horizontal_recoil", 0.0F, sources, context);
+      boolean producedShot = false;
       RandomSource random = shooter.getRandom();
       for (var variant : bullet.hitscans()) {
          int shotCount = Math.max(0, (int)Math.ceil(StatResolver.resolve("shot_count", variant.core().shotCount(), sources, context)));
          for (int i = 0; i < shotCount; i++) {
+            producedShot = true;
             Vec3 dir = spreadDirection(shooter.getViewVector(1.0F), spread, random);
             fireHitscan(level, shooter, dir, variant, bullet, sources);
          }
       }
       for (var variant : bullet.projectiles()) {
          int shotCount = Math.max(0, (int)Math.ceil(StatResolver.resolve("shot_count", variant.core().shotCount(), sources, context)));
-         for (int i = 0; i < shotCount; i++) fireProjectile(level, shooter, spreadDirection(shooter.getViewVector(1), spread, random),
+         for (int i = 0; i < shotCount; i++) {
+            producedShot = true;
+            fireProjectile(level, shooter, spreadDirection(shooter.getViewVector(1), spread, random),
                  variant, bulletId, sources, group, lockTarget, progressTicks);
+         }
       }
-      applyKick(shooter, vRecoil, hRecoil);
+      return producedShot;
    }
 
    private static Vec3 spreadDirection(Vec3 look, float spread, RandomSource random) {
@@ -251,11 +254,4 @@ public final class GunBallistics {
       }
    }
 
-   private static void applyKick(ServerPlayer shooter, float vertical, float horizontal) {
-      float total = vertical + horizontal;
-      if (!(total <= 0.0F)) {
-         Vec3 back = shooter.getLookAngle().scale(-total / 2000.0);
-         shooter.push(back.x, Math.max(0.0, back.y * 0.2), back.z);
-      }
-   }
 }

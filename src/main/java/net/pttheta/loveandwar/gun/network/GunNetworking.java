@@ -21,11 +21,12 @@ public final class GunNetworking {
 
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
-      // Runtime active-group provenance adds a network-only component unknown to older clients.
-      PayloadRegistrar registrar = event.registrar("4.0");
+      // Owner-only camera recoil requires the matching client handler in addition to active-group metadata.
+      PayloadRegistrar registrar = event.registrar("5.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);
       registrar.playToClient(SGunSound.TYPE, SGunSound.STREAM_CODEC, (payload, context) -> context.enqueueWork(() -> GunSoundPlayer.play(payload)));
+      registrar.playToClient(SGunRecoil.TYPE,SGunRecoil.STREAM_CODEC,(payload,context)->context.enqueueWork(()->net.pttheta.loveandwar.gun.client.GunRecoil.accept(payload)));
    }
 
    private static void handleShotTrail(SShotTrail payload, IPayloadContext context) {

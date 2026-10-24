@@ -393,9 +393,13 @@ public final class GunEngine {
    }
 
    static void executeAction(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, ActionDef action, List<ModifierSource> sources, int progress) {
+      executeAction(player,gunStack,def,group,action,sources,progress,0);
+   }
+
+   static void executeAction(ServerPlayer player, ItemStack gunStack, GunDef def, ActionGroup group, ActionDef action, List<ModifierSource> sources, int progress,long triggerIndex) {
       switch (action.actionType()) {
          case "Shoot":
-            doShoot(player, gunStack, sources, group.key(), progress);
+            doShoot(player, gunStack, sources, group.key(), progress,triggerIndex);
             break;
          case "EjectCasing":
             doEjectCasing(player, def);
@@ -415,17 +419,23 @@ public final class GunEngine {
       GunActionTimeline.trigger(player, gunStack, def, group, gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY), true);
    }
 
-   private static void doShoot(ServerPlayer player, ItemStack gunStack, List<ModifierSource> sources, String group, int progress) {
+   private static void doShoot(ServerPlayer player, ItemStack gunStack, List<ModifierSource> sources, String group, int progress,long triggerIndex) {
       AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
+      boolean producedShot=false;
       if (!rounds.isEmpty()) {
          ItemStack round = rounds.items().get(0);
          List<ItemStack> remaining = new ArrayList<>(rounds.items().subList(1, rounds.items().size()));
          gunStack.set(ModDataComponents.GUN_LOADED_ROUNDS, new AmmoPouchContents(remaining));
          diag("SHOT fired, {} rounds left", remaining.size());
-         GunLookup.bulletDef(round).ifPresent(bullet -> GunBallistics.fire(player,
-                 BuiltInRegistries.ITEM.getKey(round.getItem()), bullet, sources, group, GunTargeting.target(player, gunStack),
-                 progress));
+         var bullet=GunLookup.bulletDef(round);
+         if(bullet.isPresent())producedShot=GunBallistics.fire(player,
+                 BuiltInRegistries.ITEM.getKey(round.getItem()),bullet.get(),sources,group,GunTargeting.target(player,gunStack),progress);
       }
+      var context=net.pttheta.loveandwar.gun.content.stat.ModifierContext.ofGroups(List.of(group));
+      float vertical=producedShot?Math.max(0,net.pttheta.loveandwar.gun.content.stat.StatResolver.resolve("vertical_recoil",0,sources,context)):0;
+      float horizontal=producedShot?Math.max(0,net.pttheta.loveandwar.gun.content.stat.StatResolver.resolve("horizontal_recoil",0,sources,context)):0;
+      // Original local Shoot callback adds once after its shot collection, including a zero impulse for an empty collection.
+      net.pttheta.loveandwar.network.ModMessages.sendToPlayer(new net.pttheta.loveandwar.gun.network.SGunRecoil(horizontal,vertical,triggerIndex),player);
    }
 
    private static void doSpawnParticle(ServerPlayer player) {

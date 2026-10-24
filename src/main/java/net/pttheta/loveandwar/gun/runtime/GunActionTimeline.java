@@ -82,7 +82,7 @@ public final class GunActionTimeline {
         for (int index = 0; index < group.actions().size(); index++) {
             var action = group.actions().get(index);
             if (!eligible(action, soundsOnly)) continue;
-            if (action.delay() == 0) GunEngine.executeAction(player, stack, gun, group, action, sources, progress);
+            if (action.delay() == 0) GunEngine.executeAction(player, stack, gun, group, action, sources, progress,frame.triggers-1);
             else {
                 // Keep nonzero fractional/negative delays queued; truncation happens only after the zero check.
                 frame.remaining[index] = (int)action.delay();
@@ -115,7 +115,8 @@ public final class GunActionTimeline {
                     sources = RealisticDamage.apply(GunLookup.contentKey(stack), frame.group, StatSources.forFiring(frame.gun, frame.group, attachments));
                 }
                 // Different same-time callbacks use authored index order; original HashMap order was unspecified.
-                GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, frame.progress);
+                // Original delayed callbacks receive current TriggerCount, after prior triggers were authored.
+                GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, frame.progress,frame.triggers);
             }
         }
         if (removed) publish(player, stack, groups);
