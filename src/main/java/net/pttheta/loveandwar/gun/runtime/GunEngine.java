@@ -44,7 +44,7 @@ public final class GunEngine {
 
    public static void handleInput(ServerPlayer player, ItemStack gunStack, InteractionHand hand, String inputType, boolean pressed) {
       if (!pressed) {
-         if ("Fire1".equals(inputType)) {
+         if ("Fire1".equals(inputType) || GunPresentation.authored().present() && GunPresentation.claim().present()) {
             // The input router resolves the originally pressed gun, including a move to an unselected slot.
             GunFireScheduler.release(player, gunStack);
             if (gunStack.getItem() instanceof GunItem) {
@@ -66,7 +66,7 @@ public final class GunEngine {
             if (handler.isEmpty()) {
                diag("Gun '{}' has no inputHandlers entry for inputType '{}'", GunLookup.contentKey(gunStack), inputType);
             } else {
-               if ("Fire1".equals(inputType) && !GunFireScheduler.press(player, gunStack)) return;
+               if ("Fire1".equals(inputType) && !GunFireScheduler.press(player, gunStack) && !GunPresentation.heldInput()) return;
                GunActionState state = (GunActionState)gunStack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                GunAttachments attachments = (GunAttachments)gunStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
                AmmoPouchContents rounds = (AmmoPouchContents)gunStack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS, AmmoPouchContents.EMPTY);
@@ -348,6 +348,7 @@ public final class GunEngine {
       }
       ActionGroup candidate = groupOpt.get();
       var retained = GunActionTimeline.context(player, gunStack, candidate.key());
+      if(GunPresentation.heldInput()&&(GunFireMode.of(candidate.repeatMode())!=GunFireMode.FULL_AUTO||retained.isPresent()))return;
       if(!GunPresentation.permits(candidate.key(),retained.map(GunActionTimeline.Context::origin).orElse(resolved.origin())))return;
       if(!GunActionTimeline.permitsPresentation(player,gunStack,candidate.key()))return;
       // Quirk kept: Toggle is checked on the requested context, while CanStart/actions use the retained instance.

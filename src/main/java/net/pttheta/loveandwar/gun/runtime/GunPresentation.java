@@ -81,6 +81,8 @@ public final class GunPresentation {
     private GunPresentation() {}
     static GunAuthoredInput authored(){var input=INPUT.get();return input==null?GunAuthoredInput.NONE:input.packet.authored();}
     static GunPredictionClaim claim(){var input=INPUT.get();return input==null?GunPredictionClaim.NONE:input.packet.prediction();}
+    static boolean heldInput(){var input=INPUT.get();return input!=null&&input.packet.isHeldUpdate();}
+    static boolean controlledInput(){var input=INPUT.get();return input!=null&&input.packet.clientControlled();}
 
     public static void input(
             ServerPlayer player, ItemStack stack, CGunInput packet, Runnable handler) {

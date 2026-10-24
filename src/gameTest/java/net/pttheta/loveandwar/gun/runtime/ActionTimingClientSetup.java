@@ -117,6 +117,15 @@ public final class ActionTimingClientSetup {
             }));
         }
         event.getDispatcher().register(command);
+        event.getDispatcher().register(Commands.literal("law_test_input_prepare").requires(source -> source.hasPermission(2)).executes(context -> {
+            var player=context.getSource().getPlayerOrException();var session=SESSIONS.get(player.getUUID());
+            if(session==null||!session.gun.equals("mars"))return 0;
+            for(int slot:new int[]{0,40}){
+                var gun=item("mars",1);gun.set(ModDataComponents.GUN_LOADED_ROUNDS,new AmmoPouchContents(List.of(item("pistol_bullet",1),item("pistol_bullet",1),item("pistol_bullet",1))));
+                player.getInventory().setItem(slot,gun);
+            }
+            GunIdentity.inventoryTick(player);player.inventoryMenu.broadcastChanges();return 1;
+        }));
         event.getDispatcher().register(Commands.literal("law_test_identity_prepare").requires(source -> source.hasPermission(2)).executes(context -> {
             var player = context.getSource().getPlayerOrException();
             var session = SESSIONS.get(player.getUUID());

@@ -49,7 +49,13 @@ public final class GunFireClientScenario {
                 minecraft.level.getFluidState(net.minecraft.core.BlockPos.containing(minecraft.player.getEyePosition())), minecraft.player.getOffhandItem());
         minecraft.options.keyAttack.setDown(true);
         GunLeftClickFire.onInteractionKey(new InputEvent.InteractionKeyMappingTriggered(0, minecraft.options.keyAttack, InteractionHand.MAIN_HAND));
-        if (tap) minecraft.options.keyAttack.setDown(false);
+        if (tap) {
+            // Synthetic zero-length logical tap: sample the press before sampling its release.
+            // A physical down/up entirely between END polls is deliberately missed, like the source.
+            GunLeftClickFire.onClientTick(new net.neoforged.neoforge.client.event.ClientTickEvent.Post());
+            minecraft.options.keyAttack.setDown(false);
+            GunLeftClickFire.onClientTick(new net.neoforged.neoforge.client.event.ClientTickEvent.Post());
+        }
         return 1;
     }
 }

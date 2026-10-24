@@ -27,6 +27,7 @@ public final class GunFireScheduler {
         long lastTick;
         long seenTick;
         boolean held;
+        boolean clientControlled;
         GunDef gun;
         ActionGroup group;
         GunAttachments attachments;
@@ -63,6 +64,7 @@ public final class GunFireScheduler {
         var cycle = cycle(player, stack);
         boolean fresh = !cycle.held;
         cycle.held = true;
+        cycle.clientControlled |= GunPresentation.controlledInput();
         return fresh;
     }
 
@@ -210,7 +212,7 @@ public final class GunFireScheduler {
         }
         cycle.advance(now);
         if (cycle.group == null) {
-            if (cycle.held) GunEngine.tryHeldFire(player, stack);
+            if (cycle.held && !cycle.clientControlled) GunEngine.tryHeldFire(player, stack);
             return cycle.group != null;
         }
 

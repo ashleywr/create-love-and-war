@@ -23,7 +23,7 @@ public final class GunNetworking {
    @SubscribeEvent
    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
       // Prediction claims and callback/ammo receipts require a matching client/server schema.
-      PayloadRegistrar registrar = event.registrar("8.0");
+      PayloadRegistrar registrar = event.registrar("9.0");
       registrar.playToServer(CGunInput.TYPE, CGunInput.STREAM_CODEC, GunNetworking::handle);
       registrar.playToServer(CGunAuthored.TYPE, CGunAuthored.STREAM_CODEC, GunNetworking::handleAuthored);
       registrar.playToClient(SShotTrail.TYPE, SShotTrail.STREAM_CODEC, GunNetworking::handleShotTrail);

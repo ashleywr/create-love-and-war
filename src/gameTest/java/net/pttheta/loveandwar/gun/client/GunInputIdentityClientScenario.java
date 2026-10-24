@@ -37,6 +37,7 @@ public final class GunInputIdentityClientScenario {
         if (releaseScenario) {
             mc.options.keyAttack.setDown(true);
             GunLeftClickFire.onInteractionKey(new InputEvent.InteractionKeyMappingTriggered(0, mc.options.keyAttack, InteractionHand.MAIN_HAND));
+            GunLeftClickFire.onClientTick(new ClientTickEvent.Post());
         }
         mc.player.getInventory().selected = 1;
         mc.getConnection().send(new ServerboundSetCarriedItemPacket(1));

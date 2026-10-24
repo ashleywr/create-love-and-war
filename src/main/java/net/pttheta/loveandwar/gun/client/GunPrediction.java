@@ -62,32 +62,50 @@ public final class GunPrediction {
         owner();
         var actual = find(input.gunId());
         if (actual.isEmpty()) return input;
+        var result = runtime(input, actual).input(input, actual);
+        if (input.pressed()) model(actual, input.inputType(), !result.prediction().present());
+        return result;
+    }
+
+    private static LocalGunActions runtime(CGunInput input, ItemStack actual) {
         var previous = GUNS.get(input.gunId());
         if (previous != null && !previous.matches(actual)) {
             previous.cancel();
             OUTGOING.addAll(previous.drainAuthored());
             GUNS.remove(input.gunId());
         }
-        var runtime =
-                GUNS.computeIfAbsent(
-                        input.gunId(),
-                        ignored ->
-                                new LocalGunActions(
-                                        owner,
-                                        actual,
-                                        (gun, group, h, v, index) -> {
-                                            GunRecoil.local(h, v, index);
-                                            MuzzleFlash.onPredicted(gun, group);
-                                        }));
-        var result = runtime.input(input, actual);
-        if (input.pressed()) model(input.inputType(), !result.prediction().present());
-        return result;
+        return GUNS.computeIfAbsent(
+                input.gunId(),
+                ignored ->
+                        new LocalGunActions(
+                                owner,
+                                actual,
+                                (gun, group, h, v, index) -> {
+                                    GunRecoil.local(h, v, index);
+                                    MuzzleFlash.onPredicted(gun, group);
+                                }));
+    }
+
+    public static java.util.Optional<CGunInput> held(CGunInput input) {
+        owner();
+        var actual = find(input.gunId());
+        if (actual.isEmpty()) return java.util.Optional.empty();
+        var prepared = runtime(input, actual).held(input, actual);
+        prepared.ifPresent(
+                packet -> {
+                    flushAuthored();
+                    model(actual, packet.inputType(), false);
+                    if (owner != null && Minecraft.getInstance().getConnection() != null)
+                        ModMessages.sendToServer(packet);
+                    flushAuthored();
+                });
+        return prepared;
     }
 
     /** Preserve START callback order before END input edges and flush final callbacks at END. */
     public static CGunInput send(CGunInput input) {
         flushAuthored();
-        var prepared = beforeSend(input);
+        var prepared = beforeSend(input.controlled());
         if (owner != null && Minecraft.getInstance().getConnection() != null)
             ModMessages.sendToServer(prepared);
         flushAuthored();
@@ -153,7 +171,12 @@ public final class GunPrediction {
     private static void model(String inputType, boolean flash) {
         var player = Minecraft.getInstance().player;
         if (player == null) return;
-        var stack = player.getMainHandItem();
+        model(player.getMainHandItem(), inputType, flash);
+    }
+
+    private static void model(ItemStack stack, String inputType, boolean flash) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
         if (!(stack.getItem() instanceof GunItem)) return;
         String gunKey = GunLookup.contentKey(stack);
         GunEngine.predictStartedGroup(player, stack, inputType, player.level().getGameTime())

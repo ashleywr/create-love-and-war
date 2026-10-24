@@ -20,7 +20,7 @@ The source sends dirty triggers from start and held/release updates. Its finish/
 - **Clock adaptation:** owner-authored firing callbacks advance from validated owner phases; the original server used its own world ticks for pending actions. This keeps batched triggers, due callbacks and final retirement ordered together. Server-origin groups keep world ticks. Behavior under real transport delay/TPS divergence still requires verification.
 - START work is queued for END transport. It is flushed before new END input edges, and final callbacks are sent even without another input edge. Owner change clears queued messages. A server denial/cancellation stops future local callbacks and queued requests without undoing recoil already displayed.
 
-Mandatory gun protocol is **8.0**. Matching development client/server registration has been exercised. Mixed-version rejection and dedicated multiplayer remain unverified.
+This milestone introduced gun protocol **8.0**. The later [input lifecycle](GUN_INPUT_LIFECYCLE.md) uses current protocol **9.0**. Matching development client/server registration has been exercised. Mixed-version rejection and dedicated multiplayer remain unverified.
 
 ## Evidence and limits
 

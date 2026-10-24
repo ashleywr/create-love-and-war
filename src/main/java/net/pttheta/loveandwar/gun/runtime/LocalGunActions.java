@@ -248,6 +248,63 @@ public final class LocalGunActions {
         if (!player.isAlive() || player.isSpectator()) return input;
         boolean fresh = held.add(input.inputType());
         if (!fresh) return input;
+        return start(input);
+    }
+
+    /** Held input updates active groups; only an absent FullAuto instance can start from a hold. */
+    public java.util.Optional<CGunInput> held(CGunInput input, ItemStack actual) {
+        sync(actual);
+        if (!player.isAlive() || player.isSpectator()) return java.util.Optional.empty();
+        if (activeFullAutoConsumesHeld(input.inputType())) return java.util.Optional.empty();
+        var context =
+                GunEngine.predictInputContext(
+                        player, shadow, input.inputType(), player.level().getGameTime());
+        if (context.isEmpty()
+                || GunFireMode.of(context.get().group().repeatMode()) != GunFireMode.FULL_AUTO
+                || context.get().group().actions().stream()
+                        .noneMatch(a -> a.actionType().equals("Shoot"))
+                || frames.stream().anyMatch(f -> f.group.key().equals(context.get().group().key())))
+            return java.util.Optional.empty();
+        held.add(input.inputType());
+        var prepared = start(input.heldUpdate());
+        return prepared.prediction().present()
+                ? java.util.Optional.of(prepared)
+                : java.util.Optional.empty();
+    }
+
+    private boolean activeFullAutoConsumesHeld(String input) {
+        if (reloading || frames.isEmpty()) return false;
+        var def = GunLookup.gunDef(shadow).orElse(null);
+        if (def == null) return false;
+        var state = shadow.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
+        for (var handler : def.inputHandlers()) {
+            if (!handler.inputType().equals(input)) continue;
+            for (var node : handler.nodes()) {
+                if (!GunModes.modalCheck(def, state, node.modalCheck())) continue;
+                if (node.deferToAttachment()) return false;
+                if (node.actionGroupToTrigger().isEmpty()) continue;
+                ActionGroup candidate = null;
+                for (var group : def.actionGroups())
+                    if (group.key().equals(node.actionGroupToTrigger())) {
+                        candidate = group;
+                        break;
+                    }
+                if (candidate == null) continue;
+                if (node.andContinueEvaluating()
+                        || GunFireMode.of(candidate.repeatMode()) != GunFireMode.FULL_AUTO)
+                    return false;
+                // Source updates an already started group without CanStart, then this first
+                // successful non-continuing FullAuto node ends possible-group evaluation.
+                for (var frame : frames)
+                    if (frame.group.key().equals(candidate.key()) && !frame.finishing) return true;
+                return false;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    private CGunInput start(CGunInput input) {
         var predicted =
                 GunEngine.predictInputContext(
                         player, shadow, input.inputType(), player.level().getGameTime());

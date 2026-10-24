@@ -37,7 +37,8 @@ public final class GunModeClientScenario {
                     var mc = Minecraft.getInstance(); if (mc.player == null) return 0;
                     mc.setScreen(null); mc.options.keyUse.setDown(true);
                     GunLeftClickFire.onInteractionKey(new InputEvent.InteractionKeyMappingTriggered(1, mc.options.keyUse, InteractionHand.MAIN_HAND));
-                    mc.options.keyUse.setDown(false); return 1;
+                    GunLeftClickFire.onClientTick(new ClientTickEvent.Post());
+                    mc.options.keyUse.setDown(false); GunLeftClickFire.onClientTick(new ClientTickEvent.Post()); return 1;
                 }))
                 .then(Commands.literal("switch").executes(context -> {
                     var mc = Minecraft.getInstance(); if (mc.player == null) return 0;
