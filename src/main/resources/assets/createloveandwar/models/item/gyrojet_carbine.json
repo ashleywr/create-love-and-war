@@ -144,7 +144,7 @@
   },
   "icons": {
     "default": "createloveandwar:item/gyrojet_carbine",
-    "fc_49_aged": "fcreateloveandwar:item/gyrojet_carbine_brass"
+    "fc_49_aged": "createloveandwar:item/gyrojet_carbine_brass"
   },
   "animations": {
     "gun_slide_distance": 0.1875

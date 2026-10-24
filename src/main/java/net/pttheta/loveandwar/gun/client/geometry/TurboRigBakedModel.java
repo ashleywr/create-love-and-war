@@ -69,6 +69,11 @@ public final class TurboRigBakedModel implements BakedModel {
    private final BakedModel projectileMesh;
    private final BakedModel flatIconModel;
    private BakedModel heldIconModel;
+   private final Map<String,BakedModel> flatIcons = new LinkedHashMap<>();
+   private final Map<String,BakedModel> heldIcons = new LinkedHashMap<>();
+   private final Map<String,Map<String,List<BakedQuad>>> localQuads = new LinkedHashMap<>();
+   private Matrix4f meshRoot = new Matrix4f();
+   private final TurboRigRenderTree renderTree;
 
    private TurboRigBakedModel(
       Map<String, Map<String, List<BakedQuad>>> quadsByVariantThenPart,
@@ -87,6 +92,7 @@ public final class TurboRigBakedModel implements BakedModel {
       this.icons = data.icons();
       this.paintjobs = data.paintjobs();
       this.data = data;
+      this.renderTree = new TurboRigRenderTree(data);
       this.partTransforms = partTransforms;
       this.ambientOcclusion = ambientOcclusion;
       this.gui3d = gui3d;
@@ -126,7 +132,8 @@ public final class TurboRigBakedModel implements BakedModel {
       Map<String, Map<String, List<BakedQuad>>> quadsByVariantThenPart = new LinkedHashMap<>();
       quadsByVariantThenPart.put("default", bakeAllParts(data, textureResolver(context, spriteGetter, null), partTransforms, rootTransform));
 
-      for (String paintjob : data.paintjobs()) {
+      for (String paintjob : data.skinKeys()) {
+         if(paintjob.equals("default"))continue;
          quadsByVariantThenPart.put(paintjob, bakeAllParts(data, textureResolver(context, spriteGetter, paintjob), partTransforms, rootTransform));
       }
 
@@ -145,12 +152,18 @@ public final class TurboRigBakedModel implements BakedModel {
          iconSprite
       );
       built.rootTransform = rootTransform;
-      if (iconSprite != null && !isGunModel(context.getModelName())) {
-         List<BakedQuad> extruded = UnbakedGeometryHelper.bakeElements(
-            UnbakedGeometryHelper.createUnbakedItemElements(0, iconSprite), material -> iconSprite, BlockModelRotation.X0_Y0
-         );
-         built.heldIconModel = built.new FlatIconModel(extruded, iconSprite, true);
+      built.meshRoot=new Matrix4f().translate(.5F,.5F,.5F).mul(rotationMatrix).translate(-.5F,-.5F,-.5F);
+      for(String paint:quadsByVariantThenPart.keySet())
+         built.localQuads.put(paint,bakeAllParts(data,textureResolver(context,spriteGetter,paint),Map.of(),v->v));
+      for(var entry:data.icons().entrySet()) {
+         var sprite=spriteGetter.apply(new Material(TextureAtlas.LOCATION_BLOCKS,entry.getValue()));
+         built.flatIcons.put(entry.getKey(),built.new FlatIconModel(bakeFlatIcon(sprite),sprite));
+         if(!isGunModel(context.getModelName())) {
+            var extruded=UnbakedGeometryHelper.bakeElements(UnbakedGeometryHelper.createUnbakedItemElements(0,sprite),material->sprite,BlockModelRotation.X0_Y0);
+            built.heldIcons.put(entry.getKey(),built.new FlatIconModel(extruded,sprite,true));
+         }
       }
+      built.heldIconModel=built.heldIcons.get("default");
 
       return built;
    }
@@ -467,6 +480,25 @@ public final class TurboRigBakedModel implements BakedModel {
 
    public UnaryOperator<Vector3f> rootTransform() {
       return this.rootTransform;
+   }
+
+   public TurboRigRenderTree renderTree() { return this.renderTree; }
+
+   /** Caller supplies the gun's root for an installed child, bypassing that child's item/display root. */
+   public List<BakedQuad> meshPart(String name,String paint,Matrix4f placement,TurboRigBakedModel rootRig) {
+      // Unknown/empty paint safely uses the default mesh skin; absent icons still take the 3D path.
+      String selected=this.localQuads.containsKey(paint)?paint:"default";
+      var local=this.localQuads.get(selected).getOrDefault(name,List.of());if(local.isEmpty())return local;
+      var authored=this.partTransforms.get(name);
+      if(rootRig==this&&authored!=null&&placement.equals(authored,1.0E-6F))return this.partQuads(name,selected);
+      return TurboRigQuadTransforms.place(local,new Matrix4f(rootRig.meshRoot).mul(placement));
+   }
+
+   public BakedModel applySelectedIcon(String paint,ItemDisplayContext context,PoseStack poseStack) {
+      if(context==ItemDisplayContext.GUI)return this.flatIcons.get(paint);
+      var icon=this.heldIcons.get(paint);if(icon==null)return null;
+      poseStack.translate(-.5F,-.5F,-.5F);poseStack.scale(.55F,.55F,.55F);
+      poseStack.translate(.4F,.5F,.5F);poseStack.translate(.5F,.5F,.5F);return icon;
    }
 
    public static void applyAdsEyeLine(TurboRigBakedModel rig, ItemDisplayContext ctx, PoseStack poseStack) {

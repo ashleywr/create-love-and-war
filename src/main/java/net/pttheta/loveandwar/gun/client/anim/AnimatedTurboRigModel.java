@@ -2,14 +2,11 @@ package net.pttheta.loveandwar.gun.client.anim;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -18,96 +15,58 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.pttheta.loveandwar.Config;
 import net.pttheta.loveandwar.gun.client.MuzzleFlash;
+import net.pttheta.loveandwar.gun.client.AdsBlendState;
 import net.pttheta.loveandwar.gun.client.ScopeVisibility;
 import net.pttheta.loveandwar.gun.client.geometry.TurboRigBakedModel;
-import net.pttheta.loveandwar.gun.client.geometry.TurboRigModelData;
-import net.pttheta.loveandwar.gun.client.geometry.TurboRigQuadBaker;
+import net.pttheta.loveandwar.gun.client.geometry.TurboRigRenderTree;
+import net.pttheta.loveandwar.gun.runtime.GunAttachments;
+import net.pttheta.loveandwar.gun.runtime.GunItem;
+import net.pttheta.loveandwar.gun.runtime.GunLookup;
+import net.pttheta.loveandwar.item.ModDataComponents;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import org.slf4j.LoggerFactory;
 
 public final class AnimatedTurboRigModel implements BakedModel {
    private final TurboRigBakedModel base;
-   private final Map<String, List<TextureAtlasSprite>> spritesByPartInFaceOrder;
    private final ItemOverrides overrides;
-   private Matrix4f lastPosedMuzzle;
 
    public AnimatedTurboRigModel(TurboRigBakedModel base) {
       this.base = base;
-      Map<String, List<TextureAtlasSprite>> sprites = new LinkedHashMap<>();
-
-      for (String partName : base.partNames()) {
-         sprites.put(partName, base.partQuads(partName).stream().<TextureAtlasSprite>map(BakedQuad::getSprite).toList());
-      }
-
-      this.spritesByPartInFaceOrder = Map.copyOf(sprites);
       this.overrides = new AnimatedTurboRigModel.AnimatedOverrides();
    }
 
-   private List<BakedQuad> animatedQuads(ItemStack stack, boolean localPlayer) {
-      float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
-      Map<String, PartPose> poses = GunPoseResolver.currentPose(stack, partialTick, localPlayer);
-      if (poses.isEmpty()) {
-         return null;
-      }
-
-      TurboRigModelData data = this.base.rawData();
-      this.lastPosedMuzzle = this.base.attachPointMatrix(MuzzleFlash.activeAttachPoint(), nodeName -> {
-         PartPose nodePose = poses.get(nodeName);
-         return nodePose != null && !nodePose.isIdentity() ? nodePose.toMatrix() : null;
-      });
-      Map<String, Matrix4f> posed = this.base.posedPartTransforms(nodeName -> {
-         PartPose nodePose = poses.get(nodeName);
-         return nodePose != null && !nodePose.isIdentity() ? nodePose.toMatrix() : null;
-      });
+   private List<BakedQuad> animatedQuads(ItemStack renderStack,ItemStack contextStack,Function<String,Matrix4f> poses) {
+      String paint=renderStack.getOrDefault(ModDataComponents.GUN_PAINTJOB,"default");
+      var def=GunLookup.gunDef(contextStack);
+      var attachments=contextStack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS,GunAttachments.EMPTY);
       List<BakedQuad> out = new ArrayList<>();
-
-      for (TurboRigModelData.PartDef part : data.parts().values()) {
-         Matrix4f placement = posed.getOrDefault(part.name(), this.base.partTransform(part.name()));
-         if (Config.GUN_DIAGNOSTICS != null && (Boolean)Config.GUN_DIAGNOSTICS.get()) {
-            Matrix4f st = this.base.partTransform(part.name());
-            Vector3f a = st.transformPosition(new Vector3f());
-            Vector3f b = placement.transformPosition(new Vector3f());
-            float d = a.distance(b);
-            LoggerFactory.getLogger("createloveandwar/mtx")
-               .info("PART {} reuse={} originShift={}", new Object[]{part.name(), placement.equals(st, 1.0E-6F), String.format("%.4f", d)});
-         }
-
-         if (placement.equals(this.base.partTransform(part.name()), 1.0E-6F)) {
-            out.addAll(this.base.partQuads(part.name()));
-         } else {
-            List<TextureAtlasSprite> sprites = this.spritesByPartInFaceOrder.getOrDefault(part.name(), List.of());
-            int expectedFaces = 0;
-
-            for (TurboRigModelData.TurboElement element : part.elements()) {
-               expectedFaces += element.faces().size();
-            }
-
-            if (sprites.size() != expectedFaces) {
-               out.addAll(this.base.partQuads(part.name()));
-            } else {
-               int[] cursor = new int[]{0};
-               Function<String, TextureAtlasSprite> spriteByFaceOrder = ignoredTextureRef -> cursor[0] < sprites.size()
-                  ? sprites.get((int)(cursor[0]++))
-                  : null;
-               UnaryOperator<Vector3f> root = this.base.rootTransform();
-               UnaryOperator<Vector3f> postTransform = v -> root.apply(placement.transformPosition(v));
-               List<BakedQuad> partQuads = new ArrayList<>();
-
-               for (TurboRigModelData.TurboElement element : part.elements()) {
-                  partQuads.addAll(TurboRigQuadBaker.bakeElement(element, spriteByFaceOrder, postTransform));
+      this.base.renderTree().visit(poses,(name,placement)->{
+         var mount=renderStack.getItem() instanceof GunItem?TurboRigRenderTree.mount(name):null;
+         if(mount!=null&&def.isPresent()) {
+            var slots=attachments.forCategory(mount.category());
+            var installed=mount.index()<slots.size()?slots.get(mount.index()):ItemStack.EMPTY;
+            if(GunLookup.attachmentDef(installed).isPresent()) {
+               // Definition presence, not renderer success, controls replacement in GunItemRenderer.
+               var model=Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(installed);
+               if(model instanceof AnimatedTurboRigModel animated)model=animated.baseRig();
+               if(model instanceof TurboRigBakedModel child) {
+                  String childPaint=installed.getOrDefault(ModDataComponents.GUN_PAINTJOB,"default");
+                  child.renderTree().visit(ignored->null,(childName,childPlacement)->{
+                     out.addAll(child.meshPart(childName,childPaint,new Matrix4f(placement).mul(childPlacement),this.base));
+                     return true;
+                  });
                }
-
-               out.addAll(TurboRigQuadBaker.applyMaterial(partQuads, part.material()));
+               if(GunLookup.slotFor(def.get().attachmentSlots(),mount.category()).hideDefaultMesh())return false;
             }
          }
-      }
-
+         out.addAll(this.base.meshPart(name,paint,placement,this.base));return true;
+      });
       return out;
    }
 
@@ -176,23 +135,18 @@ public final class AnimatedTurboRigModel implements BakedModel {
 
    private final class AnimatedOverrides extends ItemOverrides {
       public BakedModel resolve(BakedModel model, ItemStack stack, ClientLevel level, LivingEntity entity, int seed) {
-         LocalPlayer me = Minecraft.getInstance().player;
-         boolean localPlayer = me != null && entity == me && ItemStack.isSameItem(stack, me.getMainHandItem());
-         List<BakedQuad> quads = AnimatedTurboRigModel.this.animatedQuads(stack, localPlayer);
          // Vanilla can still render the old stack during re-equip after the selected hand has changed.
-         return AnimatedTurboRigModel.this.new PosedModel(quads, quads == null ? null : AnimatedTurboRigModel.this.lastPosedMuzzle, stack);
+         return AnimatedTurboRigModel.this.new PosedModel(stack);
       }
    }
 
    private final class PosedModel implements BakedModel {
-      private final List<BakedQuad> quads;
-      private final Matrix4f posedMuzzle;
+      private List<BakedQuad> quads;
+      private Matrix4f posedMuzzle;
       private final ItemStack renderStack;
       private ScopeVisibility.GunRender visibility=ScopeVisibility.GunRender.VISIBLE;
 
-      PosedModel(List<BakedQuad> quads, Matrix4f posedMuzzle, ItemStack renderStack) {
-         this.quads = quads;
-         this.posedMuzzle = posedMuzzle;
+      PosedModel(ItemStack renderStack) {
          this.renderStack = renderStack;
       }
 
@@ -250,13 +204,21 @@ public final class AnimatedTurboRigModel implements BakedModel {
 
       public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
          this.visibility=this.renderStack.getItem() instanceof net.pttheta.loveandwar.gun.runtime.GunItem?ScopeVisibility.renderState(transformType):ScopeVisibility.GunRender.VISIBLE;
-         if (AnimatedTurboRigModel.this.base.drawsAsIcon()) {
-            return AnimatedTurboRigModel.this.base.applyTransform(transformType, poseStack, applyLeftHandTransform);
+         BakedModel icon=AnimatedTurboRigModel.this.base.applySelectedIcon(this.renderStack.getOrDefault(ModDataComponents.GUN_PAINTJOB,"default"),transformType,poseStack);
+         if(icon!=null)return icon;
+
+         var mc=Minecraft.getInstance();var contextStack=this.renderStack;
+         if(this.renderStack.getItem() instanceof GunItem&&transformType.firstPerson()&&mc.player!=null) {
+            var hand=transformType==AdsBlendState.displayHand(InteractionHand.MAIN_HAND,mc.options.mainHand().get())?InteractionHand.MAIN_HAND:InteractionHand.OFF_HAND;
+            contextStack=mc.player.getItemInHand(hand);
          }
-         BakedModel icon = AnimatedTurboRigModel.this.base.flatIconModel();
-         if (transformType == ItemDisplayContext.GUI && icon != null) {
-            return icon;
-         }
+         // Ordinary first-person entry always uses the current local shooter, even across different gun items.
+         // The existing prediction clock is main-hand only; offhand prediction remains a separate audit.
+         boolean predicted=transformType.firstPerson()&&mc.player!=null&&contextStack==mc.player.getMainHandItem();
+         var poses=GunPoseResolver.currentPose(contextStack,mc.getTimer().getGameTimeDeltaPartialTick(false),predicted);
+         Function<String,Matrix4f> poseByNode=name->{var pose=poses.get(name);return pose==null||pose.isIdentity()?null:pose.toMatrix();};
+         this.posedMuzzle=poses.isEmpty()?null:AnimatedTurboRigModel.this.base.attachPointMatrix(MuzzleFlash.activeAttachPoint(),poseByNode);
+         this.quads=this.visibility==ScopeVisibility.GunRender.VISIBLE?AnimatedTurboRigModel.this.animatedQuads(this.renderStack,contextStack,poseByNode):List.of();
 
          if (Config.GUN_DIAGNOSTICS != null && (Boolean)Config.GUN_DIAGNOSTICS.get()) {
             LoggerFactory.getLogger("createloveandwar/ctx")

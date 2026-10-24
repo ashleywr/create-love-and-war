@@ -43,17 +43,19 @@ public final class TurboRigLoader implements IGeometryLoader<TurboRigGeometry> {
       }
 
       List<String> paintjobs = new ArrayList<>();
+      List<String> skinKeys = new ArrayList<>();
       if (json.has("textures")) {
          JsonObject texturesJson = GsonHelper.getAsJsonObject(json, "textures");
 
          for (String key : texturesJson.keySet()) {
+            skinKeys.add(key);
             if (!key.equals("layer0") && !key.equals("particle") && !key.equals("default")) {
                paintjobs.add(key);
             }
          }
       }
 
-      return new TurboRigGeometry(new TurboRigModelData(parts, attachPoints, paintjobs, icons));
+      return new TurboRigGeometry(new TurboRigModelData(parts, attachPoints, paintjobs, icons,skinKeys));
    }
 
    private static TurboRigModelData.PartDef readPart(String name, JsonObject partJson) {

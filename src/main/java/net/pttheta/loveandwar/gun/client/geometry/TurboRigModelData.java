@@ -10,6 +10,7 @@ public final class TurboRigModelData {
    private final List<TurboRigModelData.AttachPoint> attachPoints;
    private final List<String> paintjobs;
    private final Map<String, ResourceLocation> icons;
+   private final List<String> skinKeys;
 
    public TurboRigModelData(
       Map<String, TurboRigModelData.PartDef> parts,
@@ -17,11 +18,18 @@ public final class TurboRigModelData {
       List<String> paintjobs,
       Map<String, ResourceLocation> icons
    ) {
+      this(parts,attachPoints,paintjobs,icons,java.util.stream.Stream.concat(java.util.stream.Stream.of("default"),paintjobs.stream()).toList());
+   }
+
+   public TurboRigModelData(Map<String,PartDef> parts,List<AttachPoint> attachPoints,List<String> paintjobs,Map<String,ResourceLocation> icons,List<String> skinKeys) {
       this.parts = Map.copyOf(parts);
       this.attachPoints = List.copyOf(attachPoints);
       this.paintjobs = List.copyOf(paintjobs);
       this.icons = Map.copyOf(icons);
+      this.skinKeys = List.copyOf(skinKeys);
    }
+
+   public List<String> skinKeys() { return this.skinKeys; }
 
    public Map<String, TurboRigModelData.PartDef> parts() {
       return this.parts;
