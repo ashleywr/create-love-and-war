@@ -24,29 +24,43 @@ import net.pttheta.loveandwar.item.ModDataComponents;
 @EventBusSubscriber(modid = "createloveandwar")
 public final class GunActionTimeline {
     private static final Map<ServerPlayer, IdentityHashMap<ItemStack, Map<String, Frame>>> FRAMES = new WeakHashMap<>();
-    private static final int[] NO_DELAYS = new int[0];
-    private static final boolean[] NO_PENDING = new boolean[0];
+    private static final ActionCallbackClock.Callback NO_CALLBACK = (index, trigger, progress) -> {};
     private static final class Frame {
         final GunDef gun;
         final ActionGroup group;
         GunActiveGroups.Entry descriptor;
         final boolean delayedScope;
-        final int[] remaining;
-        final boolean[] pending;
+        final ActionCallbackClock clock;
         long lastTick;
         long tickedAt = Long.MIN_VALUE;
         long stateTickedAt = Long.MIN_VALUE;
-        int progress;
-        long triggers;
         boolean finishing;
 
         Frame(ServerPlayer player, GunDef gun, ActionGroup group, GunActiveGroups.Origin origin, long now) {
             this.gun = gun; this.group = group; this.lastTick = now;
             descriptor = new GunActiveGroups.Entry(group.key(), origin, UUID.randomUUID(), now, player.getUUID());
             delayedScope=group.actions().stream().anyMatch(action->"Scope".equals(action.actionType())&&action.delay()!=0);
-            boolean delayed = group.actions().stream().anyMatch(action -> action.delay() != 0);
-            remaining = delayed ? new int[group.actions().size()] : NO_DELAYS;
-            pending = delayed ? new boolean[remaining.length] : NO_PENDING;
+            clock = new ActionCallbackClock(group.actions().size(), index -> group.actions().get(index).delay());
+        }
+    }
+
+    /** Ephemeral dispatch context: never stored in FRAMES, so it cannot retain a weak-map player key. */
+    private static final class Dispatch implements ActionCallbackClock.Callback {
+        final ServerPlayer player;
+        final ItemStack stack;
+        final Frame frame;
+        List<ModifierSource> sources;
+
+        Dispatch(ServerPlayer player, ItemStack stack, Frame frame, List<ModifierSource> sources) {
+            this.player = player; this.stack = stack; this.frame = frame; this.sources = sources;
+        }
+
+        @Override public void run(int index, long trigger, int progress) {
+            if (sources == null) {
+                var attachments = stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
+                sources = RealisticDamage.apply(GunLookup.contentKey(stack), frame.group, StatSources.forFiring(frame.gun, frame.group, attachments));
+            }
+            GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, progress, trigger);
         }
     }
     private GunActionTimeline() {}
@@ -71,24 +85,14 @@ public final class GunActionTimeline {
         // Quirk kept: ActionStack aliases Def.key and reuses the first instance's actual definition/context.
         gun = frame.gun;
         group = frame.group;
-        frame.triggers++;
         if(frame.delayedScope){
             var previous=frame.descriptor;
-            frame.descriptor=new GunActiveGroups.Entry(previous.key(),previous.origin(),previous.activation(),previous.startedAt(),previous.owner(),frame.triggers);
+            frame.descriptor=new GunActiveGroups.Entry(previous.key(),previous.origin(),previous.activation(),previous.startedAt(),previous.owner(),frame.clock.triggers()+1);
             publish(player,stack,groups);
         }
         var sources = RealisticDamage.apply(GunLookup.contentKey(stack), group, StatSources.forFiring(gun, group, attachments));
-        int progress = frame.progress;
-        for (int index = 0; index < group.actions().size(); index++) {
-            var action = group.actions().get(index);
-            if (!eligible(action, soundsOnly)) continue;
-            if (action.delay() == 0) GunEngine.executeAction(player, stack, gun, group, action, sources, progress,frame.triggers-1);
-            else {
-                // Keep nonzero fractional/negative delays queued; truncation happens only after the zero check.
-                frame.remaining[index] = (int)action.delay();
-                frame.pending[index] = true;
-            }
-        }
+        var actual = frame.group;
+        frame.clock.trigger(index -> eligible(actual.actions().get(index), soundsOnly), new Dispatch(player, stack, frame, sources));
     }
 
     static void tick(ServerPlayer player, ItemStack stack) {
@@ -104,20 +108,10 @@ public final class GunActionTimeline {
             if (now <= frame.lastTick) continue;
             // Runtime pending work must not resume after a dropped/unloaded interval.
             if (now - frame.lastTick > 1) { iterator.remove(); removed = true; continue; }
-            frame.lastTick = now; frame.tickedAt = now; frame.progress++;
-            List<ModifierSource> sources = null;
-            for (int index = 0; index < frame.pending.length; index++) {
-                if (!frame.pending[index]) continue;
-                if (frame.remaining[index] > 1) { frame.remaining[index]--; continue; }
-                frame.pending[index] = false;
-                if (sources == null) {
-                    var attachments = stack.getOrDefault(ModDataComponents.GUN_ATTACHMENTS, GunAttachments.EMPTY);
-                    sources = RealisticDamage.apply(GunLookup.contentKey(stack), frame.group, StatSources.forFiring(frame.gun, frame.group, attachments));
-                }
-                // Different same-time callbacks use authored index order; original HashMap order was unspecified.
-                // Original delayed callbacks receive current TriggerCount, after prior triggers were authored.
-                GunEngine.executeAction(player, stack, frame.gun, frame.group, frame.group.actions().get(index), sources, frame.progress,frame.triggers);
-            }
+            frame.lastTick = now; frame.tickedAt = now;
+            // Stable authored-index order is retained; original HashMap same-time ordering was unspecified.
+            // No dispatch/stat allocation on the ordinary no-pending tick path.
+            frame.clock.tick(frame.clock.hasPending() ? new Dispatch(player, stack, frame, null) : NO_CALLBACK);
         }
         if (removed) publish(player, stack, groups);
     }
@@ -131,7 +125,7 @@ public final class GunActionTimeline {
         boolean removed = groups.values().removeIf(frame -> {
             boolean remove = frame.tickedAt == now && (frame.finishing
                 || (GunFireMode.of(frame.group.repeatMode()) == GunFireMode.SEMI_AUTO || GunFireMode.of(frame.group.repeatMode()) == GunFireMode.BURST_FIRE)
-                && frame.progress > (long)GunEngine.groupDurationTicks(frame.group) * frame.triggers);
+                && frame.clock.pastDuration(GunEngine.groupDurationTicks(frame.group)));
             if (remove && frame.finishing) {
                 var state = stack.getOrDefault(ModDataComponents.GUN_ACTION_STATE, GunActionState.IDLE);
                 if (state.activeToggles().contains(frame.group.key())) stack.set(ModDataComponents.GUN_ACTION_STATE, state.withToggle(frame.group.key(), false));
@@ -172,7 +166,7 @@ public final class GunActionTimeline {
 
     static java.util.Optional<Context> context(ServerPlayer player, ItemStack stack, String key) {
         var frame = frame(player, stack, key);
-        return frame == null ? java.util.Optional.empty() : java.util.Optional.of(new Context(frame.gun, frame.group, frame.descriptor.origin(), frame.progress, frame.triggers));
+        return frame == null ? java.util.Optional.empty() : java.util.Optional.of(new Context(frame.gun, frame.group, frame.descriptor.origin(), frame.clock.progress(), frame.clock.triggers()));
     }
 
     static void synchronize(ServerPlayer player, ItemStack stack) {

@@ -36,6 +36,29 @@ public final class GunRecoilGameTests {
         listener.player.setItemInHand(InteractionHand.MAIN_HAND,gun);listener.player.setXRot(-90);return gun;
     }
     @GameTest(template="projectile_arena",templateNamespace="createloveandwar")
+    public static void callbacksObserveTriggerCountBeforeItAdvances(GameTestHelper helper) throws ReflectiveOperationException {
+        try(var owner=new GunAudioGameTests.Listener(helper)){
+            var gun=loaded(owner,2);var observed=new java.util.ArrayList<Long>();
+            var original=owner.player.connection;
+            owner.player.connection=new net.minecraft.server.network.ServerGamePacketListenerImpl(helper.getLevel().getServer(),
+                new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND),owner.player,
+                net.minecraft.server.network.CommonListenerCookie.createInitial(owner.player.getGameProfile(),false)){
+                @Override public void send(net.minecraft.network.protocol.Packet<?> packet){
+                    if(packet instanceof ClientboundCustomPayloadPacket payload&&payload.payload() instanceof SGunRecoil)
+                        observed.add(GunActionTimeline.context(owner.player,gun,group().key()).orElseThrow().triggers());
+                    original.send(packet);
+                }
+                @Override public boolean hasChannel(ResourceLocation id){return false;}
+            };
+            var def=GunContent.gun("mars").orElseThrow();
+            for(int i=0;i<2;i++)GunEngine.triggerActions(owner.player,gun,def,group(),GunAttachments.EMPTY);
+            helper.assertTrue(observed.equals(List.of(0L,1L)),"Original callbacks see TriggerCount before increment; observed="+observed);
+            helper.assertTrue(GunActionTimeline.context(owner.player,gun,group().key()).orElseThrow().triggers()==2,
+                "After both callbacks the retained group count advances to2");
+        }
+        helper.succeed();
+    }
+    @GameTest(template="projectile_arena",templateNamespace="createloveandwar")
     public static void firingPreservesExistingShooterVelocity(GameTestHelper helper) throws ReflectiveOperationException {
         try(var listener=new GunAudioGameTests.Listener(helper)){
             var gun=stack("mars");gun.set(ModDataComponents.GUN_LOADED_ROUNDS,new AmmoPouchContents(List.of(stack("pistol_bullet"))));

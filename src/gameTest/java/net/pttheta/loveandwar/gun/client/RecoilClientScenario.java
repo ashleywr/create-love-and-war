@@ -45,6 +45,23 @@ public final class RecoilClientScenario {
     @SubscribeEvent public static void register(RegisterClientCommandsEvent event){
         if(!Boolean.getBoolean("law.enableClientScenario"))return;
         event.getDispatcher().register(Commands.literal("law_test_recoil_camera").executes(context->cameraCheck()));
+        event.getDispatcher().register(Commands.literal("law_test_prediction_initial").executes(context->{
+            var mc=Minecraft.getInstance();if(mc.player==null)return 0;
+            var stack=mc.player.getMainHandItem();
+            var group=net.pttheta.loveandwar.gun.runtime.GunEngine.predictStartedGroup(mc.player,stack,"Fire1",mc.level.getGameTime());
+            if(group.isEmpty()||!group.get().key().equals("primary_fire")||stack.getOrDefault(ModDataComponents.GUN_LOADED_ROUNDS,AmmoPouchContents.EMPTY).isEmpty())
+                throw new IllegalStateException("Prediction baseline requires ready loaded primary group");
+            try{
+                var state=state();var snapshot=clear(state);
+                try{
+                    event.getDispatcher().execute("law_test_fire_client tap",context.getSource());
+                    // Client payload handlers enqueue on this same thread and cannot run until this command returns.
+                    float pending=read(state,"pendingPitch");
+                    LoggerFactory.getLogger("createloveandwar/scenario").info("LAW_PREDICTION_CHECK name=initial_before_reply pass={} pending={}",pending>0,pending);
+                }finally{restore(state,snapshot);}
+            }catch(ReflectiveOperationException ex){throw new IllegalStateException(ex);}
+            return 1;
+        }));
         event.getDispatcher().register(Commands.literal("law_test_recoil_burst").executes(context->{
             if(!arm())return 0;return event.getDispatcher().execute("law_test_fire_client tap",context.getSource());
         }));
