@@ -18,12 +18,20 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
       - run: bash ./gradlew --no-daemon build runGameTestServer
+      - name: Collect GameTest reports
+        if: always()
+        run: |
+          mkdir -p build/reports/gametest
+          if [ -d ../private/run-gametest/logs ]; then
+            cp -a ../private/run-gametest/logs build/reports/gametest/
+          fi
+          if [ -f ../private/run-gametest/results.xml ]; then
+            cp ../private/run-gametest/results.xml build/reports/gametest/results.xml
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: build-and-test-results
           path: |
             build/libs/
-            build/reports/tests/
-            ../private/run-gametest/logs/
-            ../private/run-gametest/results.xml
+            build/reports/
