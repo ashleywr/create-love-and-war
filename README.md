@@ -34,7 +34,7 @@ The unchanged input binary and raw recovery are retained separately from this re
 
 <!-- ashley-release-information -->
 
-## Ashley's builds
+## My builds
 
 This is an unofficial maintenance fork. Original authors retain ownership and credit. See the [upstream project](https://www.curseforge.com/minecraft/mc-mods/create-love-war) for the original mod. Local changes do not imply upstream endorsement.
 
